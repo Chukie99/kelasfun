@@ -48,6 +48,11 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
+
+  Future<String> getDatabasePath() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    return p.join(dbFolder.path, 'kelasFun', 'kelasfun.db');
+  }
 }
 
 LazyDatabase _openConnection() {
