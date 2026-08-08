@@ -38,6 +38,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
           final students = snapshot.data ?? [];
           
           final classes = ['Semua', ...students.map((s) => s.className).toSet()];
+          if (!classes.contains(_selectedClass)) {
+            _selectedClass = 'Semua';
+          }
           
           final filteredStudents = students.where((s) {
             final matchesSearch = _searchQuery.isEmpty ||
