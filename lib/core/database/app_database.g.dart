@@ -2435,6 +2435,311 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $SchedulesTable extends Schedules
+    with TableInfo<$SchedulesTable, Schedule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SchedulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+      'day', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 10),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _periodMeta = const VerificationMeta('period');
+  @override
+  late final GeneratedColumn<int> period = GeneratedColumn<int>(
+      'period', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _subjectIdMeta =
+      const VerificationMeta('subjectId');
+  @override
+  late final GeneratedColumn<int> subjectId = GeneratedColumn<int>(
+      'subject_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES subjects (id)'));
+  static const VerificationMeta _classNameMeta =
+      const VerificationMeta('className');
+  @override
+  late final GeneratedColumn<String> className = GeneratedColumn<String>(
+      'class_name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, day, period, subjectId, className];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schedules';
+  @override
+  VerificationContext validateIntegrity(Insertable<Schedule> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+          _dayMeta, day.isAcceptableOrUnknown(data['day']!, _dayMeta));
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('period')) {
+      context.handle(_periodMeta,
+          period.isAcceptableOrUnknown(data['period']!, _periodMeta));
+    } else if (isInserting) {
+      context.missing(_periodMeta);
+    }
+    if (data.containsKey('subject_id')) {
+      context.handle(_subjectIdMeta,
+          subjectId.isAcceptableOrUnknown(data['subject_id']!, _subjectIdMeta));
+    } else if (isInserting) {
+      context.missing(_subjectIdMeta);
+    }
+    if (data.containsKey('class_name')) {
+      context.handle(_classNameMeta,
+          className.isAcceptableOrUnknown(data['class_name']!, _classNameMeta));
+    } else if (isInserting) {
+      context.missing(_classNameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Schedule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Schedule(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      day: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}day'])!,
+      period: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}period'])!,
+      subjectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}subject_id'])!,
+      className: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}class_name'])!,
+    );
+  }
+
+  @override
+  $SchedulesTable createAlias(String alias) {
+    return $SchedulesTable(attachedDatabase, alias);
+  }
+}
+
+class Schedule extends DataClass implements Insertable<Schedule> {
+  final int id;
+  final String day;
+  final int period;
+  final int subjectId;
+  final String className;
+  const Schedule(
+      {required this.id,
+      required this.day,
+      required this.period,
+      required this.subjectId,
+      required this.className});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['day'] = Variable<String>(day);
+    map['period'] = Variable<int>(period);
+    map['subject_id'] = Variable<int>(subjectId);
+    map['class_name'] = Variable<String>(className);
+    return map;
+  }
+
+  SchedulesCompanion toCompanion(bool nullToAbsent) {
+    return SchedulesCompanion(
+      id: Value(id),
+      day: Value(day),
+      period: Value(period),
+      subjectId: Value(subjectId),
+      className: Value(className),
+    );
+  }
+
+  factory Schedule.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Schedule(
+      id: serializer.fromJson<int>(json['id']),
+      day: serializer.fromJson<String>(json['day']),
+      period: serializer.fromJson<int>(json['period']),
+      subjectId: serializer.fromJson<int>(json['subjectId']),
+      className: serializer.fromJson<String>(json['className']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'day': serializer.toJson<String>(day),
+      'period': serializer.toJson<int>(period),
+      'subjectId': serializer.toJson<int>(subjectId),
+      'className': serializer.toJson<String>(className),
+    };
+  }
+
+  Schedule copyWith(
+          {int? id,
+          String? day,
+          int? period,
+          int? subjectId,
+          String? className}) =>
+      Schedule(
+        id: id ?? this.id,
+        day: day ?? this.day,
+        period: period ?? this.period,
+        subjectId: subjectId ?? this.subjectId,
+        className: className ?? this.className,
+      );
+  Schedule copyWithCompanion(SchedulesCompanion data) {
+    return Schedule(
+      id: data.id.present ? data.id.value : this.id,
+      day: data.day.present ? data.day.value : this.day,
+      period: data.period.present ? data.period.value : this.period,
+      subjectId: data.subjectId.present ? data.subjectId.value : this.subjectId,
+      className: data.className.present ? data.className.value : this.className,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Schedule(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('period: $period, ')
+          ..write('subjectId: $subjectId, ')
+          ..write('className: $className')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, day, period, subjectId, className);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Schedule &&
+          other.id == this.id &&
+          other.day == this.day &&
+          other.period == this.period &&
+          other.subjectId == this.subjectId &&
+          other.className == this.className);
+}
+
+class SchedulesCompanion extends UpdateCompanion<Schedule> {
+  final Value<int> id;
+  final Value<String> day;
+  final Value<int> period;
+  final Value<int> subjectId;
+  final Value<String> className;
+  const SchedulesCompanion({
+    this.id = const Value.absent(),
+    this.day = const Value.absent(),
+    this.period = const Value.absent(),
+    this.subjectId = const Value.absent(),
+    this.className = const Value.absent(),
+  });
+  SchedulesCompanion.insert({
+    this.id = const Value.absent(),
+    required String day,
+    required int period,
+    required int subjectId,
+    required String className,
+  })  : day = Value(day),
+        period = Value(period),
+        subjectId = Value(subjectId),
+        className = Value(className);
+  static Insertable<Schedule> custom({
+    Expression<int>? id,
+    Expression<String>? day,
+    Expression<int>? period,
+    Expression<int>? subjectId,
+    Expression<String>? className,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (day != null) 'day': day,
+      if (period != null) 'period': period,
+      if (subjectId != null) 'subject_id': subjectId,
+      if (className != null) 'class_name': className,
+    });
+  }
+
+  SchedulesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? day,
+      Value<int>? period,
+      Value<int>? subjectId,
+      Value<String>? className}) {
+    return SchedulesCompanion(
+      id: id ?? this.id,
+      day: day ?? this.day,
+      period: period ?? this.period,
+      subjectId: subjectId ?? this.subjectId,
+      className: className ?? this.className,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (period.present) {
+      map['period'] = Variable<int>(period.value);
+    }
+    if (subjectId.present) {
+      map['subject_id'] = Variable<int>(subjectId.value);
+    }
+    if (className.present) {
+      map['class_name'] = Variable<String>(className.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchedulesCompanion(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('period: $period, ')
+          ..write('subjectId: $subjectId, ')
+          ..write('className: $className')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2444,18 +2749,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GradesTable grades = $GradesTable(this);
   late final $PointsTable points = $PointsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $SchedulesTable schedules = $SchedulesTable(this);
   late final StudentDao studentDao = StudentDao(this as AppDatabase);
   late final AttendanceDao attendanceDao = AttendanceDao(this as AppDatabase);
   late final SubjectDao subjectDao = SubjectDao(this as AppDatabase);
   late final GradeDao gradeDao = GradeDao(this as AppDatabase);
   late final PointDao pointDao = PointDao(this as AppDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
+  late final ScheduleDao scheduleDao = ScheduleDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [students, attendance, subjects, grades, points, settings];
+      [students, attendance, subjects, grades, points, settings, schedules];
 }
 
 typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
@@ -3335,6 +3642,21 @@ final class $$SubjectsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$SchedulesTable, List<Schedule>>
+      _schedulesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.schedules,
+              aliasName:
+                  $_aliasNameGenerator(db.subjects.id, db.schedules.subjectId));
+
+  $$SchedulesTableProcessedTableManager get schedulesRefs {
+    final manager = $$SchedulesTableTableManager($_db, $_db.schedules)
+        .filter((f) => f.subjectId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_schedulesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$SubjectsTableFilterComposer
@@ -3371,6 +3693,27 @@ class $$SubjectsTableFilterComposer
             $$GradesTableFilterComposer(
               $db: $db,
               $table: $db.grades,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> schedulesRefs(
+      Expression<bool> Function($$SchedulesTableFilterComposer f) f) {
+    final $$SchedulesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.schedules,
+        getReferencedColumn: (t) => t.subjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SchedulesTableFilterComposer(
+              $db: $db,
+              $table: $db.schedules,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -3443,6 +3786,27 @@ class $$SubjectsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> schedulesRefs<T extends Object>(
+      Expression<T> Function($$SchedulesTableAnnotationComposer a) f) {
+    final $$SchedulesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.schedules,
+        getReferencedColumn: (t) => t.subjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SchedulesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.schedules,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$SubjectsTableTableManager extends RootTableManager<
@@ -3456,7 +3820,7 @@ class $$SubjectsTableTableManager extends RootTableManager<
     $$SubjectsTableUpdateCompanionBuilder,
     (Subject, $$SubjectsTableReferences),
     Subject,
-    PrefetchHooks Function({bool gradesRefs})> {
+    PrefetchHooks Function({bool gradesRefs, bool schedulesRefs})> {
   $$SubjectsTableTableManager(_$AppDatabase db, $SubjectsTable table)
       : super(TableManagerState(
           db: db,
@@ -3495,10 +3859,13 @@ class $$SubjectsTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$SubjectsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({gradesRefs = false}) {
+          prefetchHooksCallback: ({gradesRefs = false, schedulesRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (gradesRefs) db.grades],
+              explicitlyWatchedTables: [
+                if (gradesRefs) db.grades,
+                if (schedulesRefs) db.schedules
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -3509,6 +3876,18 @@ class $$SubjectsTableTableManager extends RootTableManager<
                             $$SubjectsTableReferences._gradesRefsTable(db),
                         managerFromTypedResult: (p0) =>
                             $$SubjectsTableReferences(db, table, p0).gradesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.subjectId == item.id),
+                        typedResults: items),
+                  if (schedulesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$SubjectsTableReferences._schedulesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$SubjectsTableReferences(db, table, p0)
+                                .schedulesRefs,
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.subjectId == item.id),
@@ -3531,7 +3910,7 @@ typedef $$SubjectsTableProcessedTableManager = ProcessedTableManager<
     $$SubjectsTableUpdateCompanionBuilder,
     (Subject, $$SubjectsTableReferences),
     Subject,
-    PrefetchHooks Function({bool gradesRefs})>;
+    PrefetchHooks Function({bool gradesRefs, bool schedulesRefs})>;
 typedef $$GradesTableCreateCompanionBuilder = GradesCompanion Function({
   Value<int> id,
   required int studentId,
@@ -4339,6 +4718,271 @@ typedef $$SettingsTableProcessedTableManager = ProcessedTableManager<
     (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
     Setting,
     PrefetchHooks Function()>;
+typedef $$SchedulesTableCreateCompanionBuilder = SchedulesCompanion Function({
+  Value<int> id,
+  required String day,
+  required int period,
+  required int subjectId,
+  required String className,
+});
+typedef $$SchedulesTableUpdateCompanionBuilder = SchedulesCompanion Function({
+  Value<int> id,
+  Value<String> day,
+  Value<int> period,
+  Value<int> subjectId,
+  Value<String> className,
+});
+
+final class $$SchedulesTableReferences
+    extends BaseReferences<_$AppDatabase, $SchedulesTable, Schedule> {
+  $$SchedulesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SubjectsTable _subjectIdTable(_$AppDatabase db) =>
+      db.subjects.createAlias(
+          $_aliasNameGenerator(db.schedules.subjectId, db.subjects.id));
+
+  $$SubjectsTableProcessedTableManager get subjectId {
+    final manager = $$SubjectsTableTableManager($_db, $_db.subjects)
+        .filter((f) => f.id($_item.subjectId));
+    final item = $_typedResult.readTableOrNull(_subjectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$SchedulesTableFilterComposer
+    extends Composer<_$AppDatabase, $SchedulesTable> {
+  $$SchedulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get day => $composableBuilder(
+      column: $table.day, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get period => $composableBuilder(
+      column: $table.period, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get className => $composableBuilder(
+      column: $table.className, builder: (column) => ColumnFilters(column));
+
+  $$SubjectsTableFilterComposer get subjectId {
+    final $$SubjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subjectId,
+        referencedTable: $db.subjects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SubjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.subjects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$SchedulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SchedulesTable> {
+  $$SchedulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get day => $composableBuilder(
+      column: $table.day, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get period => $composableBuilder(
+      column: $table.period, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get className => $composableBuilder(
+      column: $table.className, builder: (column) => ColumnOrderings(column));
+
+  $$SubjectsTableOrderingComposer get subjectId {
+    final $$SubjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subjectId,
+        referencedTable: $db.subjects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SubjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.subjects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$SchedulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SchedulesTable> {
+  $$SchedulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<int> get period =>
+      $composableBuilder(column: $table.period, builder: (column) => column);
+
+  GeneratedColumn<String> get className =>
+      $composableBuilder(column: $table.className, builder: (column) => column);
+
+  $$SubjectsTableAnnotationComposer get subjectId {
+    final $$SubjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subjectId,
+        referencedTable: $db.subjects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SubjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.subjects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$SchedulesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SchedulesTable,
+    Schedule,
+    $$SchedulesTableFilterComposer,
+    $$SchedulesTableOrderingComposer,
+    $$SchedulesTableAnnotationComposer,
+    $$SchedulesTableCreateCompanionBuilder,
+    $$SchedulesTableUpdateCompanionBuilder,
+    (Schedule, $$SchedulesTableReferences),
+    Schedule,
+    PrefetchHooks Function({bool subjectId})> {
+  $$SchedulesTableTableManager(_$AppDatabase db, $SchedulesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SchedulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SchedulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SchedulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> day = const Value.absent(),
+            Value<int> period = const Value.absent(),
+            Value<int> subjectId = const Value.absent(),
+            Value<String> className = const Value.absent(),
+          }) =>
+              SchedulesCompanion(
+            id: id,
+            day: day,
+            period: period,
+            subjectId: subjectId,
+            className: className,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String day,
+            required int period,
+            required int subjectId,
+            required String className,
+          }) =>
+              SchedulesCompanion.insert(
+            id: id,
+            day: day,
+            period: period,
+            subjectId: subjectId,
+            className: className,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$SchedulesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({subjectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (subjectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.subjectId,
+                    referencedTable:
+                        $$SchedulesTableReferences._subjectIdTable(db),
+                    referencedColumn:
+                        $$SchedulesTableReferences._subjectIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$SchedulesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $SchedulesTable,
+    Schedule,
+    $$SchedulesTableFilterComposer,
+    $$SchedulesTableOrderingComposer,
+    $$SchedulesTableAnnotationComposer,
+    $$SchedulesTableCreateCompanionBuilder,
+    $$SchedulesTableUpdateCompanionBuilder,
+    (Schedule, $$SchedulesTableReferences),
+    Schedule,
+    PrefetchHooks Function({bool subjectId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4355,4 +4999,6 @@ class $AppDatabaseManager {
       $$PointsTableTableManager(_db, _db.points);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$SchedulesTableTableManager get schedules =>
+      $$SchedulesTableTableManager(_db, _db.schedules);
 }

@@ -10,12 +10,14 @@ import 'tables/subjects.dart';
 import 'tables/grades.dart';
 import 'tables/points.dart';
 import 'tables/settings.dart';
+import 'tables/schedule.dart';
 import 'daos/student_dao.dart';
 import 'daos/attendance_dao.dart';
 import 'daos/subject_dao.dart';
 import 'daos/grade_dao.dart';
 import 'daos/point_dao.dart';
 import 'daos/settings_dao.dart';
+import 'daos/schedule_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -26,6 +28,7 @@ part 'app_database.g.dart';
   Grades,
   Points,
   Settings,
+  Schedules,
 ], daos: [
   StudentDao,
   AttendanceDao,
@@ -33,6 +36,7 @@ part 'app_database.g.dart';
   GradeDao,
   PointDao,
   SettingsDao,
+  ScheduleDao,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([DatabaseConnection? connection]) : super(connection ?? _openConnection());
