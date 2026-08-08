@@ -60,4 +60,9 @@ class AttendanceDao extends DatabaseAccessor<AppDatabase> with _$AttendanceDaoMi
       ..where((t) => t.synced.equals('false'))
     ).get();
   }
+
+  Future<void> markSynced(int id) {
+    return (update(attendance)..where((t) => t.id.equals(id)))
+        .write(const AttendanceCompanion(synced: Value('true')));
+  }
 }
