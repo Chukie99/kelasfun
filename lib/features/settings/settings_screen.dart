@@ -3,11 +3,58 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/sync/sync_server.dart';
+import 'package:kelasfun/core/utils/network_utils.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
+import 'package:kelasfun/features/settings/widgets/server_section.dart';
+import 'package:kelasfun/features/settings/widgets/pairing_qr.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  SyncServer? _server;
+  bool _serverRunning = false;
+  String _serverUrl = '';
+  String _localIp = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServerStatus();
+  }
+
+  Future<void> _loadServerStatus() async {
+    final ip = await NetworkUtils.getLocalIp();
+    setState(() => _localIp = ip);
+  }
+
+  Future<void> _toggleServer() async {
+    final db = context.read<AppDatabase>();
+    
+    if (_serverRunning) {
+      await _server?.stop();
+      setState(() {
+        _serverRunning = false;
+        _serverUrl = '';
+      });
+    } else {
+      _server = SyncServer(
+        db: db,
+        apiKey: 'kelasfun-secret-key',
+      );
+      await _server!.start();
+      setState(() {
+        _serverRunning = true;
+        _serverUrl = 'http://$_localIp:8080';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,23 +64,32 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           AppCard(
+            child: ServerSection(
+              isRunning: _serverRunning,
+              serverUrl: _serverUrl,
+              onToggle: _toggleServer,
+            ),
+          ),
+          if (_serverRunning) ...[
+            const SizedBox(height: 16),
+            AppCard(
+              child: PairingQr(port: 8080, token: 'kelasfun-secret-key'),
+            ),
+          ],
+          const SizedBox(height: 16),
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Backup & Restore', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text('Backup & Restore',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 16),
-                const Text('Backup database ke flashdisk untuk keamanan data'),
-                const SizedBox(height: 8),
                 AppButton(
                   label: 'Backup Database',
                   icon: Icons.backup,
                   onPressed: () => _backupDatabase(context),
                 ),
                 const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text('Restore database dari file backup'),
-                const SizedBox(height: 8),
                 AppButton(
                   label: 'Restore Database',
                   icon: Icons.restore,
@@ -48,7 +104,8 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tentang', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text('Tentang',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 8),
                 const Text('kelasFun v1.0.0'),
                 const Text('Aplikasi Manajemen Kelas Offline-First'),
