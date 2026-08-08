@@ -10,6 +10,7 @@ class Students extends Table {
   TextColumn get address => text().nullable()();
   TextColumn get parentName => text().nullable()();
   TextColumn get parentPhone => text().nullable()();
+  TextColumn get photoPath => text().nullable()();
   TextColumn get qrData => text().unique()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

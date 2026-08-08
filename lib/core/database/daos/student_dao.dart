@@ -18,6 +18,7 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
     String? address,
     String? parentName,
     String? parentPhone,
+    String? photoPath,
   }) {
     return into(students).insert(StudentsCompanion.insert(
       nis: nis,
@@ -29,6 +30,7 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
       address: Value(address),
       parentName: Value(parentName),
       parentPhone: Value(parentPhone),
+      photoPath: Value(photoPath),
     ));
   }
 

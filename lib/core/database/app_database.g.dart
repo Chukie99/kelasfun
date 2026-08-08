@@ -76,6 +76,12 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   late final GeneratedColumn<String> parentPhone = GeneratedColumn<String>(
       'parent_phone', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _photoPathMeta =
+      const VerificationMeta('photoPath');
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+      'photo_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _qrDataMeta = const VerificationMeta('qrData');
   @override
   late final GeneratedColumn<String> qrData = GeneratedColumn<String>(
@@ -110,6 +116,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
         address,
         parentName,
         parentPhone,
+        photoPath,
         qrData,
         createdAt,
         updatedAt
@@ -171,6 +178,10 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           parentPhone.isAcceptableOrUnknown(
               data['parent_phone']!, _parentPhoneMeta));
     }
+    if (data.containsKey('photo_path')) {
+      context.handle(_photoPathMeta,
+          photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta));
+    }
     if (data.containsKey('qr_data')) {
       context.handle(_qrDataMeta,
           qrData.isAcceptableOrUnknown(data['qr_data']!, _qrDataMeta));
@@ -212,6 +223,8 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.string, data['${effectivePrefix}parent_name']),
       parentPhone: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}parent_phone']),
+      photoPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}photo_path']),
       qrData: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}qr_data'])!,
       createdAt: attachedDatabase.typeMapping
@@ -237,6 +250,7 @@ class Student extends DataClass implements Insertable<Student> {
   final String? address;
   final String? parentName;
   final String? parentPhone;
+  final String? photoPath;
   final String qrData;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -250,6 +264,7 @@ class Student extends DataClass implements Insertable<Student> {
       this.address,
       this.parentName,
       this.parentPhone,
+      this.photoPath,
       required this.qrData,
       required this.createdAt,
       required this.updatedAt});
@@ -272,6 +287,9 @@ class Student extends DataClass implements Insertable<Student> {
     }
     if (!nullToAbsent || parentPhone != null) {
       map['parent_phone'] = Variable<String>(parentPhone);
+    }
+    if (!nullToAbsent || photoPath != null) {
+      map['photo_path'] = Variable<String>(photoPath);
     }
     map['qr_data'] = Variable<String>(qrData);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -298,6 +316,9 @@ class Student extends DataClass implements Insertable<Student> {
       parentPhone: parentPhone == null && nullToAbsent
           ? const Value.absent()
           : Value(parentPhone),
+      photoPath: photoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoPath),
       qrData: Value(qrData),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -317,6 +338,7 @@ class Student extends DataClass implements Insertable<Student> {
       address: serializer.fromJson<String?>(json['address']),
       parentName: serializer.fromJson<String?>(json['parentName']),
       parentPhone: serializer.fromJson<String?>(json['parentPhone']),
+      photoPath: serializer.fromJson<String?>(json['photoPath']),
       qrData: serializer.fromJson<String>(json['qrData']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -335,6 +357,7 @@ class Student extends DataClass implements Insertable<Student> {
       'address': serializer.toJson<String?>(address),
       'parentName': serializer.toJson<String?>(parentName),
       'parentPhone': serializer.toJson<String?>(parentPhone),
+      'photoPath': serializer.toJson<String?>(photoPath),
       'qrData': serializer.toJson<String>(qrData),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -351,6 +374,7 @@ class Student extends DataClass implements Insertable<Student> {
           Value<String?> address = const Value.absent(),
           Value<String?> parentName = const Value.absent(),
           Value<String?> parentPhone = const Value.absent(),
+          Value<String?> photoPath = const Value.absent(),
           String? qrData,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
@@ -364,6 +388,7 @@ class Student extends DataClass implements Insertable<Student> {
         address: address.present ? address.value : this.address,
         parentName: parentName.present ? parentName.value : this.parentName,
         parentPhone: parentPhone.present ? parentPhone.value : this.parentPhone,
+        photoPath: photoPath.present ? photoPath.value : this.photoPath,
         qrData: qrData ?? this.qrData,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -381,6 +406,7 @@ class Student extends DataClass implements Insertable<Student> {
           data.parentName.present ? data.parentName.value : this.parentName,
       parentPhone:
           data.parentPhone.present ? data.parentPhone.value : this.parentPhone,
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
       qrData: data.qrData.present ? data.qrData.value : this.qrData,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -399,6 +425,7 @@ class Student extends DataClass implements Insertable<Student> {
           ..write('address: $address, ')
           ..write('parentName: $parentName, ')
           ..write('parentPhone: $parentPhone, ')
+          ..write('photoPath: $photoPath, ')
           ..write('qrData: $qrData, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -417,6 +444,7 @@ class Student extends DataClass implements Insertable<Student> {
       address,
       parentName,
       parentPhone,
+      photoPath,
       qrData,
       createdAt,
       updatedAt);
@@ -433,6 +461,7 @@ class Student extends DataClass implements Insertable<Student> {
           other.address == this.address &&
           other.parentName == this.parentName &&
           other.parentPhone == this.parentPhone &&
+          other.photoPath == this.photoPath &&
           other.qrData == this.qrData &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -448,6 +477,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String?> address;
   final Value<String?> parentName;
   final Value<String?> parentPhone;
+  final Value<String?> photoPath;
   final Value<String> qrData;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -461,6 +491,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.address = const Value.absent(),
     this.parentName = const Value.absent(),
     this.parentPhone = const Value.absent(),
+    this.photoPath = const Value.absent(),
     this.qrData = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -475,6 +506,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.address = const Value.absent(),
     this.parentName = const Value.absent(),
     this.parentPhone = const Value.absent(),
+    this.photoPath = const Value.absent(),
     required String qrData,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -493,6 +525,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? address,
     Expression<String>? parentName,
     Expression<String>? parentPhone,
+    Expression<String>? photoPath,
     Expression<String>? qrData,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -507,6 +540,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       if (address != null) 'address': address,
       if (parentName != null) 'parent_name': parentName,
       if (parentPhone != null) 'parent_phone': parentPhone,
+      if (photoPath != null) 'photo_path': photoPath,
       if (qrData != null) 'qr_data': qrData,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -523,6 +557,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       Value<String?>? address,
       Value<String?>? parentName,
       Value<String?>? parentPhone,
+      Value<String?>? photoPath,
       Value<String>? qrData,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
@@ -536,6 +571,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       address: address ?? this.address,
       parentName: parentName ?? this.parentName,
       parentPhone: parentPhone ?? this.parentPhone,
+      photoPath: photoPath ?? this.photoPath,
       qrData: qrData ?? this.qrData,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -572,6 +608,9 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (parentPhone.present) {
       map['parent_phone'] = Variable<String>(parentPhone.value);
     }
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
+    }
     if (qrData.present) {
       map['qr_data'] = Variable<String>(qrData.value);
     }
@@ -596,6 +635,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('address: $address, ')
           ..write('parentName: $parentName, ')
           ..write('parentPhone: $parentPhone, ')
+          ..write('photoPath: $photoPath, ')
           ..write('qrData: $qrData, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -644,6 +684,12 @@ class $AttendanceTable extends Attendance
   late final GeneratedColumn<String> scanMethod = GeneratedColumn<String>(
       'scan_method', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _scannedAtMeta =
       const VerificationMeta('scannedAt');
   @override
@@ -661,7 +707,7 @@ class $AttendanceTable extends Attendance
       defaultValue: const Constant('false'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, studentId, date, status, scanMethod, scannedAt, synced];
+      [id, studentId, date, status, scanMethod, description, scannedAt, synced];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -701,6 +747,12 @@ class $AttendanceTable extends Attendance
     } else if (isInserting) {
       context.missing(_scanMethodMeta);
     }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
     if (data.containsKey('scanned_at')) {
       context.handle(_scannedAtMeta,
           scannedAt.isAcceptableOrUnknown(data['scanned_at']!, _scannedAtMeta));
@@ -732,6 +784,8 @@ class $AttendanceTable extends Attendance
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       scanMethod: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}scan_method'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
       scannedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}scanned_at'])!,
       synced: attachedDatabase.typeMapping
@@ -751,6 +805,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
   final String date;
   final String status;
   final String scanMethod;
+  final String? description;
   final DateTime scannedAt;
   final String synced;
   const AttendanceData(
@@ -759,6 +814,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
       required this.date,
       required this.status,
       required this.scanMethod,
+      this.description,
       required this.scannedAt,
       required this.synced});
   @override
@@ -769,6 +825,9 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
     map['date'] = Variable<String>(date);
     map['status'] = Variable<String>(status);
     map['scan_method'] = Variable<String>(scanMethod);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
     map['scanned_at'] = Variable<DateTime>(scannedAt);
     map['synced'] = Variable<String>(synced);
     return map;
@@ -781,6 +840,9 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
       date: Value(date),
       status: Value(status),
       scanMethod: Value(scanMethod),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
       scannedAt: Value(scannedAt),
       synced: Value(synced),
     );
@@ -795,6 +857,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
       date: serializer.fromJson<String>(json['date']),
       status: serializer.fromJson<String>(json['status']),
       scanMethod: serializer.fromJson<String>(json['scanMethod']),
+      description: serializer.fromJson<String?>(json['description']),
       scannedAt: serializer.fromJson<DateTime>(json['scannedAt']),
       synced: serializer.fromJson<String>(json['synced']),
     );
@@ -808,6 +871,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
       'date': serializer.toJson<String>(date),
       'status': serializer.toJson<String>(status),
       'scanMethod': serializer.toJson<String>(scanMethod),
+      'description': serializer.toJson<String?>(description),
       'scannedAt': serializer.toJson<DateTime>(scannedAt),
       'synced': serializer.toJson<String>(synced),
     };
@@ -819,6 +883,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
           String? date,
           String? status,
           String? scanMethod,
+          Value<String?> description = const Value.absent(),
           DateTime? scannedAt,
           String? synced}) =>
       AttendanceData(
@@ -827,6 +892,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
         date: date ?? this.date,
         status: status ?? this.status,
         scanMethod: scanMethod ?? this.scanMethod,
+        description: description.present ? description.value : this.description,
         scannedAt: scannedAt ?? this.scannedAt,
         synced: synced ?? this.synced,
       );
@@ -838,6 +904,8 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
       status: data.status.present ? data.status.value : this.status,
       scanMethod:
           data.scanMethod.present ? data.scanMethod.value : this.scanMethod,
+      description:
+          data.description.present ? data.description.value : this.description,
       scannedAt: data.scannedAt.present ? data.scannedAt.value : this.scannedAt,
       synced: data.synced.present ? data.synced.value : this.synced,
     );
@@ -851,6 +919,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
           ..write('date: $date, ')
           ..write('status: $status, ')
           ..write('scanMethod: $scanMethod, ')
+          ..write('description: $description, ')
           ..write('scannedAt: $scannedAt, ')
           ..write('synced: $synced')
           ..write(')'))
@@ -858,8 +927,8 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, studentId, date, status, scanMethod, scannedAt, synced);
+  int get hashCode => Object.hash(
+      id, studentId, date, status, scanMethod, description, scannedAt, synced);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -869,6 +938,7 @@ class AttendanceData extends DataClass implements Insertable<AttendanceData> {
           other.date == this.date &&
           other.status == this.status &&
           other.scanMethod == this.scanMethod &&
+          other.description == this.description &&
           other.scannedAt == this.scannedAt &&
           other.synced == this.synced);
 }
@@ -879,6 +949,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
   final Value<String> date;
   final Value<String> status;
   final Value<String> scanMethod;
+  final Value<String?> description;
   final Value<DateTime> scannedAt;
   final Value<String> synced;
   const AttendanceCompanion({
@@ -887,6 +958,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
     this.date = const Value.absent(),
     this.status = const Value.absent(),
     this.scanMethod = const Value.absent(),
+    this.description = const Value.absent(),
     this.scannedAt = const Value.absent(),
     this.synced = const Value.absent(),
   });
@@ -896,6 +968,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
     required String date,
     required String status,
     required String scanMethod,
+    this.description = const Value.absent(),
     this.scannedAt = const Value.absent(),
     this.synced = const Value.absent(),
   })  : studentId = Value(studentId),
@@ -908,6 +981,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
     Expression<String>? date,
     Expression<String>? status,
     Expression<String>? scanMethod,
+    Expression<String>? description,
     Expression<DateTime>? scannedAt,
     Expression<String>? synced,
   }) {
@@ -917,6 +991,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
       if (date != null) 'date': date,
       if (status != null) 'status': status,
       if (scanMethod != null) 'scan_method': scanMethod,
+      if (description != null) 'description': description,
       if (scannedAt != null) 'scanned_at': scannedAt,
       if (synced != null) 'synced': synced,
     });
@@ -928,6 +1003,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
       Value<String>? date,
       Value<String>? status,
       Value<String>? scanMethod,
+      Value<String?>? description,
       Value<DateTime>? scannedAt,
       Value<String>? synced}) {
     return AttendanceCompanion(
@@ -936,6 +1012,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
       date: date ?? this.date,
       status: status ?? this.status,
       scanMethod: scanMethod ?? this.scanMethod,
+      description: description ?? this.description,
       scannedAt: scannedAt ?? this.scannedAt,
       synced: synced ?? this.synced,
     );
@@ -959,6 +1036,9 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
     if (scanMethod.present) {
       map['scan_method'] = Variable<String>(scanMethod.value);
     }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
     if (scannedAt.present) {
       map['scanned_at'] = Variable<DateTime>(scannedAt.value);
     }
@@ -976,6 +1056,7 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
           ..write('date: $date, ')
           ..write('status: $status, ')
           ..write('scanMethod: $scanMethod, ')
+          ..write('description: $description, ')
           ..write('scannedAt: $scannedAt, ')
           ..write('synced: $synced')
           ..write(')'))
@@ -2311,6 +2392,7 @@ typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
   Value<String?> address,
   Value<String?> parentName,
   Value<String?> parentPhone,
+  Value<String?> photoPath,
   required String qrData,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -2325,6 +2407,7 @@ typedef $$StudentsTableUpdateCompanionBuilder = StudentsCompanion Function({
   Value<String?> address,
   Value<String?> parentName,
   Value<String?> parentPhone,
+  Value<String?> photoPath,
   Value<String> qrData,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -2413,6 +2496,9 @@ class $$StudentsTableFilterComposer
 
   ColumnFilters<String> get parentPhone => $composableBuilder(
       column: $table.parentPhone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get qrData => $composableBuilder(
       column: $table.qrData, builder: (column) => ColumnFilters(column));
@@ -2523,6 +2609,9 @@ class $$StudentsTableOrderingComposer
   ColumnOrderings<String> get parentPhone => $composableBuilder(
       column: $table.parentPhone, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get qrData => $composableBuilder(
       column: $table.qrData, builder: (column) => ColumnOrderings(column));
 
@@ -2568,6 +2657,9 @@ class $$StudentsTableAnnotationComposer
 
   GeneratedColumn<String> get parentPhone => $composableBuilder(
       column: $table.parentPhone, builder: (column) => column);
+
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
 
   GeneratedColumn<String> get qrData =>
       $composableBuilder(column: $table.qrData, builder: (column) => column);
@@ -2675,6 +2767,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String?> address = const Value.absent(),
             Value<String?> parentName = const Value.absent(),
             Value<String?> parentPhone = const Value.absent(),
+            Value<String?> photoPath = const Value.absent(),
             Value<String> qrData = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2689,6 +2782,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             address: address,
             parentName: parentName,
             parentPhone: parentPhone,
+            photoPath: photoPath,
             qrData: qrData,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -2703,6 +2797,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String?> address = const Value.absent(),
             Value<String?> parentName = const Value.absent(),
             Value<String?> parentPhone = const Value.absent(),
+            Value<String?> photoPath = const Value.absent(),
             required String qrData,
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2717,6 +2812,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             address: address,
             parentName: parentName,
             parentPhone: parentPhone,
+            photoPath: photoPath,
             qrData: qrData,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -2799,6 +2895,7 @@ typedef $$AttendanceTableCreateCompanionBuilder = AttendanceCompanion Function({
   required String date,
   required String status,
   required String scanMethod,
+  Value<String?> description,
   Value<DateTime> scannedAt,
   Value<String> synced,
 });
@@ -2808,6 +2905,7 @@ typedef $$AttendanceTableUpdateCompanionBuilder = AttendanceCompanion Function({
   Value<String> date,
   Value<String> status,
   Value<String> scanMethod,
+  Value<String?> description,
   Value<DateTime> scannedAt,
   Value<String> synced,
 });
@@ -2850,6 +2948,9 @@ class $$AttendanceTableFilterComposer
 
   ColumnFilters<String> get scanMethod => $composableBuilder(
       column: $table.scanMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get scannedAt => $composableBuilder(
       column: $table.scannedAt, builder: (column) => ColumnFilters(column));
@@ -2899,6 +3000,9 @@ class $$AttendanceTableOrderingComposer
   ColumnOrderings<String> get scanMethod => $composableBuilder(
       column: $table.scanMethod, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get scannedAt => $composableBuilder(
       column: $table.scannedAt, builder: (column) => ColumnOrderings(column));
 
@@ -2946,6 +3050,9 @@ class $$AttendanceTableAnnotationComposer
 
   GeneratedColumn<String> get scanMethod => $composableBuilder(
       column: $table.scanMethod, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
 
   GeneratedColumn<DateTime> get scannedAt =>
       $composableBuilder(column: $table.scannedAt, builder: (column) => column);
@@ -3002,6 +3109,7 @@ class $$AttendanceTableTableManager extends RootTableManager<
             Value<String> date = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<String> scanMethod = const Value.absent(),
+            Value<String?> description = const Value.absent(),
             Value<DateTime> scannedAt = const Value.absent(),
             Value<String> synced = const Value.absent(),
           }) =>
@@ -3011,6 +3119,7 @@ class $$AttendanceTableTableManager extends RootTableManager<
             date: date,
             status: status,
             scanMethod: scanMethod,
+            description: description,
             scannedAt: scannedAt,
             synced: synced,
           ),
@@ -3020,6 +3129,7 @@ class $$AttendanceTableTableManager extends RootTableManager<
             required String date,
             required String status,
             required String scanMethod,
+            Value<String?> description = const Value.absent(),
             Value<DateTime> scannedAt = const Value.absent(),
             Value<String> synced = const Value.absent(),
           }) =>
@@ -3029,6 +3139,7 @@ class $$AttendanceTableTableManager extends RootTableManager<
             date: date,
             status: status,
             scanMethod: scanMethod,
+            description: description,
             scannedAt: scannedAt,
             synced: synced,
           ),

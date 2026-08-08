@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/barcode_helpers.dart';
 import 'package:kelasfun/features/attendance/widgets/attendance_card.dart';
 
@@ -19,6 +20,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Timer? _scanTimer;
   final _focusNode = FocusNode();
   String? _lastScanResult;
+  String _selectedFilter = 'Semua';
+
+  static const List<String> _filters = [
+    'Semua', 'Hadir', 'Sakit', 'Izin', 'Alpa', 'Belum Absen',
+  ];
 
   @override
   void initState() {
@@ -63,6 +69,88 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     setState(() => _lastScanResult = '${student.fullName} - Hadir');
   }
 
+  Future<void> _markAttendance({
+    required Student student,
+    required String status,
+    String? description,
+  }) async {
+    final db = context.read<AppDatabase>();
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    await db.attendanceDao.markAttendance(
+      studentId: student.id,
+      date: today,
+      status: status,
+      scanMethod: 'MANUAL',
+      description: description,
+    );
+
+    setState(() => _lastScanResult = '${student.fullName} - $status');
+  }
+
+  Future<void> _resetAttendance(Student student) async {
+    final db = context.read<AppDatabase>();
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    await db.attendanceDao.resetAttendance(student.id, today);
+
+    setState(() => _lastScanResult = '${student.fullName} - Status direset');
+  }
+
+  Future<void> _showDescriptionDialog({
+    required Student student,
+    required String status,
+  }) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Keterangan $status'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'Masukkan keterangan...',
+            border: const OutlineInputBorder(),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      await _markAttendance(
+        student: student,
+        status: status,
+        description: result.isNotEmpty ? result : null,
+      );
+    }
+  }
+
+  Widget _buildFilterChip(String label, int count) {
+    final isSelected = _selectedFilter == label;
+    return FilterChip(
+      label: Text('$label ($count)'),
+      selected: isSelected,
+      onSelected: (_) => setState(() => _selectedFilter = label),
+      selectedColor: AppTheme.cyan.withOpacity(0.2),
+      checkmarkColor: AppTheme.cyan,
+      labelStyle: TextStyle(
+        color: isSelected ? AppTheme.cyan : AppTheme.textSecondary,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
@@ -89,7 +177,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              color: const Color(0xFF5B9BD5),
+              color: AppTheme.cyan,
               child: Text(
                 'Scan kartu barcode siswa - $today',
                 style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -100,47 +188,113 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 color: _lastScanResult!.contains('Hadir')
-                    ? const Color(0xFF70C1B3)
-                    : const Color(0xFFFF6B6B),
+                    ? AppTheme.mint
+                    : _lastScanResult!.contains('reset')
+                        ? AppTheme.amber
+                        : AppTheme.coral,
                 child: Text(
                   _lastScanResult!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
-            Expanded(
-              child: StreamBuilder<List<AttendanceData>>(
-                stream: (db.select(db.attendance)
-                  ..where((t) => t.date.equals(today))
-                ).watch(),
-                builder: (context, snapshot) {
-                  final attendances = snapshot.data ?? [];
-                  if (attendances.isEmpty) {
-                    return const Center(
-                      child: Text('Belum ada presensi hari ini',
-                          style: TextStyle(color: Colors.grey)),
+            StreamBuilder<List<Student>>(
+              stream: db.studentDao.watchAllStudents(),
+              builder: (context, studentSnapshot) {
+                final allStudents = studentSnapshot.data ?? [];
+
+                return StreamBuilder<List<AttendanceData>>(
+                  stream: db.attendanceDao.watchAttendanceByDate(today),
+                  builder: (context, attendanceSnapshot) {
+                    final attendances = attendanceSnapshot.data ?? [];
+
+                    final hadirCount = attendances.where((a) => a.status == 'Hadir').length;
+                    final sakitCount = attendances.where((a) => a.status == 'Sakit').length;
+                    final izinCount = attendances.where((a) => a.status == 'Izin').length;
+                    final alpaCount = attendances.where((a) => a.status == 'Alpa').length;
+                    final belumAbsenCount = allStudents.length - attendances.length;
+
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 60,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                _buildFilterChip('Semua', allStudents.length),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Hadir', hadirCount),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Sakit', sakitCount),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Izin', izinCount),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Alpa', alpaCount),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Belum Absen', belumAbsenCount),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildStudentList(allStudents, attendances),
+                          ),
+                        ],
+                      ),
                     );
-                  }
-                  return ListView.builder(
-                    itemCount: attendances.length,
-                    itemBuilder: (context, index) {
-                      final att = attendances[index];
-                      return FutureBuilder<Student?>(
-                        future: db.studentDao.getStudentById(att.studentId),
-                        builder: (context, studentSnap) {
-                          final student = studentSnap.data;
-                          if (student == null) return const SizedBox();
-                          return AttendanceCard(attendance: att, student: student);
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
+                  },
+                );
+              },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStudentList(List<Student> allStudents, List<AttendanceData> attendances) {
+    final attendanceMap = {for (final a in attendances) a.studentId: a};
+
+    List<Student> filteredStudents;
+    if (_selectedFilter == 'Semua') {
+      filteredStudents = allStudents;
+    } else if (_selectedFilter == 'Belum Absen') {
+      filteredStudents = allStudents.where((s) => !attendanceMap.containsKey(s.id)).toList();
+    } else {
+      filteredStudents = allStudents.where((s) {
+        final att = attendanceMap[s.id];
+        return att != null && att.status == _selectedFilter;
+      }).toList();
+    }
+
+    if (filteredStudents.isEmpty) {
+      return Center(
+        child: Text(
+          _selectedFilter == 'Belum Absen'
+              ? 'Semua siswa sudah absen hari ini'
+              : 'Tidak ada siswa dengan status $_selectedFilter',
+          style: const TextStyle(color: AppTheme.textSecondary),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: filteredStudents.length,
+      itemBuilder: (context, index) {
+        final student = filteredStudents[index];
+        final attendance = attendanceMap[student.id];
+
+        return AttendanceCard(
+          attendance: attendance,
+          student: student,
+          onIzin: () => _showDescriptionDialog(student: student, status: 'Izin'),
+          onSakit: () => _showDescriptionDialog(student: student, status: 'Sakit'),
+          onAlpa: () => _showDescriptionDialog(student: student, status: 'Alpa'),
+          onReset: () => _resetAttendance(student),
+        );
+      },
     );
   }
 }

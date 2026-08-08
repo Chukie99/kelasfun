@@ -38,12 +38,14 @@ class SyncHandler {
       final date = data['date'] as String;
       final status = data['status'] as String;
       final scanMethod = data['scanMethod'] as String;
+      final description = data['description'] as String?;
 
       await db.attendanceDao.markAttendance(
         studentId: studentId,
         date: date,
         status: status,
         scanMethod: scanMethod,
+        description: description,
       );
 
       return _jsonResponse({'success': true, 'message': 'Attendance synced'});

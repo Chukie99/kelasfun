@@ -7,6 +7,7 @@ class Attendance extends Table {
   TextColumn get date => text()();
   TextColumn get status => text()();
   TextColumn get scanMethod => text()();
+  TextColumn get description => text().nullable()();
   DateTimeColumn get scannedAt => dateTime().withDefault(currentDateAndTime)();
   TextColumn get synced => text().withDefault(const Constant('false'))();
 

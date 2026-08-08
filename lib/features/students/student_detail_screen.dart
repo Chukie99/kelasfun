@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/core/utils/photo_helper.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 import 'package:kelasfun/features/students/student_form_screen.dart';
@@ -31,12 +33,49 @@ class StudentDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _PhotoPreview(student: student),
+          const SizedBox(height: 16),
           _QRPreview(student: student),
           const SizedBox(height: 16),
           _BiodataCard(student: student),
           const SizedBox(height: 16),
           _PrintActionsCard(student: student),
         ],
+      ),
+    );
+  }
+}
+
+class _PhotoPreview extends StatelessWidget {
+  final Student student;
+  const _PhotoPreview({required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = PhotoHelper.getInitials(student.fullName);
+
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: student.photoPath != null && File(student.photoPath!).existsSync()
+              ? CircleAvatar(
+                  radius: 60,
+                  backgroundImage: FileImage(File(student.photoPath!)),
+                )
+              : CircleAvatar(
+                  radius: 60,
+                  backgroundColor: AppTheme.cyan.withOpacity(0.2),
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.cyan,
+                    ),
+                  ),
+                ),
+        ),
       ),
     );
   }

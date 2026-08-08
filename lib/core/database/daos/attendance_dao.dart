@@ -13,6 +13,7 @@ class AttendanceDao extends DatabaseAccessor<AppDatabase> with _$AttendanceDaoMi
     required String date,
     required String status,
     required String scanMethod,
+    String? description,
   }) async {
     final existing = await (select(attendance)
       ..where((t) => t.studentId.equals(studentId) & t.date.equals(date))
@@ -23,6 +24,7 @@ class AttendanceDao extends DatabaseAccessor<AppDatabase> with _$AttendanceDaoMi
         .write(AttendanceCompanion(
           status: Value(status),
           scanMethod: Value(scanMethod),
+          description: Value(description),
         ));
     } else {
       await into(attendance).insert(AttendanceCompanion.insert(
@@ -30,7 +32,18 @@ class AttendanceDao extends DatabaseAccessor<AppDatabase> with _$AttendanceDaoMi
         date: date,
         status: status,
         scanMethod: scanMethod,
+        description: Value.absentIfNull(description),
       ));
+    }
+  }
+
+  Future<void> resetAttendance(int studentId, String date) async {
+    final existing = await (select(attendance)
+      ..where((t) => t.studentId.equals(studentId) & t.date.equals(date))
+    ).getSingleOrNull();
+
+    if (existing != null) {
+      await (delete(attendance)..where((t) => t.id.equals(existing.id))).go();
     }
   }
 

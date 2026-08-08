@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/core/utils/photo_helper.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 
 class StudentCard extends StatelessWidget {
@@ -12,17 +14,24 @@ class StudentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initials = PhotoHelper.getInitials(student.fullName);
+
     return AppCard(
       onTap: onTap,
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: AppTheme.cyan.withOpacity(0.2),
-            child: Text(
-              student.fullName.substring(0, 1).toUpperCase(),
-              style: const TextStyle(color: AppTheme.cyan, fontWeight: FontWeight.bold),
-            ),
-          ),
+          student.photoPath != null && File(student.photoPath!).existsSync()
+              ? CircleAvatar(
+                  backgroundImage: FileImage(File(student.photoPath!)),
+                )
+              : CircleAvatar(
+                  backgroundColor: AppTheme.cyan.withOpacity(0.2),
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                        color: AppTheme.cyan, fontWeight: FontWeight.bold),
+                  ),
+                ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
