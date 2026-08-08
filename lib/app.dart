@@ -10,13 +10,33 @@ class KelasFunApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final db = database ?? AppDatabase();
     return Provider<AppDatabase>.value(
-      value: database ?? AppDatabase(),
-      child: MaterialApp(
-        title: 'kelasFun',
-        theme: AppTheme.darkTheme,
-        debugShowCheckedModeBanner: false,
-        home: const HomeScreen(),
+      value: db,
+      child: StreamBuilder<String?>(
+        stream: db.settingsDao.watchSetting('theme_mode'),
+        builder: (context, snapshot) {
+          final mode = snapshot.data ?? 'dark';
+          ThemeMode themeMode;
+          switch (mode) {
+            case 'light':
+              themeMode = ThemeMode.light;
+              break;
+            case 'system':
+              themeMode = ThemeMode.system;
+              break;
+            default:
+              themeMode = ThemeMode.dark;
+          }
+          return MaterialApp(
+            title: 'kelasFun',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            debugShowCheckedModeBanner: false,
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }

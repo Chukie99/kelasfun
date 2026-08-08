@@ -69,6 +69,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tema Aplikasi',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const SizedBox(height: 8),
+                const Text('Pilih mode tampilan',
+                    style: TextStyle(color: Colors.grey)),
+                const SizedBox(height: 8),
+                ListTile(
+                  leading: const Icon(Icons.palette),
+                  title: const Text('Mode Tema'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showThemeDialog(context),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          AppCard(
             child: ServerSection(
               isRunning: _serverRunning,
               serverUrl: _serverUrl,
@@ -172,6 +192,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  void _showThemeDialog(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    showDialog(
+      context: context,
+      builder: (ctx) => StreamBuilder<String?>(
+        stream: db.settingsDao.watchSetting('theme_mode'),
+        builder: (context, snapshot) {
+          final current = snapshot.data ?? 'dark';
+          return AlertDialog(
+            title: const Text('Mode Tema'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: const Text('Gelap'),
+                  value: 'dark',
+                  groupValue: current,
+                  onChanged: (v) async {
+                    await db.settingsDao.setSetting('theme_mode', v!);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text('Terang'),
+                  value: 'light',
+                  groupValue: current,
+                  onChanged: (v) async {
+                    await db.settingsDao.setSetting('theme_mode', v!);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text('Sistem'),
+                  value: 'system',
+                  groupValue: current,
+                  onChanged: (v) async {
+                    await db.settingsDao.setSetting('theme_mode', v!);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
