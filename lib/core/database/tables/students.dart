@@ -12,6 +12,8 @@ class Students extends Table {
   TextColumn get parentPhone => text().nullable()();
   TextColumn get photoPath => text().nullable()();
   TextColumn get qrData => text().unique()();
+  IntColumn get isActive => integer().withDefault(const Constant(1))();
+  TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -19,6 +19,7 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
     String? parentName,
     String? parentPhone,
     String? photoPath,
+    String? notes,
   }) {
     return into(students).insert(StudentsCompanion.insert(
       nis: nis,
@@ -26,17 +27,22 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
       className: className,
       gender: gender,
       qrData: qrData,
-      birthDate: Value(birthDate),
-      address: Value(address),
-      parentName: Value(parentName),
-      parentPhone: Value(parentPhone),
-      photoPath: Value(photoPath),
+      birthDate: Value.absentIfNull(birthDate),
+      address: Value.absentIfNull(address),
+      parentName: Value.absentIfNull(parentName),
+      parentPhone: Value.absentIfNull(parentPhone),
+      photoPath: Value.absentIfNull(photoPath),
+      notes: Value.absentIfNull(notes),
     ));
   }
 
-  Future<List<Student>> getAllStudents() => select(students).get();
+  Future<List<Student>> getAllStudents() {
+    return (select(students)..where((t) => t.isActive.equals(1))).get();
+  }
 
-  Stream<List<Student>> watchAllStudents() => select(students).watch();
+  Stream<List<Student>> watchAllStudents() {
+    return (select(students)..where((t) => t.isActive.equals(1))).watch();
+  }
 
   Future<Student?> getStudentById(int id) {
     return (select(students)..where((t) => t.id.equals(id))).getSingleOrNull();
@@ -52,5 +58,10 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
 
   Future<int> deleteStudent(int id) {
     return (delete(students)..where((t) => t.id.equals(id))).go();
+  }
+
+  Future<int> softDeleteStudent(int id) {
+    return (update(students)..where((t) => t.id.equals(id)))
+        .write(StudentsCompanion(isActive: const Value(0)));
   }
 }

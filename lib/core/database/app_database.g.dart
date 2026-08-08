@@ -89,6 +89,19 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<int> isActive = GeneratedColumn<int>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -118,6 +131,8 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
         parentPhone,
         photoPath,
         qrData,
+        isActive,
+        notes,
         createdAt,
         updatedAt
       ];
@@ -188,6 +203,14 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
     } else if (isInserting) {
       context.missing(_qrDataMeta);
     }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -227,6 +250,10 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.string, data['${effectivePrefix}photo_path']),
       qrData: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}qr_data'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}is_active'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -252,6 +279,8 @@ class Student extends DataClass implements Insertable<Student> {
   final String? parentPhone;
   final String? photoPath;
   final String qrData;
+  final int isActive;
+  final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Student(
@@ -266,6 +295,8 @@ class Student extends DataClass implements Insertable<Student> {
       this.parentPhone,
       this.photoPath,
       required this.qrData,
+      required this.isActive,
+      this.notes,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -292,6 +323,10 @@ class Student extends DataClass implements Insertable<Student> {
       map['photo_path'] = Variable<String>(photoPath);
     }
     map['qr_data'] = Variable<String>(qrData);
+    map['is_active'] = Variable<int>(isActive);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -320,6 +355,9 @@ class Student extends DataClass implements Insertable<Student> {
           ? const Value.absent()
           : Value(photoPath),
       qrData: Value(qrData),
+      isActive: Value(isActive),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -340,6 +378,8 @@ class Student extends DataClass implements Insertable<Student> {
       parentPhone: serializer.fromJson<String?>(json['parentPhone']),
       photoPath: serializer.fromJson<String?>(json['photoPath']),
       qrData: serializer.fromJson<String>(json['qrData']),
+      isActive: serializer.fromJson<int>(json['isActive']),
+      notes: serializer.fromJson<String?>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -359,6 +399,8 @@ class Student extends DataClass implements Insertable<Student> {
       'parentPhone': serializer.toJson<String?>(parentPhone),
       'photoPath': serializer.toJson<String?>(photoPath),
       'qrData': serializer.toJson<String>(qrData),
+      'isActive': serializer.toJson<int>(isActive),
+      'notes': serializer.toJson<String?>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -376,6 +418,8 @@ class Student extends DataClass implements Insertable<Student> {
           Value<String?> parentPhone = const Value.absent(),
           Value<String?> photoPath = const Value.absent(),
           String? qrData,
+          int? isActive,
+          Value<String?> notes = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       Student(
@@ -390,6 +434,8 @@ class Student extends DataClass implements Insertable<Student> {
         parentPhone: parentPhone.present ? parentPhone.value : this.parentPhone,
         photoPath: photoPath.present ? photoPath.value : this.photoPath,
         qrData: qrData ?? this.qrData,
+        isActive: isActive ?? this.isActive,
+        notes: notes.present ? notes.value : this.notes,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -408,6 +454,8 @@ class Student extends DataClass implements Insertable<Student> {
           data.parentPhone.present ? data.parentPhone.value : this.parentPhone,
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
       qrData: data.qrData.present ? data.qrData.value : this.qrData,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -427,6 +475,8 @@ class Student extends DataClass implements Insertable<Student> {
           ..write('parentPhone: $parentPhone, ')
           ..write('photoPath: $photoPath, ')
           ..write('qrData: $qrData, ')
+          ..write('isActive: $isActive, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -446,6 +496,8 @@ class Student extends DataClass implements Insertable<Student> {
       parentPhone,
       photoPath,
       qrData,
+      isActive,
+      notes,
       createdAt,
       updatedAt);
   @override
@@ -463,6 +515,8 @@ class Student extends DataClass implements Insertable<Student> {
           other.parentPhone == this.parentPhone &&
           other.photoPath == this.photoPath &&
           other.qrData == this.qrData &&
+          other.isActive == this.isActive &&
+          other.notes == this.notes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -479,6 +533,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String?> parentPhone;
   final Value<String?> photoPath;
   final Value<String> qrData;
+  final Value<int> isActive;
+  final Value<String?> notes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const StudentsCompanion({
@@ -493,6 +549,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.parentPhone = const Value.absent(),
     this.photoPath = const Value.absent(),
     this.qrData = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -508,6 +566,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.parentPhone = const Value.absent(),
     this.photoPath = const Value.absent(),
     required String qrData,
+    this.isActive = const Value.absent(),
+    this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   })  : nis = Value(nis),
@@ -527,6 +587,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? parentPhone,
     Expression<String>? photoPath,
     Expression<String>? qrData,
+    Expression<int>? isActive,
+    Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -542,6 +604,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       if (parentPhone != null) 'parent_phone': parentPhone,
       if (photoPath != null) 'photo_path': photoPath,
       if (qrData != null) 'qr_data': qrData,
+      if (isActive != null) 'is_active': isActive,
+      if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -559,6 +623,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       Value<String?>? parentPhone,
       Value<String?>? photoPath,
       Value<String>? qrData,
+      Value<int>? isActive,
+      Value<String?>? notes,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
     return StudentsCompanion(
@@ -573,6 +639,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       parentPhone: parentPhone ?? this.parentPhone,
       photoPath: photoPath ?? this.photoPath,
       qrData: qrData ?? this.qrData,
+      isActive: isActive ?? this.isActive,
+      notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -614,6 +682,12 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (qrData.present) {
       map['qr_data'] = Variable<String>(qrData.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<int>(isActive.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -637,6 +711,8 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('parentPhone: $parentPhone, ')
           ..write('photoPath: $photoPath, ')
           ..write('qrData: $qrData, ')
+          ..write('isActive: $isActive, ')
+          ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2394,6 +2470,8 @@ typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
   Value<String?> parentPhone,
   Value<String?> photoPath,
   required String qrData,
+  Value<int> isActive,
+  Value<String?> notes,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
 });
@@ -2409,6 +2487,8 @@ typedef $$StudentsTableUpdateCompanionBuilder = StudentsCompanion Function({
   Value<String?> parentPhone,
   Value<String?> photoPath,
   Value<String> qrData,
+  Value<int> isActive,
+  Value<String?> notes,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
 });
@@ -2502,6 +2582,12 @@ class $$StudentsTableFilterComposer
 
   ColumnFilters<String> get qrData => $composableBuilder(
       column: $table.qrData, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -2615,6 +2701,12 @@ class $$StudentsTableOrderingComposer
   ColumnOrderings<String> get qrData => $composableBuilder(
       column: $table.qrData, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -2663,6 +2755,12 @@ class $$StudentsTableAnnotationComposer
 
   GeneratedColumn<String> get qrData =>
       $composableBuilder(column: $table.qrData, builder: (column) => column);
+
+  GeneratedColumn<int> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2769,6 +2867,8 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String?> parentPhone = const Value.absent(),
             Value<String?> photoPath = const Value.absent(),
             Value<String> qrData = const Value.absent(),
+            Value<int> isActive = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -2784,6 +2884,8 @@ class $$StudentsTableTableManager extends RootTableManager<
             parentPhone: parentPhone,
             photoPath: photoPath,
             qrData: qrData,
+            isActive: isActive,
+            notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),
@@ -2799,6 +2901,8 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String?> parentPhone = const Value.absent(),
             Value<String?> photoPath = const Value.absent(),
             required String qrData,
+            Value<int> isActive = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -2814,6 +2918,8 @@ class $$StudentsTableTableManager extends RootTableManager<
             parentPhone: parentPhone,
             photoPath: photoPath,
             qrData: qrData,
+            isActive: isActive,
+            notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),
