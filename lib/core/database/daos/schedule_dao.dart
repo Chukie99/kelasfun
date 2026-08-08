@@ -25,14 +25,14 @@ class ScheduleDao extends DatabaseAccessor<AppDatabase> with _$ScheduleDaoMixin 
   Future<List<Schedule>> getScheduleByClass(String className) {
     return (select(schedules)
       ..where((t) => t.className.equals(className))
-      ..orderBy([(t) => OrderingTerm.asc(t.day), OrderingTerm.asc(t.period)])
+      ..orderBy([(t) => OrderingTerm.asc(t.day), (t) => OrderingTerm.asc(t.period)])
     ).get();
   }
 
   Stream<List<Schedule>> watchScheduleByClass(String className) {
     return (select(schedules)
       ..where((t) => t.className.equals(className))
-      ..orderBy([(t) => OrderingTerm.asc(t.day), OrderingTerm.asc(t.period)])
+      ..orderBy([(t) => OrderingTerm.asc(t.day), (t) => OrderingTerm.asc(t.period)])
     ).watch();
   }
 
