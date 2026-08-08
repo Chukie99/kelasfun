@@ -6,6 +6,7 @@ import 'package:kelasfun/features/grades/ranking_screen.dart';
 import 'package:kelasfun/features/discipline/point_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 import 'package:kelasfun/features/settings/settings_screen.dart';
+import 'package:kelasfun/features/attendance/attendance_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static const List<_MenuItem> _menuItems = [
+    _MenuItem(icon: Icons.qr_code_scanner, label: 'Presensi'),
     _MenuItem(icon: Icons.people, label: 'Siswa'),
     _MenuItem(icon: Icons.subject, label: 'Mapel'),
     _MenuItem(icon: Icons.emoji_events, label: 'Peringkat'),
@@ -28,13 +30,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildContent() {
     switch (_selectedIndex) {
-      case 0: return const StudentListScreen();
-      case 1: return const SubjectScreen();
-      case 2: return const RankingScreen();
-      case 3: return const PointScreen();
-      case 4: return const ReportScreen();
-      case 5: return const SettingsScreen();
-      default: return const StudentListScreen();
+      case 0: return const AttendanceScreen();
+      case 1: return const StudentListScreen();
+      case 2: return const SubjectScreen();
+      case 3: return const RankingScreen();
+      case 4: return const PointScreen();
+      case 5: return const ReportScreen();
+      case 6: return const SettingsScreen();
+      default: return const AttendanceScreen();
     }
   }
 
