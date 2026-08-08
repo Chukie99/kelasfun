@@ -58,8 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) => setState(() => _selectedIndex = index),
             labelType: NavigationRailLabelType.all,
-            selectedIconTheme: const IconThemeData(color: AppTheme.primaryBlue),
-            selectedLabelTextStyle: const TextStyle(color: AppTheme.primaryBlue),
+            selectedIconTheme: const IconThemeData(color: AppTheme.cyan),
+            selectedLabelTextStyle: const TextStyle(color: AppTheme.cyan),
             destinations: _menuItems.map((item) {
               return NavigationRailDestination(
                 icon: Icon(item.icon),

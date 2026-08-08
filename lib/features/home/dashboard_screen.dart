@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
-import 'package:kelasfun/features/attendance/attendance_screen.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 
@@ -60,22 +59,19 @@ class _SchoolProfileCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primaryBlue, Color(0xFF70C1B3)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppTheme.cyan.withOpacity(0.15),
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.cyan.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.school, color: Colors.white, size: 48),
+                const Icon(Icons.school, color: AppTheme.cyan, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   name.isNotEmpty ? name : 'Nama Sekolah',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -84,7 +80,7 @@ class _SchoolProfileCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     location,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
               ],
@@ -122,24 +118,27 @@ class _StatsTodayCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Statistik Hari Ini',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppTheme.textPrimary)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         _StatItem(
                           count: totalStudents.toString(),
                           label: 'Total',
-                          color: AppTheme.primaryBlue,
+                          color: AppTheme.cyan,
                         ),
                         _StatItem(
                           count: hadir.toString(),
                           label: 'Hadir',
-                          color: AppTheme.softGreen,
+                          color: AppTheme.mint,
                         ),
                         _StatItem(
                           count: alpha.toString(),
                           label: 'Alpha',
-                          color: AppTheme.softPink,
+                          color: AppTheme.coral,
                         ),
                       ],
                     ),
@@ -180,7 +179,7 @@ class _StatItem extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
         ],
       ),
     );
@@ -223,7 +222,10 @@ class _QuickSummaryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Ringkasan Cepat',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: AppTheme.textPrimary)),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -231,19 +233,19 @@ class _QuickSummaryCard extends StatelessWidget {
                               icon: Icons.subject,
                               value: totalSubjects.toString(),
                               label: 'Mapel',
-                              color: AppTheme.primaryBlue,
+                              color: AppTheme.cyan,
                             ),
                             _SummaryItem(
                               icon: Icons.star,
                               value: totalPoints.toString(),
                               label: 'Poin',
-                              color: AppTheme.warmOrange,
+                              color: AppTheme.amber,
                             ),
                             _SummaryItem(
                               icon: Icons.analytics,
                               value: avgScore,
                               label: 'Rata-rata',
-                              color: AppTheme.softGreen,
+                              color: AppTheme.mint,
                             ),
                           ],
                         ),
@@ -283,7 +285,8 @@ class _SummaryItem extends StatelessWidget {
           Text(value,
               style: TextStyle(
                   color: color, fontSize: 20, fontWeight: FontWeight.bold)),
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(label,
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         ],
       ),
     );
@@ -303,7 +306,10 @@ class _QuickActionsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Aksi Cepat',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.textPrimary)),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -311,13 +317,8 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.qr_code_scanner,
                     label: 'Presensi',
-                    color: AppTheme.softGreen,
-                    onTap: () {
-                      final homeState = context.findAncestorStateOfType<State>();
-                      if (homeState != null && homeState.mounted) {
-                        (homeState as dynamic).setState(() {});
-                      }
-                    },
+                    color: AppTheme.mint,
+                    onTap: onNavigate ?? () {},
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -325,7 +326,7 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.person_add,
                     label: 'Tambah Siswa',
-                    color: AppTheme.primaryBlue,
+                    color: AppTheme.cyan,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -338,7 +339,7 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.description,
                     label: 'Laporan',
-                    color: AppTheme.warmOrange,
+                    color: AppTheme.amber,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

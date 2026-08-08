@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 
 class StudentCard extends StatelessWidget {
@@ -16,10 +17,10 @@ class StudentCard extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF5B9BD5),
+            backgroundColor: AppTheme.cyan.withOpacity(0.2),
             child: Text(
               student.fullName.substring(0, 1).toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: AppTheme.cyan, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(width: 12),
@@ -28,14 +29,19 @@ class StudentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(student.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppTheme.textPrimary)),
                 Text('NIS: ${student.nis} • Kelas: ${student.className}',
-                    style: const TextStyle(color: Colors.grey)),
+                    style: const TextStyle(color: AppTheme.textSecondary)),
               ],
             ),
           ),
           if (onDelete != null)
-            IconButton(icon: const Icon(Icons.delete, color: Color(0xFFFF6B6B)), onPressed: onDelete),
+            IconButton(
+                icon: const Icon(Icons.delete, color: AppTheme.coral),
+                onPressed: onDelete),
         ],
       ),
     );

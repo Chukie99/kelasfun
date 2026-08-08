@@ -14,7 +14,7 @@ class KelasFunApp extends StatelessWidget {
       value: database ?? AppDatabase(),
       child: MaterialApp(
         title: 'kelasFun',
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
         home: const HomeScreen(),
       ),

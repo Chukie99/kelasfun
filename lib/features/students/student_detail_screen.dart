@@ -56,9 +56,8 @@ class _QRPreview extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.textPrimary,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
               ),
               child: QrImageView(
                 data: student.qrData,
@@ -66,19 +65,22 @@ class _QRPreview extends StatelessWidget {
                 size: 180,
                 eyeStyle: const QrEyeStyle(
                   eyeShape: QrEyeShape.circle,
-                  color: AppTheme.primaryBlue,
+                  color: AppTheme.background,
                 ),
                 dataModuleStyle: const QrDataModuleStyle(
                   dataModuleShape: QrDataModuleShape.circle,
-                  color: AppTheme.darkGray,
+                  color: AppTheme.background,
                 ),
               ),
             ),
             const SizedBox(height: 12),
             Text(student.fullName,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.textPrimary)),
             Text('NIS: ${student.nis}',
-                style: const TextStyle(color: Colors.grey)),
+                style: const TextStyle(color: AppTheme.textSecondary)),
           ],
         ),
       ),
@@ -99,7 +101,10 @@ class _BiodataCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Biodata Lengkap',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.textPrimary)),
             const Divider(),
             _InfoRow(label: 'NIS', value: student.nis),
             _InfoRow(label: 'Nama Lengkap', value: student.fullName),
@@ -146,10 +151,12 @@ class _InfoRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 140,
-            child: Text(label, style: const TextStyle(color: Colors.grey)),
+            child: Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+            child: Text(value,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
           ),
         ],
       ),
@@ -170,14 +177,17 @@ class _PrintActionsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Cetak',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.textPrimary)),
             const SizedBox(height: 16),
             AppButton(
-              label: 'Cetak Kartu QR (10/A4)',
+              label: 'Cetak Kartu KTP (10/A4)',
               icon: Icons.print,
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cetak Kartu QR - Fitur dalam pengembangan')),
+                  const SnackBar(content: Text('Cetak Kartu KTP - Fitur dalam pengembangan')),
                 );
               },
             ),
