@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/barcode_helpers.dart';
@@ -21,6 +20,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final _focusNode = FocusNode();
   String? _lastScanResult;
   String _selectedFilter = 'Semua';
+  DateTime _selectedDate = DateTime.now();
 
   static const List<String> _filters = [
     'Semua', 'Hadir', 'Sakit', 'Izin', 'Alpa', 'Belum Absen',
@@ -58,10 +58,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       return;
     }
 
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     await db.attendanceDao.markAttendance(
       studentId: student.id,
-      date: today,
+      date: _dateStr,
       status: 'Hadir',
       scanMethod: 'QR_SCAN',
     );
@@ -75,11 +74,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     String? description,
   }) async {
     final db = context.read<AppDatabase>();
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     await db.attendanceDao.markAttendance(
       studentId: student.id,
-      date: today,
+      date: _dateStr,
       status: status,
       scanMethod: 'MANUAL',
       description: description,
@@ -90,9 +88,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<void> _resetAttendance(Student student) async {
     final db = context.read<AppDatabase>();
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    await db.attendanceDao.resetAttendance(student.id, today);
+    await db.attendanceDao.resetAttendance(student.id, _dateStr);
 
     setState(() => _lastScanResult = '${student.fullName} - Status direset');
   }
@@ -151,13 +148,37 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
+  String get _dateStr =>
+      '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Presensi Hari Ini')),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Presensi'),
+            Text(_dateStr, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_today),
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2024),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) setState(() => _selectedDate = picked);
+            },
+          ),
+        ],
+      ),
       body: RawKeyboardListener(
         focusNode: _focusNode,
         autofocus: true,
@@ -179,7 +200,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               padding: const EdgeInsets.all(16),
               color: AppTheme.cyan,
               child: Text(
-                'Scan kartu barcode siswa - $today',
+                'Scan kartu barcode siswa - $_dateStr',
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
@@ -204,7 +225,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 final allStudents = studentSnapshot.data ?? [];
 
                 return StreamBuilder<List<AttendanceData>>(
-                  stream: db.attendanceDao.watchAttendanceByDate(today),
+                  stream: db.attendanceDao.watchAttendanceByDate(_dateStr),
                   builder: (context, attendanceSnapshot) {
                     final attendances = attendanceSnapshot.data ?? [];
 
