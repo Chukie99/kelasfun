@@ -1,19 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/features/students/student_list_screen.dart';
+import 'package:kelasfun/features/subjects/subject_screen.dart';
+import 'package:kelasfun/features/grades/ranking_screen.dart';
+import 'package:kelasfun/features/discipline/point_screen.dart';
+import 'package:kelasfun/features/reports/report_screen.dart';
+import 'package:kelasfun/features/settings/settings_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  static const List<_MenuItem> _menuItems = [
+    _MenuItem(icon: Icons.people, label: 'Siswa'),
+    _MenuItem(icon: Icons.subject, label: 'Mapel'),
+    _MenuItem(icon: Icons.emoji_events, label: 'Peringkat'),
+    _MenuItem(icon: Icons.star, label: 'Poin'),
+    _MenuItem(icon: Icons.description, label: 'Laporan'),
+    _MenuItem(icon: Icons.settings, label: 'Setting'),
+  ];
+
+  Widget _buildContent() {
+    switch (_selectedIndex) {
+      case 0: return const StudentListScreen();
+      case 1: return const SubjectScreen();
+      case 2: return const RankingScreen();
+      case 3: return const PointScreen();
+      case 4: return const ReportScreen();
+      case 5: return const SettingsScreen();
+      default: return const StudentListScreen();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('kelasFun')),
-      body: const Center(
-        child: Text(
-          'kelasFun - Aplikasi Manajemen Kelas',
-          style: TextStyle(fontSize: 18, color: AppTheme.darkGray),
-        ),
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+            labelType: NavigationRailLabelType.all,
+            selectedIconTheme: const IconThemeData(color: AppTheme.primaryBlue),
+            selectedLabelTextStyle: const TextStyle(color: AppTheme.primaryBlue),
+            destinations: _menuItems.map((item) {
+              return NavigationRailDestination(
+                icon: Icon(item.icon),
+                label: Text(item.label),
+              );
+            }).toList(),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(child: _buildContent()),
+        ],
       ),
     );
   }
+}
+
+class _MenuItem {
+  final IconData icon;
+  final String label;
+  const _MenuItem({required this.icon, required this.label});
 }
