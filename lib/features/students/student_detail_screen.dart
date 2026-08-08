@@ -40,6 +40,8 @@ class StudentDetailScreen extends StatelessWidget {
           _BiodataCard(student: student),
           const SizedBox(height: 16),
           _PrintActionsCard(student: student),
+          const SizedBox(height: 16),
+          _ArchiveCard(student: student),
         ],
       ),
     );
@@ -169,6 +171,11 @@ class _BiodataCard extends StatelessWidget {
                 value: student.parentPhone?.isNotEmpty == true
                     ? student.parentPhone!
                     : '-'),
+            if (student.notes != null && student.notes!.isNotEmpty) ...[
+              const Divider(),
+              const Text('Catatan:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              Text(student.notes!, style: const TextStyle(color: AppTheme.textPrimary)),
+            ],
           ],
         ),
       ),
@@ -240,6 +247,60 @@ class _PrintActionsCard extends StatelessWidget {
                   const SnackBar(content: Text('Cetak Biodata - Fitur dalam pengembangan')),
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ArchiveCard extends StatelessWidget {
+  final Student student;
+  const _ArchiveCard({required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Arsip',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.textPrimary)),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Arsipkan Siswa?'),
+                    content: Text(
+                        'Apakah Anda yakin ingin mengarsipkan ${student.fullName}? Siswa yang diarsipkan tidak akan muncul di daftar aktif.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Batal'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Arsipkan'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true && context.mounted) {
+                  final db = context.read<AppDatabase>();
+                  await db.studentDao.softDeleteStudent(student.id);
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              icon: const Icon(Icons.archive),
+              label: const Text('Arsipkan'),
             ),
           ],
         ),
