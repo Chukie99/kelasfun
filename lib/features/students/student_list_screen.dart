@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/utils/qr_generator.dart';
 import 'package:kelasfun/features/students/student_form_screen.dart';
 import 'package:kelasfun/features/students/student_detail_screen.dart';
 import 'package:kelasfun/features/students/widgets/student_card.dart';
@@ -16,12 +18,69 @@ class _StudentListScreenState extends State<StudentListScreen> {
   String _searchQuery = '';
   String _selectedClass = 'Semua';
 
+  Future<void> _importCSV(BuildContext context) async {
+    final db = context.read<AppDatabase>();
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    final content = String.fromCharCodes(bytes);
+    final lines = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+    int success = 0, failed = 0;
+    for (final line in lines.skip(1)) {
+      final parts = line.split(',');
+      if (parts.length < 4) { failed++; continue; }
+
+      final nis = parts[0].trim();
+      final name = parts[1].trim();
+      final className = parts[2].trim();
+      final gender = parts[3].trim();
+
+      try {
+        final existing = await db.studentDao.getStudentByNis(nis);
+        if (existing != null) { failed++; continue; }
+
+        await db.studentDao.insertStudent(
+          nis: nis,
+          fullName: name,
+          className: className,
+          gender: gender,
+          qrData: QrGenerator.encodePayload(nis: nis, name: name, className: className),
+        );
+        success++;
+      } catch (e) {
+        failed++;
+      }
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Import selesai: $success berhasil, $failed gagal')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Data Siswa')),
+      appBar: AppBar(
+        title: const Text('Data Siswa'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_upload),
+            onPressed: () => _importCSV(context),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
