@@ -28,6 +28,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   late TextEditingController _addressController;
   late TextEditingController _parentNameController;
   late TextEditingController _parentPhoneController;
+  late TextEditingController _notesController;
   String? _gender;
   String? _photoPath;
 
@@ -41,6 +42,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _addressController = TextEditingController(text: widget.student?.address ?? '');
     _parentNameController = TextEditingController(text: widget.student?.parentName ?? '');
     _parentPhoneController = TextEditingController(text: widget.student?.parentPhone ?? '');
+    _notesController = TextEditingController(text: widget.student?.notes ?? '');
     _gender = widget.student?.gender;
     _photoPath = widget.student?.photoPath;
   }
@@ -54,6 +56,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _addressController.dispose();
     _parentNameController.dispose();
     _parentPhoneController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -164,6 +167,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               AppTextField(label: 'Alamat', controller: _addressController, onChanged: (_) {}),
               AppTextField(label: 'Nama Orang Tua', controller: _parentNameController, onChanged: (_) {}),
               AppTextField(label: 'No. HP Orang Tua', controller: _parentPhoneController, onChanged: (_) {}),
+              AppTextField(label: 'Catatan', controller: _notesController, maxLines: 3, onChanged: (_) {}),
               const SizedBox(height: 24),
               AppButton(
                 label: isEditing ? 'Simpan' : 'Tambah',
@@ -176,6 +180,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                   final qrData = QrGenerator.encodePayload(
                     nis: nis, name: name, className: className,
                   );
+                  final notes = _notesController.text.isNotEmpty ? _notesController.text : null;
 
                   if (isEditing) {
                     await db.studentDao.updateStudent(StudentsCompanion(
@@ -190,6 +195,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       parentPhone: Value(_parentPhoneController.text),
                       photoPath: Value(_photoPath),
                       qrData: Value(qrData),
+                      notes: Value(notes),
                     ));
                   } else {
                     await db.studentDao.insertStudent(
@@ -201,6 +207,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       parentName: _parentNameController.text,
                       parentPhone: _parentPhoneController.text,
                       photoPath: _photoPath,
+                      notes: notes,
                     );
                   }
                   if (context.mounted) Navigator.pop(context);
