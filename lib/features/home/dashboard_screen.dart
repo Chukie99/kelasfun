@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
@@ -26,6 +27,8 @@ class DashboardScreen extends StatelessWidget {
           _SchoolProfileCard(db: db),
           const SizedBox(height: 16),
           _StatsTodayCard(db: db, today: today),
+          const SizedBox(height: 16),
+          _ChartsCard(db: db, today: today, semester: semester, year: year),
           const SizedBox(height: 16),
           _QuickSummaryCard(db: db, semester: semester, year: year),
           const SizedBox(height: 16),
@@ -392,6 +395,159 @@ class _ActionButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _AttendancePieChart extends StatelessWidget {
+  final int hadir, izin, sakit, alpa;
+  const _AttendancePieChart({required this.hadir, required this.izin, required this.sakit, required this.alpa});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = hadir + izin + sakit + alpa;
+    if (total == 0) return const Center(child: Text('Belum ada data', style: TextStyle(color: AppTheme.textSecondary)));
+
+    return SizedBox(
+      height: 150,
+      child: PieChart(
+        PieChartData(
+          sectionsSpace: 2,
+          centerSpaceRadius: 30,
+          sections: [
+            PieChartSectionData(value: hadir.toDouble(), color: AppTheme.cyan, title: '$hadir', radius: 40),
+            PieChartSectionData(value: izin.toDouble(), color: AppTheme.amber, title: '$izin', radius: 40),
+            PieChartSectionData(value: sakit.toDouble(), color: AppTheme.mint, title: '$sakit', radius: 40),
+            PieChartSectionData(value: alpa.toDouble(), color: AppTheme.coral, title: '$alpa', radius: 40),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GradeBarChart extends StatelessWidget {
+  final Map<String, double> subjectAverages;
+  const _GradeBarChart({required this.subjectAverages});
+
+  @override
+  Widget build(BuildContext context) {
+    if (subjectAverages.isEmpty) return const Center(child: Text('Belum ada data', style: TextStyle(color: AppTheme.textSecondary)));
+
+    final entries = subjectAverages.entries.toList();
+    return SizedBox(
+      height: 150,
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          maxY: 100,
+          barGroups: List.generate(entries.length, (i) {
+            return BarChartGroupData(x: i, barRods: [
+              BarChartRodData(
+                toY: entries[i].value,
+                color: AppTheme.cyan,
+                width: 20,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+              ),
+            ]);
+          }),
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (i, meta) {
+                  final name = entries[i.toInt()].key;
+                  return Text(name.length > 6 ? name.substring(0, 6) : name, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary));
+                },
+              ),
+            ),
+            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(show: false),
+          gridData: const FlGridData(show: false),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChartsCard extends StatelessWidget {
+  final AppDatabase db;
+  final String today;
+  final String semester;
+  final String year;
+  const _ChartsCard({required this.db, required this.today, required this.semester, required this.year});
+
+  @override
+  Widget build(BuildContext context) {
+    final semesterKey = '$semester $year';
+
+    return StreamBuilder<List<AttendanceData>>(
+      stream: db.attendanceDao.watchAttendanceByDate(today),
+      builder: (context, attendanceSnapshot) {
+        final attendance = attendanceSnapshot.data ?? [];
+        final hadir = attendance.where((a) => a.status == 'hadir').length;
+        final sakit = attendance.where((a) => a.status == 'sakit').length;
+        final izin = attendance.where((a) => a.status == 'izin').length;
+        final alpa = attendance.where((a) => a.status == 'alpa').length;
+
+        return FutureBuilder<List<Subject>>(
+          future: db.subjectDao.getAllSubjects(),
+          builder: (context, subjectSnapshot) {
+            final subjects = subjectSnapshot.data ?? [];
+
+            return FutureBuilder<List<Grade>>(
+              future: db.gradeDao.getRanking(semesterKey),
+              builder: (context, gradeSnapshot) {
+                final grades = gradeSnapshot.data ?? [];
+                final subjectAverages = <String, double>{};
+
+                for (final subject in subjects) {
+                  final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
+                  if (subjectGrades.isNotEmpty) {
+                    final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
+                    subjectAverages[subject.name] = avg;
+                  }
+                }
+
+                return AppCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Grafik',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: AppTheme.textPrimary)),
+                        const SizedBox(height: 16),
+                        const Text('Kehadiran Hari Ini',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: AppTheme.textSecondary)),
+                        const SizedBox(height: 8),
+                        _AttendancePieChart(hadir: hadir, izin: izin, sakit: sakit, alpa: alpa),
+                        const SizedBox(height: 16),
+                        const Text('Rata-rata Nilai per Mapel',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: AppTheme.textSecondary)),
+                        const SizedBox(height: 8),
+                        _GradeBarChart(subjectAverages: subjectAverages),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
