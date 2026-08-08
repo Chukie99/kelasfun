@@ -8,6 +8,7 @@ import 'package:kelasfun/features/discipline/point_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 import 'package:kelasfun/features/settings/settings_screen.dart';
 import 'package:kelasfun/features/attendance/attendance_screen.dart';
+import 'package:kelasfun/features/schedule/schedule_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _MenuItem(icon: Icons.emoji_events, label: 'Peringkat'),
     _MenuItem(icon: Icons.star, label: 'Poin'),
     _MenuItem(icon: Icons.description, label: 'Laporan'),
+    _MenuItem(icon: Icons.calendar_today, label: 'Jadwal'),
     _MenuItem(icon: Icons.settings, label: 'Setting'),
   ];
 
@@ -42,7 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
       case 4: return const RankingScreen();
       case 5: return const PointScreen();
       case 6: return const ReportScreen();
-      case 7: return const SettingsScreen();
+      case 7: return const ScheduleScreen();
+      case 8: return const SettingsScreen();
       default: return DashboardScreen(
         onNavigate: () => setState(() => _selectedIndex = 1),
       );
