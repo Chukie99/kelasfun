@@ -208,43 +208,47 @@ class ReportScreen extends StatelessWidget {
     final db = context.read<AppDatabase>();
     final students = await db.studentDao.getAllStudents();
     final classStudents = students.where((s) => s.className == className).toList();
+    final ranking = await db.gradeDao.getRanking(semester);
+    final subjects = await db.subjectDao.getAllSubjects();
 
     for (final student in classStudents) {
-      final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
-      final totalPoints = await db.pointDao.getTotalPoints(student.id);
-      final ranking = await db.gradeDao.getRanking(semester);
-      final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
+      try {
+        final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
+        final totalPoints = await db.pointDao.getTotalPoints(student.id);
+        final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
 
-      final subjects = await db.subjectDao.getAllSubjects();
-      final gradeData = <Map<String, dynamic>>[];
-      for (final subject in subjects) {
-        final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
-        if (subjectGrades.isNotEmpty) {
-          final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
-          gradeData.add({
-            'subject': subject.name,
-            'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
-            'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
-            'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
-            'average': avg,
-          });
+        final gradeData = <Map<String, dynamic>>[];
+        for (final subject in subjects) {
+          final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
+          if (subjectGrades.isNotEmpty) {
+            final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
+            gradeData.add({
+              'subject': subject.name,
+              'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
+              'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
+              'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
+              'average': avg,
+            });
+          }
         }
-      }
 
-      final pdf = await PdfGenerator.generateReportCard(
-        studentName: student.fullName,
-        nis: student.nis,
-        className: student.className,
-        semester: semester,
-        grades: gradeData,
-        totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
-        totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
-        rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
-        totalStudents: ranking.length,
-      );
+        final pdf = await PdfGenerator.generateReportCard(
+          studentName: student.fullName,
+          nis: student.nis,
+          className: student.className,
+          semester: semester,
+          grades: gradeData,
+          totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
+          totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
+          rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
+          totalStudents: ranking.length,
+        );
 
-      if (pdf != null) {
-        await Printing.layoutPdf(onLayout: (format) => pdf);
+        if (pdf != null) {
+          await Printing.layoutPdf(onLayout: (format) => pdf);
+        }
+      } catch (e) {
+        // Skip failed student, continue with others
       }
     }
 
