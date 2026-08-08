@@ -11,7 +11,7 @@ void main() {
     final db = createTestDb();
     await tester.pumpWidget(KelasFunApp(database: db));
     await tester.pump();
-    expect(find.text('Presensi'), findsOneWidget);
+    expect(find.text('Beranda'), findsOneWidget);
     await db.close();
   });
 }

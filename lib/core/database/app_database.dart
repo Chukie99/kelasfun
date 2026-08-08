@@ -15,6 +15,7 @@ import 'daos/attendance_dao.dart';
 import 'daos/subject_dao.dart';
 import 'daos/grade_dao.dart';
 import 'daos/point_dao.dart';
+import 'daos/settings_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -31,6 +32,7 @@ part 'app_database.g.dart';
   SubjectDao,
   GradeDao,
   PointDao,
+  SettingsDao,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([DatabaseConnection? connection]) : super(connection ?? _openConnection());

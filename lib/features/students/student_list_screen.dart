@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/features/students/student_form_screen.dart';
+import 'package:kelasfun/features/students/student_detail_screen.dart';
 import 'package:kelasfun/features/students/widgets/student_card.dart';
 
 class StudentListScreen extends StatelessWidget {
@@ -39,7 +40,7 @@ class StudentListScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => StudentFormScreen(student: student),
+                    builder: (_) => StudentDetailScreen(student: student),
                   ),
                 ),
                 onDelete: () async {

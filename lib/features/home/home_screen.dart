@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/features/home/dashboard_screen.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
 import 'package:kelasfun/features/subjects/subject_screen.dart';
 import 'package:kelasfun/features/grades/ranking_screen.dart';
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static const List<_MenuItem> _menuItems = [
+    _MenuItem(icon: Icons.dashboard, label: 'Beranda'),
     _MenuItem(icon: Icons.qr_code_scanner, label: 'Presensi'),
     _MenuItem(icon: Icons.people, label: 'Siswa'),
     _MenuItem(icon: Icons.subject, label: 'Mapel'),
@@ -30,14 +32,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildContent() {
     switch (_selectedIndex) {
-      case 0: return const AttendanceScreen();
-      case 1: return const StudentListScreen();
-      case 2: return const SubjectScreen();
-      case 3: return const RankingScreen();
-      case 4: return const PointScreen();
-      case 5: return const ReportScreen();
-      case 6: return const SettingsScreen();
-      default: return const AttendanceScreen();
+      case 0:
+        return DashboardScreen(
+          onNavigate: () => setState(() => _selectedIndex = 1),
+        );
+      case 1: return const AttendanceScreen();
+      case 2: return const StudentListScreen();
+      case 3: return const SubjectScreen();
+      case 4: return const RankingScreen();
+      case 5: return const PointScreen();
+      case 6: return const ReportScreen();
+      case 7: return const SettingsScreen();
+      default: return DashboardScreen(
+        onNavigate: () => setState(() => _selectedIndex = 1),
+      );
     }
   }
 

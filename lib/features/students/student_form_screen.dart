@@ -20,6 +20,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   late TextEditingController _nisController;
   late TextEditingController _nameController;
   late TextEditingController _classController;
+  late TextEditingController _birthDateController;
+  late TextEditingController _addressController;
+  late TextEditingController _parentNameController;
+  late TextEditingController _parentPhoneController;
   String? _gender;
 
   @override
@@ -28,6 +32,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _nisController = TextEditingController(text: widget.student?.nis ?? '');
     _nameController = TextEditingController(text: widget.student?.fullName ?? '');
     _classController = TextEditingController(text: widget.student?.className ?? '');
+    _birthDateController = TextEditingController(text: widget.student?.birthDate ?? '');
+    _addressController = TextEditingController(text: widget.student?.address ?? '');
+    _parentNameController = TextEditingController(text: widget.student?.parentName ?? '');
+    _parentPhoneController = TextEditingController(text: widget.student?.parentPhone ?? '');
     _gender = widget.student?.gender;
   }
 
@@ -36,6 +44,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _nisController.dispose();
     _nameController.dispose();
     _classController.dispose();
+    _birthDateController.dispose();
+    _addressController.dispose();
+    _parentNameController.dispose();
+    _parentPhoneController.dispose();
     super.dispose();
   }
 
@@ -64,6 +76,14 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                 ],
                 onChanged: (value) => setState(() => _gender = value),
               ),
+              AppTextField(
+                label: 'Tanggal Lahir (YYYY-MM-DD)',
+                controller: _birthDateController,
+                onChanged: (_) {},
+              ),
+              AppTextField(label: 'Alamat', controller: _addressController, onChanged: (_) {}),
+              AppTextField(label: 'Nama Orang Tua', controller: _parentNameController, onChanged: (_) {}),
+              AppTextField(label: 'No. HP Orang Tua', controller: _parentPhoneController, onChanged: (_) {}),
               const SizedBox(height: 24),
               AppButton(
                 label: isEditing ? 'Simpan' : 'Tambah',
@@ -84,6 +104,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       fullName: Value(name),
                       className: Value(className),
                       gender: Value(_gender ?? ''),
+                      birthDate: Value(_birthDateController.text),
+                      address: Value(_addressController.text),
+                      parentName: Value(_parentNameController.text),
+                      parentPhone: Value(_parentPhoneController.text),
                       qrData: Value(qrData),
                     ));
                   } else {
@@ -91,6 +115,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       nis: nis, fullName: name,
                       className: className, gender: _gender ?? '',
                       qrData: qrData,
+                      birthDate: _birthDateController.text,
+                      address: _addressController.text,
+                      parentName: _parentNameController.text,
+                      parentPhone: _parentPhoneController.text,
                     );
                   }
                   if (context.mounted) Navigator.pop(context);
