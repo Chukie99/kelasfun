@@ -10,6 +10,11 @@ import 'tables/subjects.dart';
 import 'tables/grades.dart';
 import 'tables/points.dart';
 import 'tables/settings.dart';
+import 'daos/student_dao.dart';
+import 'daos/attendance_dao.dart';
+import 'daos/subject_dao.dart';
+import 'daos/grade_dao.dart';
+import 'daos/point_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -20,9 +25,17 @@ part 'app_database.g.dart';
   Grades,
   Points,
   Settings,
+], daos: [
+  StudentDao,
+  AttendanceDao,
+  SubjectDao,
+  GradeDao,
+  PointDao,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([DatabaseConnection? connection]) : super(connection ?? _openConnection());
+
+  AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
   @override
   int get schemaVersion => 1;
