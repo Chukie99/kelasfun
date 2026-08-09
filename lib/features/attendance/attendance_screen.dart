@@ -102,12 +102,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Keterangan $status'),
+        title: Text('Keterangan $status', style: AppTheme.h3(context)),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Masukkan keterangan...',
-            border: const OutlineInputBorder(),
           ),
           maxLines: 2,
         ),
@@ -133,17 +132,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  Widget _buildFilterChip(String label, int count) {
+  Widget _buildFilterChip(String label, int count, bool isDark) {
     final isSelected = _selectedFilter == label;
     return FilterChip(
       label: Text('$label ($count)'),
       selected: isSelected,
       onSelected: (_) => setState(() => _selectedFilter = label),
-      selectedColor: AppTheme.cyan.withOpacity(0.2),
-      checkmarkColor: AppTheme.cyan,
-      labelStyle: TextStyle(
-        color: isSelected ? AppTheme.cyan : AppTheme.textSecondary,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      selectedColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
+      checkmarkColor: isDark ? AppTheme.accent : AppTheme.lightAccent,
+      labelStyle: AppTheme.body(context).copyWith(
+        fontSize: 13,
+        color: isSelected
+            ? (isDark ? AppTheme.accent : AppTheme.lightAccent)
+            : (isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary),
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
       ),
     );
   }
@@ -154,14 +156,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? AppTheme.accent : AppTheme.lightAccent;
+    final mintColor = isDark ? AppTheme.mint : AppTheme.lightMint;
+    final amberColor = isDark ? AppTheme.amber : AppTheme.lightAmber;
+    final coralColor = isDark ? AppTheme.coral : AppTheme.lightCoral;
 
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Presensi'),
-            Text(_dateStr, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text('Presensi', style: AppTheme.h2(context)),
+            Text(_dateStr, style: AppTheme.caption(context)),
           ],
         ),
         actions: [
@@ -197,26 +204,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              color: AppTheme.cyan,
+              padding: const EdgeInsets.all(AppTheme.spacingBase),
+              color: accentColor,
               child: Text(
                 'Scan kartu barcode siswa - $_dateStr',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: AppTheme.body(context).copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
             if (_lastScanResult != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppTheme.spacingMd),
                 color: _lastScanResult!.contains('Hadir')
-                    ? AppTheme.mint
+                    ? mintColor
                     : _lastScanResult!.contains('reset')
-                        ? AppTheme.amber
-                        : AppTheme.coral,
+                        ? amberColor
+                        : coralColor,
                 child: Text(
                   _lastScanResult!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: AppTheme.body(context).copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             StreamBuilder<List<Student>>(
@@ -240,26 +252,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         children: [
                           Container(
                             height: 60,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingBase,
+                            ),
                             child: ListView(
                               scrollDirection: Axis.horizontal,
                               children: [
-                                _buildFilterChip('Semua', allStudents.length),
-                                const SizedBox(width: 8),
-                                _buildFilterChip('Hadir', hadirCount),
-                                const SizedBox(width: 8),
-                                _buildFilterChip('Sakit', sakitCount),
-                                const SizedBox(width: 8),
-                                _buildFilterChip('Izin', izinCount),
-                                const SizedBox(width: 8),
-                                _buildFilterChip('Alpa', alpaCount),
-                                const SizedBox(width: 8),
-                                _buildFilterChip('Belum Absen', belumAbsenCount),
+                                _buildFilterChip('Semua', allStudents.length, isDark),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                _buildFilterChip('Hadir', hadirCount, isDark),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                _buildFilterChip('Sakit', sakitCount, isDark),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                _buildFilterChip('Izin', izinCount, isDark),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                _buildFilterChip('Alpa', alpaCount, isDark),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                _buildFilterChip('Belum Absen', belumAbsenCount, isDark),
                               ],
                             ),
                           ),
                           Expanded(
-                            child: _buildStudentList(allStudents, attendances),
+                            child: _buildStudentList(allStudents, attendances, isDark),
                           ),
                         ],
                       ),
@@ -274,7 +288,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildStudentList(List<Student> allStudents, List<AttendanceData> attendances) {
+  Widget _buildStudentList(
+    List<Student> allStudents,
+    List<AttendanceData> attendances,
+    bool isDark,
+  ) {
     final attendanceMap = {for (final a in attendances) a.studentId: a};
 
     List<Student> filteredStudents;
@@ -295,13 +313,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _selectedFilter == 'Belum Absen'
               ? 'Semua siswa sudah absen hari ini'
               : 'Tidak ada siswa dengan status $_selectedFilter',
-          style: const TextStyle(color: AppTheme.textSecondary),
+          style: AppTheme.bodySmall(context),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.spacingBase),
       itemCount: filteredStudents.length,
       itemBuilder: (context, index) {
         final student = filteredStudents[index];

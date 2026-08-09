@@ -21,31 +21,49 @@ class AttendanceCard extends StatelessWidget {
     this.onReset,
   });
 
-  Color get statusColor {
-    if (attendance == null) return AppTheme.textSecondary;
+  Color _statusColor(bool isDark) {
+    if (attendance == null) {
+      return isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
+    }
     switch (attendance!.status) {
-      case 'Hadir': return AppTheme.mint;
-      case 'Izin': return AppTheme.amber;
-      case 'Sakit': return AppTheme.cyan;
-      case 'Alpa': return AppTheme.coral;
-      default: return AppTheme.textSecondary;
+      case 'Hadir':
+        return isDark ? AppTheme.mint : AppTheme.lightMint;
+      case 'Izin':
+        return isDark ? AppTheme.amber : AppTheme.lightAmber;
+      case 'Sakit':
+        return isDark ? AppTheme.accent : AppTheme.lightAccent;
+      case 'Alpa':
+        return isDark ? AppTheme.coral : AppTheme.lightCoral;
+      default:
+        return isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
     }
   }
 
   IconData get statusIcon {
     if (attendance == null) return Icons.help_outline;
     switch (attendance!.status) {
-      case 'Hadir': return Icons.check_circle;
-      case 'Izin': return Icons.info;
-      case 'Sakit': return Icons.local_hospital;
-      case 'Alpa': return Icons.cancel;
-      default: return Icons.help_outline;
+      case 'Hadir':
+        return Icons.check_circle;
+      case 'Izin':
+        return Icons.info;
+      case 'Sakit':
+        return Icons.local_hospital;
+      case 'Alpa':
+        return Icons.cancel;
+      default:
+        return Icons.help_outline;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasAttended = attendance != null;
+    final statusCol = _statusColor(isDark);
+    final textPrimaryColor = isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary;
+    final textSecondaryColor = isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
+    final accentColor = isDark ? AppTheme.accent : AppTheme.lightAccent;
+    final dividerColor = isDark ? AppTheme.divider : AppTheme.lightDivider;
 
     return AppCard(
       child: Column(
@@ -53,70 +71,92 @@ class AttendanceCard extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: statusColor.withOpacity(0.2),
-                child: Icon(statusIcon, color: statusColor, size: 20),
+                backgroundColor: statusCol.withOpacity(0.15),
+                child: Icon(statusIcon, color: statusCol, size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(student.fullName,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppTheme.textPrimary)),
-                    Text(student.className,
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 12)),
+                    Text(
+                      student.fullName,
+                      style: AppTheme.body(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: textPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingXs),
+                    Text(
+                      student.className,
+                      style: AppTheme.caption(context).copyWith(
+                        color: textSecondaryColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
               if (hasAttended)
-                Text(attendance!.status,
-                    style: TextStyle(
-                        color: statusColor, fontWeight: FontWeight.bold)),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingSm,
+                    vertical: AppTheme.spacingXs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusCol.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+                  ),
+                  child: Text(
+                    attendance!.status,
+                    style: AppTheme.small(context).copyWith(
+                      color: statusCol,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
           if (attendance?.description?.isNotEmpty == true) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingSm),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppTheme.spacingSm),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: statusCol.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(AppTheme.radiusButton),
               ),
               child: Text(
                 attendance!.description!,
-                style: TextStyle(color: statusColor, fontSize: 12),
+                style: AppTheme.caption(context).copyWith(
+                  color: statusCol,
+                ),
               ),
             ),
           ],
           if (!hasAttended) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingMd),
             Row(
               children: [
                 Expanded(
                   child: _ActionButton(
                     label: 'Izin',
-                    color: AppTheme.amber,
+                    color: isDark ? AppTheme.amber : AppTheme.lightAmber,
                     onPressed: onIzin,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.spacingSm),
                 Expanded(
                   child: _ActionButton(
                     label: 'Sakit',
-                    color: AppTheme.cyan,
+                    color: accentColor,
                     onPressed: onSakit,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.spacingSm),
                 Expanded(
                   child: _ActionButton(
                     label: 'Alpa',
-                    color: AppTheme.coral,
+                    color: isDark ? AppTheme.coral : AppTheme.lightCoral,
                     onPressed: onAlpa,
                   ),
                 ),
@@ -124,7 +164,7 @@ class AttendanceCard extends StatelessWidget {
             ),
           ],
           if (hasAttended && attendance!.status != 'Hadir') ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingSm),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -132,8 +172,8 @@ class AttendanceCard extends StatelessWidget {
                 icon: const Icon(Icons.refresh, size: 16),
                 label: const Text('Reset Status'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.textSecondary,
-                  side: const BorderSide(color: AppTheme.divider),
+                  foregroundColor: textSecondaryColor,
+                  side: BorderSide(color: dividerColor),
                 ),
               ),
             ),
@@ -162,9 +202,16 @@ class _ActionButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusButton),
+        ),
+        elevation: 0,
       ),
-      child: Text(label, style: const TextStyle(fontSize: 12)),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+      ),
     );
   }
 }
