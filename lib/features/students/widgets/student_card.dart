@@ -15,6 +15,7 @@ class StudentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = PhotoHelper.getInitials(student.fullName);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppCard(
       onTap: onTap,
@@ -25,31 +26,32 @@ class StudentCard extends StatelessWidget {
                   backgroundImage: FileImage(File(student.photoPath!)),
                 )
               : CircleAvatar(
-                  backgroundColor: AppTheme.cyan.withOpacity(0.2),
+                  backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
                   child: Text(
                     initials,
-                    style: const TextStyle(
-                        color: AppTheme.cyan, fontWeight: FontWeight.bold),
+                    style: AppTheme.body(context).copyWith(
+                        color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppTheme.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(student.fullName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppTheme.textPrimary)),
+                    style: AppTheme.body(context).copyWith(
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: AppTheme.spacingXs),
                 Text('NIS: ${student.nis} • Kelas: ${student.className}',
-                    style: const TextStyle(color: AppTheme.textSecondary)),
+                    style: AppTheme.caption(context)),
               ],
             ),
           ),
           if (onDelete != null)
             IconButton(
-                icon: const Icon(Icons.delete, color: AppTheme.coral),
+                icon: Icon(Icons.delete,
+                    color: isDark ? AppTheme.coral : AppTheme.lightCoral),
                 onPressed: onDelete),
         ],
       ),

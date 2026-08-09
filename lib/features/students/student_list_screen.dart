@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/qr_generator.dart';
 import 'package:kelasfun/features/students/student_form_screen.dart';
 import 'package:kelasfun/features/students/student_detail_screen.dart';
 import 'package:kelasfun/features/students/widgets/student_card.dart';
+import 'package:kelasfun/shared/widgets/app_text_field.dart';
 
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
@@ -70,13 +72,15 @@ class _StudentListScreenState extends State<StudentListScreen> {
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Siswa'),
+        title: Text('Data Siswa', style: AppTheme.h2(context)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.file_upload),
+            icon: Icon(Icons.file_upload,
+                color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary),
             onPressed: () => _importCSV(context),
           ),
         ],
@@ -92,7 +96,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
         stream: db.studentDao.watchAllStudents(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+                child: CircularProgressIndicator(
+                    color: isDark ? AppTheme.accent : AppTheme.lightAccent));
           }
           final students = snapshot.data ?? [];
           
@@ -110,33 +116,89 @@ class _StudentListScreenState extends State<StudentListScreen> {
           }).toList();
 
           if (students.isEmpty) {
-            return const Center(child: Text('Belum ada siswa'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_outlined,
+                      size: 64,
+                      color: isDark ? AppTheme.textTertiary : AppTheme.lightTextTertiary),
+                  const SizedBox(height: AppTheme.spacingBase),
+                  Text('Belum ada siswa',
+                      style: AppTheme.h3(context)),
+                  const SizedBox(height: AppTheme.spacingSm),
+                  Text('Tambahkan siswa dengan menekan tombol +',
+                      style: AppTheme.bodySmall(context)),
+                ],
+              ),
+            );
           }
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Cari siswa...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                padding: const EdgeInsets.all(AppTheme.spacingBase),
+                child: AppTextField(
+                  hint: 'Cari siswa...',
+                  prefixIcon: Icons.search,
                   onChanged: (v) => setState(() => _searchQuery = v),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: DropdownButton<String>(
-                  value: _selectedClass,
-                  items: classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                  onChanged: (v) => setState(() => _selectedClass = v ?? 'Semua'),
+              SizedBox(
+                height: 48,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingBase),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: classes.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: AppTheme.spacingSm),
+                  itemBuilder: (context, index) {
+                    final cls = classes[index];
+                    final isSelected = _selectedClass == cls;
+                    return ChoiceChip(
+                      label: Text(cls),
+                      selected: isSelected,
+                      onSelected: (_) => setState(() => _selectedClass = cls),
+                      selectedColor: isDark ? AppTheme.mintSoft : AppTheme.lightMintSoft,
+                      backgroundColor: isDark ? AppTheme.surfaceLight : AppTheme.lightSurfaceLight,
+                      labelStyle: AppTheme.bodySmall(context).copyWith(
+                        color: isSelected
+                            ? (isDark ? AppTheme.mint : AppTheme.lightMint)
+                            : (isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary),
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                      checkmarkColor: isDark ? AppTheme.mint : AppTheme.lightMint,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+                        side: BorderSide(
+                          color: isSelected
+                              ? (isDark ? AppTheme.mint : AppTheme.lightMint)
+                              : (isDark ? AppTheme.divider : AppTheme.lightDivider),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
+              const SizedBox(height: AppTheme.spacingSm),
               Expanded(
                 child: filteredStudents.isEmpty
-                    ? const Center(child: Text('Tidak ada siswa ditemukan'))
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.search_off,
+                                size: 48,
+                                color: isDark ? AppTheme.textTertiary : AppTheme.lightTextTertiary),
+                            const SizedBox(height: AppTheme.spacingBase),
+                            Text('Tidak ada siswa ditemukan',
+                                style: AppTheme.h3(context)),
+                            const SizedBox(height: AppTheme.spacingSm),
+                            Text('Coba kata kunci lain atau ubah filter',
+                                style: AppTheme.bodySmall(context)),
+                          ],
+                        ),
+                      )
                     : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: AppTheme.spacingXl),
                         itemCount: filteredStudents.length,
                         itemBuilder: (context, index) {
                           final student = filteredStudents[index];
