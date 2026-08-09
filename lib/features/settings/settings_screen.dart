@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/sync/sync_server.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/network_utils.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
@@ -62,32 +63,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Pengaturan')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spacingBase),
         children: [
           AppCard(
             child: _SchoolProfileSection(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tema Aplikasi',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                const SizedBox(height: 8),
-                const Text('Pilih mode tampilan',
-                    style: TextStyle(color: Colors.grey)),
-                const SizedBox(height: 8),
+                Text('Tema Aplikasi', style: AppTheme.h2(context)),
+                const SizedBox(height: AppTheme.spacingSm),
+                Text('Pilih mode tampilan', style: AppTheme.bodySmall(context)),
+                const SizedBox(height: AppTheme.spacingSm),
                 ListTile(
-                  leading: const Icon(Icons.palette),
-                  title: const Text('Mode Tema'),
+                  leading: Icon(Icons.palette, color: AppTheme.accent),
+                  title: Text('Mode Tema', style: AppTheme.body(context)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showThemeDialog(context),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           AppCard(
             child: ServerSection(
               isRunning: _serverRunning,
@@ -96,25 +95,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           if (_serverRunning) ...[
-            const SizedBox(height: 16),
-            AppCard(
+            const SizedBox(height: AppTheme.spacingBase),
+            const AppCard(
               child: PairingQr(port: 8080, token: 'kelasfun-secret-key'),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Backup & Restore',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                const SizedBox(height: 16),
+                Text('Backup & Restore', style: AppTheme.h2(context)),
+                const SizedBox(height: AppTheme.spacingBase),
                 AppButton(
                   label: 'Backup Database',
                   icon: Icons.backup,
                   onPressed: () => _backupDatabase(context),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.spacingBase),
                 AppButton(
                   label: 'Restore Database',
                   icon: Icons.restore,
@@ -124,16 +122,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tentang',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                const SizedBox(height: 8),
-                const Text('kelasFun v1.0.0'),
-                const Text('Aplikasi Manajemen Kelas Offline-First'),
+                Text('Tentang', style: AppTheme.h2(context)),
+                const SizedBox(height: AppTheme.spacingSm),
+                Text('kelasFun v1.0.0', style: AppTheme.body(context)),
+                Text('Aplikasi Manajemen Kelas Offline-First',
+                    style: AppTheme.bodySmall(context)),
               ],
             ),
           ),
@@ -203,12 +201,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, snapshot) {
           final current = snapshot.data ?? 'dark';
           return AlertDialog(
-            title: const Text('Mode Tema'),
+            title: Text('Mode Tema', style: AppTheme.h3(context)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<String>(
-                  title: const Text('Gelap'),
+                  title: Text('Gelap', style: AppTheme.body(context)),
                   value: 'dark',
                   groupValue: current,
                   onChanged: (v) async {
@@ -217,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 RadioListTile<String>(
-                  title: const Text('Terang'),
+                  title: Text('Terang', style: AppTheme.body(context)),
                   value: 'light',
                   groupValue: current,
                   onChanged: (v) async {
@@ -226,7 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 RadioListTile<String>(
-                  title: const Text('Sistem'),
+                  title: Text('Sistem', style: AppTheme.body(context)),
                   value: 'system',
                   groupValue: current,
                   onChanged: (v) async {
@@ -290,19 +288,18 @@ class _SchoolProfileSectionState extends State<_SchoolProfileSection> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingBase),
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.spacingBase),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Profil Sekolah',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          const SizedBox(height: 16),
+          Text('Profil Sekolah', style: AppTheme.h2(context)),
+          const SizedBox(height: AppTheme.spacingBase),
           AppTextField(
             label: 'Nama Sekolah',
             controller: _nameController,
@@ -333,7 +330,7 @@ class _SchoolProfileSectionState extends State<_SchoolProfileSection> {
             controller: _emailController,
             onChanged: (_) {},
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           AppButton(
             label: 'Simpan Profil',
             icon: Icons.save,
