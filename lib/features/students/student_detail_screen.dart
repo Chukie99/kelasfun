@@ -31,16 +31,16 @@ class StudentDetailScreen extends StatelessWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spacingBase),
         children: [
           _PhotoPreview(student: student),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           _QRPreview(student: student),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           _BiodataCard(student: student),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           _PrintActionsCard(student: student),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingBase),
           _ArchiveCard(student: student),
         ],
       ),
@@ -55,29 +55,25 @@ class _PhotoPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = PhotoHelper.getInitials(student.fullName);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? AppTheme.accent : AppTheme.lightAccent;
+    final accentSoftColor = isDark ? AppTheme.accentSoft : AppTheme.lightAccentSoft;
 
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Center(
-          child: student.photoPath != null && File(student.photoPath!).existsSync()
-              ? CircleAvatar(
-                  radius: 60,
-                  backgroundImage: FileImage(File(student.photoPath!)),
-                )
-              : CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppTheme.cyan.withOpacity(0.2),
-                  child: Text(
-                    initials,
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.cyan,
-                    ),
-                  ),
+      child: Center(
+        child: student.photoPath != null && File(student.photoPath!).existsSync()
+            ? CircleAvatar(
+                radius: 60,
+                backgroundImage: FileImage(File(student.photoPath!)),
+              )
+            : CircleAvatar(
+                radius: 60,
+                backgroundColor: accentSoftColor,
+                child: Text(
+                  initials,
+                  style: AppTheme.h1(context).copyWith(color: accentColor),
                 ),
-        ),
+              ),
       ),
     );
   }
@@ -89,41 +85,37 @@ class _QRPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary;
+    final fgColor = isDark ? AppTheme.background : AppTheme.lightBackground;
+
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.textPrimary,
-                borderRadius: BorderRadius.circular(12),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingBase),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+            ),
+            child: QrImageView(
+              data: student.qrData,
+              version: QrVersions.auto,
+              size: 180,
+              eyeStyle: QrEyeStyle(
+                eyeShape: QrEyeShape.circle,
+                color: fgColor,
               ),
-              child: QrImageView(
-                data: student.qrData,
-                version: QrVersions.auto,
-                size: 180,
-                eyeStyle: const QrEyeStyle(
-                  eyeShape: QrEyeShape.circle,
-                  color: AppTheme.background,
-                ),
-                dataModuleStyle: const QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.circle,
-                  color: AppTheme.background,
-                ),
+              dataModuleStyle: QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.circle,
+                color: fgColor,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(student.fullName,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.textPrimary)),
-            Text('NIS: ${student.nis}',
-                style: const TextStyle(color: AppTheme.textSecondary)),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppTheme.spacingMd),
+          Text(student.fullName, style: AppTheme.h3(context)),
+          Text('NIS: ${student.nis}', style: AppTheme.bodySmall(context)),
+        ],
       ),
     );
   }
@@ -136,48 +128,41 @@ class _BiodataCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Biodata Lengkap',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.textPrimary)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Biodata Lengkap', style: AppTheme.h3(context)),
+          const Divider(),
+          _InfoRow(label: 'NIS', value: student.nis),
+          _InfoRow(label: 'Nama Lengkap', value: student.fullName),
+          _InfoRow(label: 'Kelas', value: student.className),
+          _InfoRow(label: 'Jenis Kelamin', value: student.gender),
+          _InfoRow(
+              label: 'Tanggal Lahir',
+              value: student.birthDate?.isNotEmpty == true
+                  ? student.birthDate!
+                  : '-'),
+          _InfoRow(
+              label: 'Alamat',
+              value: student.address?.isNotEmpty == true
+                  ? student.address!
+                  : '-'),
+          _InfoRow(
+              label: 'Nama Orang Tua',
+              value: student.parentName?.isNotEmpty == true
+                  ? student.parentName!
+                  : '-'),
+          _InfoRow(
+              label: 'No. HP Orang Tua',
+              value: student.parentPhone?.isNotEmpty == true
+                  ? student.parentPhone!
+                  : '-'),
+          if (student.notes != null && student.notes!.isNotEmpty) ...[
             const Divider(),
-            _InfoRow(label: 'NIS', value: student.nis),
-            _InfoRow(label: 'Nama Lengkap', value: student.fullName),
-            _InfoRow(label: 'Kelas', value: student.className),
-            _InfoRow(label: 'Jenis Kelamin', value: student.gender),
-            _InfoRow(
-                label: 'Tanggal Lahir',
-                value: student.birthDate?.isNotEmpty == true
-                    ? student.birthDate!
-                    : '-'),
-            _InfoRow(
-                label: 'Alamat',
-                value: student.address?.isNotEmpty == true
-                    ? student.address!
-                    : '-'),
-            _InfoRow(
-                label: 'Nama Orang Tua',
-                value: student.parentName?.isNotEmpty == true
-                    ? student.parentName!
-                    : '-'),
-            _InfoRow(
-                label: 'No. HP Orang Tua',
-                value: student.parentPhone?.isNotEmpty == true
-                    ? student.parentPhone!
-                    : '-'),
-            if (student.notes != null && student.notes!.isNotEmpty) ...[
-              const Divider(),
-              const Text('Catatan:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-              Text(student.notes!, style: const TextStyle(color: AppTheme.textPrimary)),
-            ],
+            Text('Catatan:', style: AppTheme.caption(context)),
+            Text(student.notes!, style: AppTheme.body(context)),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -191,18 +176,16 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm / 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 140,
-            child: Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
+            child: Text(label, style: AppTheme.bodySmall(context)),
           ),
           Expanded(
-            child: Text(value,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
+            child: Text(value, style: AppTheme.body(context)),
           ),
         ],
       ),
@@ -217,39 +200,32 @@ class _PrintActionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Cetak',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.textPrimary)),
-            const SizedBox(height: 16),
-            AppButton(
-              label: 'Cetak Kartu KTP (10/A4)',
-              icon: Icons.print,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cetak Kartu KTP - Fitur dalam pengembangan')),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            AppButton(
-              label: 'Cetak Biodata (A4)',
-              icon: Icons.print,
-              isOutlined: true,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cetak Biodata - Fitur dalam pengembangan')),
-                );
-              },
-            ),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Cetak', style: AppTheme.h3(context)),
+          const SizedBox(height: AppTheme.spacingBase),
+          AppButton(
+            label: 'Cetak Kartu KTP (10/A4)',
+            icon: Icons.print,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Cetak Kartu KTP - Fitur dalam pengembangan')),
+              );
+            },
+          ),
+          const SizedBox(height: AppTheme.spacingMd),
+          AppButton(
+            label: 'Cetak Biodata (A4)',
+            icon: Icons.print,
+            isOutlined: true,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Cetak Biodata - Fitur dalam pengembangan')),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -262,48 +238,41 @@ class _ArchiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Arsip',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.textPrimary)),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Arsipkan Siswa?'),
-                    content: Text(
-                        'Apakah Anda yakin ingin mengarsipkan ${student.fullName}? Siswa yang diarsipkan tidak akan muncul di daftar aktif.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Batal'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Arsipkan'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true && context.mounted) {
-                  final db = context.read<AppDatabase>();
-                  await db.studentDao.softDeleteStudent(student.id);
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              icon: const Icon(Icons.archive),
-              label: const Text('Arsipkan'),
-            ),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Arsip', style: AppTheme.h3(context)),
+          const SizedBox(height: AppTheme.spacingBase),
+          OutlinedButton.icon(
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Arsipkan Siswa?'),
+                  content: Text(
+                      'Apakah Anda yakin ingin mengarsipkan ${student.fullName}? Siswa yang diarsipkan tidak akan muncul di daftar aktif.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Batal'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Arsipkan'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true && context.mounted) {
+                final db = context.read<AppDatabase>();
+                await db.studentDao.softDeleteStudent(student.id);
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
+            icon: const Icon(Icons.archive),
+            label: const Text('Arsipkan'),
+          ),
+        ],
       ),
     );
   }
