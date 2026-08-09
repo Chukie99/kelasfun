@@ -2,21 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Dark theme colors
-  static const Color background = Color(0xFF0F1729);
-  static const Color surface = Color(0xFF1A2332);
-  static const Color surfaceLight = Color(0xFF243044);
-  static const Color accent = Color(0xFF6B8CAE);
-  static const Color accentSoft = Color(0x1E6B8CAE);
-  static const Color mint = Color(0xFF7C9A82);
-  static const Color mintSoft = Color(0x1E7C9A82);
-  static const Color amber = Color(0xFFC9A96E);
-  static const Color amberSoft = Color(0x1EC9A96E);
-  static const Color coral = Color(0xFFB07070);
-  static const Color coralSoft = Color(0x1EB07070);
-  static const Color textPrimary = Color(0xFFE8ECF1);
-  static const Color textSecondary = Color(0xFF8896A8);
-  static const Color textTertiary = Color(0xFF5C6B7E);
+  // Dark theme colors (Compact Professional Dark)
+  static const Color background = Color(0xFF0F172A);
+  static const Color surface = Color(0xFF1E293B);
+  static const Color surfaceLight = Color(0xFF293548);
+  static const Color border = Color(0xFF334155);
+
+  // Accent colors (solid/flat)
+  static const Color accentCyan = Color(0xFF38BDF8);
+  static const Color accentMint = Color(0xFF34D399);
+  static const Color accentAmber = Color(0xFFFBBF24);
+  static const Color accentCoral = Color(0xFFFB7185);
+
+  // Legacy aliases (keep for backward compat during migration)
+  static const Color accent = accentCyan;
+  static const Color accentSoft = Color(0x1E38BDF8);
+  static const Color mint = accentMint;
+  static const Color mintSoft = Color(0x1E34D399);
+  static const Color amber = accentAmber;
+  static const Color amberSoft = Color(0x1EFBBF24);
+  static const Color coral = accentCoral;
+  static const Color coralSoft = Color(0x1EFB7185);
+
+  // Text colors
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color textTertiary = Color(0xFF64748B);
   static const Color divider = Color(0xFF2A3545);
   static const Color inputFill = Color(0xFF1A2332);
   static const Color inputBorder = Color(0xFF3A4A5C);
@@ -40,21 +51,21 @@ class AppTheme {
   static const Color lightInputFill = Color(0xFFF5F3EF);
   static const Color lightInputBorder = Color(0xFFD1C9BC);
 
-  // Spacing constants
+  // Spacing constants (compact layout)
   static const double spacingXs = 4.0;
-  static const double spacingSm = 8.0;
-  static const double spacingMd = 12.0;
-  static const double spacingBase = 16.0;
-  static const double spacingLg = 24.0;
-  static const double spacingXl = 32.0;
+  static const double spacingSm = 6.0;
+  static const double spacingMd = 8.0;
+  static const double spacingBase = 12.0;
+  static const double spacingLg = 16.0;
+  static const double spacingXl = 24.0;
   static const double spacing2xl = 48.0;
   static const double spacing3xl = 64.0;
 
-  // Border radius constants
-  static const double radiusCard = 12.0;
-  static const double radiusButton = 8.0;
-  static const double radiusInput = 8.0;
-  static const double radiusChip = 6.0;
+  // Border radius constants (compact layout)
+  static const double radiusCard = 8.0;
+  static const double radiusButton = 6.0;
+  static const double radiusInput = 6.0;
+  static const double radiusChip = 14.0;
   static const double radiusFab = 20.0;
   static const double radiusDialog = 16.0;
 
