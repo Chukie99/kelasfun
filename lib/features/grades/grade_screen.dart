@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 
@@ -24,7 +25,7 @@ class _GradeScreenState extends State<GradeScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.spacingBase),
             child: Row(
               children: [
                 const Text('Semester: '),
@@ -98,7 +99,7 @@ class _GradeScreenState extends State<GradeScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.spacingSm),
                 DropdownButtonFormField<String>(
                   value: examType,
                   decoration: const InputDecoration(labelText: 'Jenis Ujian'),
@@ -109,7 +110,7 @@ class _GradeScreenState extends State<GradeScreen> {
                   ],
                   onChanged: (v) => setDialogState(() => examType = v ?? examType),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.spacingSm),
                 TextField(
                   controller: scoreController,
                   keyboardType: TextInputType.number,
