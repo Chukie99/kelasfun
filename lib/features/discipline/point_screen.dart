@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 import 'package:kelasfun/shared/widgets/app_text_field.dart';
@@ -41,16 +42,27 @@ class _PointScreenState extends State<PointScreen> {
                   return AppCard(
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: totalPoints >= 0
-                            ? const Color(0xFF70C1B3)
-                            : const Color(0xFFFF6B6B),
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark
+                            ? (totalPoints >= 0 ? AppTheme.mint : AppTheme.coral)
+                            : (totalPoints >= 0 ? AppTheme.lightMint : AppTheme.lightCoral),
                         child: Text(
                           '$totalPoints',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppTheme.textPrimary
+                                : AppTheme.lightTextPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      title: Text(student.fullName),
-                      subtitle: Text(student.className),
+                      title: Text(
+                        student.fullName,
+                        style: AppTheme.body(context),
+                      ),
+                      subtitle: Text(
+                        student.className,
+                        style: AppTheme.caption(context),
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.add_circle_outline),
                         onPressed: () => _showPointDialog(context, student),
@@ -67,7 +79,6 @@ class _PointScreenState extends State<PointScreen> {
   }
 
   void _showAddDialog(BuildContext context) {
-    final db = context.read<AppDatabase>();
     final nameController = TextEditingController();
     showDialog(
       context: context,
@@ -112,7 +123,7 @@ class _PointScreenState extends State<PointScreen> {
                   pointValue = type == 'ACHIEVEMENT' ? 10 : -5;
                 }),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.spacingSm),
               DropdownButtonFormField<String>(
                 value: category,
                 decoration: const InputDecoration(labelText: 'Kategori'),
@@ -124,7 +135,7 @@ class _PointScreenState extends State<PointScreen> {
                 ],
                 onChanged: (v) => setDialogState(() => category = v ?? category),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.spacingSm),
               TextField(
                 controller: descController,
                 decoration: const InputDecoration(labelText: 'Keterangan'),
