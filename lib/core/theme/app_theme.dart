@@ -33,23 +33,33 @@ class AppTheme {
   static const Color inputBorder = Color(0xFF3A4A5C);
 
   // Light theme colors
-  static const Color lightBackground = Color(0xFFFAFAF8);
+  static const Color lightBackground = Color(0xFFF8FAFC);
   static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightSurfaceLight = Color(0xFFF5F3EF);
-  static const Color lightAccent = Color(0xFF5A7A99);
-  static const Color lightAccentSoft = Color(0x1E5A7A99);
-  static const Color lightMint = Color(0xFF5E8A6A);
-  static const Color lightMintSoft = Color(0x1E5E8A6A);
-  static const Color lightAmber = Color(0xFFA08848);
-  static const Color lightAmberSoft = Color(0x1EA08848);
-  static const Color lightCoral = Color(0xFF945555);
-  static const Color lightCoralSoft = Color(0x1E945555);
-  static const Color lightTextPrimary = Color(0xFF1F2937);
-  static const Color lightTextSecondary = Color(0xFF6B7280);
-  static const Color lightTextTertiary = Color(0xFF9CA3AF);
-  static const Color lightDivider = Color(0xFFE5E1DA);
-  static const Color lightInputFill = Color(0xFFF5F3EF);
-  static const Color lightInputBorder = Color(0xFFD1C9BC);
+  static const Color lightSurfaceLight = Color(0xFFF1F5F9);
+  static const Color lightBorder = Color(0xFFE2E8F0);
+
+  static const Color lightAccentCyan = Color(0xFF0284C7);
+  static const Color lightAccentMint = Color(0xFF059669);
+  static const Color lightAccentAmber = Color(0xFFD97706);
+  static const Color lightAccentCoral = Color(0xFFE11D48);
+
+  // Legacy aliases
+  static const Color lightAccent = lightAccentCyan;
+  static const Color lightMint = lightAccentMint;
+  static const Color lightAmber = lightAccentAmber;
+  static const Color lightCoral = lightAccentCoral;
+
+  static const Color lightAccentSoft = Color(0x1E0284C7);
+  static const Color lightMintSoft = Color(0x1E059669);
+  static const Color lightAmberSoft = Color(0x1ED97706);
+  static const Color lightCoralSoft = Color(0x1EE11D48);
+
+  static const Color lightTextPrimary = Color(0xFF0F172A);
+  static const Color lightTextSecondary = Color(0xFF475569);
+  static const Color lightTextTertiary = Color(0xFF94A3B8);
+  static const Color lightDivider = Color(0xFFE2E8F0);
+  static const Color lightInputFill = Color(0xFFF1F5F9);
+  static const Color lightInputBorder = Color(0xFFCBD5E1);
 
   // Spacing constants (compact layout)
   static const double spacingXs = 4.0;
