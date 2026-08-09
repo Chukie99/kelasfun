@@ -197,11 +197,14 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onColor = isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary;
+
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        foregroundColor: Colors.white,
+        foregroundColor: onColor,
         padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusButton),
@@ -210,7 +213,7 @@ class _ActionButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        style: AppTheme.small(context),
       ),
     );
   }
