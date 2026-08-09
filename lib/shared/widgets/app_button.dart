@@ -67,7 +67,7 @@ class AppButton extends StatelessWidget {
     );
 
     if (isLoading) {
-      return _buildLoadingButton(buttonStyle);
+      return _buildLoadingButton(buttonStyle, fgColor);
     }
 
     if (icon != null) {
@@ -82,7 +82,7 @@ class AppButton extends StatelessWidget {
       case AppButtonType.primary:
         return (
           isDark ? AppTheme.accent : AppTheme.lightAccent,
-          Colors.white,
+          isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
           null,
         );
       case AppButtonType.secondary:
@@ -94,7 +94,7 @@ class AppButton extends StatelessWidget {
       case AppButtonType.danger:
         return (
           isDark ? AppTheme.coral : AppTheme.lightCoral,
-          Colors.white,
+          isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
           null,
         );
       case AppButtonType.ghost:
@@ -106,7 +106,7 @@ class AppButton extends StatelessWidget {
     }
   }
 
-  Widget _buildLoadingButton(ButtonStyle buttonStyle) {
+  Widget _buildLoadingButton(ButtonStyle buttonStyle, Color fgColor) {
     return ElevatedButton(
       onPressed: null,
       style: buttonStyle,
@@ -115,11 +115,7 @@ class AppButton extends StatelessWidget {
         height: 16,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            _effectiveType == AppButtonType.ghost
-                ? AppTheme.accent
-                : Colors.white,
-          ),
+          valueColor: AlwaysStoppedAnimation<Color>(fgColor),
         ),
       ),
     );

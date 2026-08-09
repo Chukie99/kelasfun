@@ -136,7 +136,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                           ),
                           child: Icon(
                             Icons.camera_alt,
-                            color: isDark ? AppTheme.textPrimary : Colors.white,
+                            color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
                             size: 20,
                           ),
                         ),

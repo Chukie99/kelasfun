@@ -208,9 +208,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               color: accentColor,
               child: Text(
                 'Scan kartu barcode siswa - $_dateStr',
-                style: AppTheme.body(context).copyWith(
-                  color: Colors.white,
-                ),
+                  style: AppTheme.body(context).copyWith(
+                    color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
+                  ),
               ),
             ),
             if (_lastScanResult != null)
@@ -226,7 +226,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   _lastScanResult!,
                   textAlign: TextAlign.center,
                   style: AppTheme.body(context).copyWith(
-                    color: Colors.white,
+                    color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
