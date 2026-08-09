@@ -4,6 +4,7 @@ import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 import 'package:kelasfun/shared/widgets/app_text_field.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 
 class SubjectScreen extends StatelessWidget {
   const SubjectScreen({super.key});
@@ -11,6 +12,7 @@ class SubjectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mata Pelajaran')),
@@ -32,13 +34,21 @@ class SubjectScreen extends StatelessWidget {
               return AppCard(
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: const Color(0xFF5B9BD5),
-                    child: Text(subject.code, style: const TextStyle(color: Colors.white)),
+                    backgroundColor: isDark ? AppTheme.accent : AppTheme.lightAccent,
+                    child: Text(
+                      subject.code,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
                   ),
                   title: Text(subject.name),
                   subtitle: Text('Kode: ${subject.code}'),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Color(0xFFFF6B6B)),
+                    icon: Icon(
+                      Icons.delete,
+                      color: isDark ? AppTheme.coral : AppTheme.lightCoral,
+                    ),
                     onPressed: () => db.subjectDao.deleteSubject(subject.id),
                   ),
                 ),
