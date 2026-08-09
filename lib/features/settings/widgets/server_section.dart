@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 
 class ServerSection extends StatelessWidget {
@@ -15,30 +16,33 @@ class ServerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Sync Server',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        const SizedBox(height: 8),
+        Text('Sync Server', style: AppTheme.h3(context)),
+        const SizedBox(height: AppTheme.spacingSm),
         Row(
           children: [
             Icon(
               isRunning ? Icons.check_circle : Icons.cancel,
-              color: isRunning ? Colors.green : Colors.red,
+              color: isRunning ? colorScheme.secondary : colorScheme.error,
             ),
-            const SizedBox(width: 8),
-            Text(isRunning ? 'Server Aktif' : 'Server Mati'),
+            const SizedBox(width: AppTheme.spacingSm),
+            Text(
+              isRunning ? 'Server Aktif' : 'Server Mati',
+              style: AppTheme.body(context),
+            ),
           ],
         ),
         if (isRunning) ...[
-          const SizedBox(height: 8),
-          Text('URL: $serverUrl',
-              style: const TextStyle(fontFamily: 'monospace')),
-          const SizedBox(height: 4),
-          const Text('Port: 8080'),
+          const SizedBox(height: AppTheme.spacingSm),
+          Text('URL: $serverUrl', style: AppTheme.caption(context).copyWith(fontFamily: 'monospace')),
+          const SizedBox(height: AppTheme.spacingXs),
+          Text('Port: 8080', style: AppTheme.caption(context)),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTheme.spacingBase),
         AppButton(
           label: isRunning ? 'Matikan Server' : 'Nyalakan Server',
           icon: isRunning ? Icons.stop : Icons.play_arrow,
