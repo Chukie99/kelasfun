@@ -34,7 +34,7 @@ class ScheduleGrid extends StatelessWidget {
           return Center(
             child: Text(
               'Jam ${periods[row - 1]}',
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+              style: AppTheme.caption(context),
             ),
           );
         }
@@ -42,11 +42,7 @@ class ScheduleGrid extends StatelessWidget {
           return Center(
             child: Text(
               days[col - 1],
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
+              style: AppTheme.caption(context).copyWith(fontWeight: FontWeight.bold),
             ),
           );
         }
@@ -64,7 +60,7 @@ class ScheduleGrid extends StatelessWidget {
           child: Center(
             child: Text(
               subject?.name ?? '-',
-              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 10),
+              style: AppTheme.small(context),
               textAlign: TextAlign.center,
             ),
           ),
