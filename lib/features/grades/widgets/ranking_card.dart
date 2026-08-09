@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 
 class RankingCard extends StatelessWidget {
@@ -14,36 +15,68 @@ class RankingCard extends StatelessWidget {
     required this.averageScore,
   });
 
-  Color get rankColor {
-    if (rank == 1) return const Color(0xFFFFD700);
-    if (rank == 2) return const Color(0xFFC0C0C0);
-    if (rank == 3) return const Color(0xFFCD7F32);
-    return const Color(0xFF5B9BD5);
+  Color _rankBadgeColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (rank == 1) return isDark ? AppTheme.amber : AppTheme.lightAmber;
+    if (rank == 2) return isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary;
+    if (rank == 3) return isDark ? AppTheme.mint : AppTheme.lightMint;
+    return isDark ? AppTheme.accent : AppTheme.lightAccent;
+  }
+
+  Color _rankBadgeBg(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (rank == 1) return isDark ? AppTheme.amberSoft : AppTheme.lightAmberSoft;
+    if (rank == 2) return isDark ? AppTheme.surfaceLight : AppTheme.lightSurfaceLight;
+    if (rank == 3) return isDark ? AppTheme.mintSoft : AppTheme.lightMintSoft;
+    return isDark ? AppTheme.accentSoft : AppTheme.lightAccentSoft;
   }
 
   @override
   Widget build(BuildContext context) {
+    final badgeColor = _rankBadgeColor(context);
+    final badgeBg = _rankBadgeBg(context);
+
     return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingBase,
+        vertical: AppTheme.spacingMd,
+      ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: rankColor,
-            radius: 20,
-            child: Text('$rank', style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: badgeBg,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '$rank',
+                style: AppTheme.body(context).copyWith(
+                  color: badgeColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppTheme.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(student.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(student.className, style: const TextStyle(color: Colors.grey)),
+                Text(
+                  student.fullName,
+                  style: AppTheme.body(context).copyWith(fontWeight: FontWeight.w600),
+                ),
+                Text(student.className, style: AppTheme.caption(context)),
               ],
             ),
           ),
-          Text(averageScore.toStringAsFixed(1),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(
+            averageScore.toStringAsFixed(1),
+            style: AppTheme.h3(context),
+          ),
         ],
       ),
     );
