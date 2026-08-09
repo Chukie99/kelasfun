@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/features/home/dashboard_screen.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
@@ -54,6 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Row(
         children: [
@@ -61,8 +64,25 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) => setState(() => _selectedIndex = index),
             labelType: NavigationRailLabelType.all,
-            selectedIconTheme: const IconThemeData(color: AppTheme.cyan),
-            selectedLabelTextStyle: const TextStyle(color: AppTheme.cyan),
+            backgroundColor: isDark ? AppTheme.surface : AppTheme.lightSurface,
+            indicatorColor: isDark ? AppTheme.accentSoft : AppTheme.lightAccentSoft,
+            selectedIconTheme: IconThemeData(
+              color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+            ),
+            unselectedIconTheme: IconThemeData(
+              color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+            ),
+            selectedLabelTextStyle: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+            ),
+            unselectedLabelTextStyle: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+            ),
+            leading: const SizedBox(height: 8),
             destinations: _menuItems.map((item) {
               return NavigationRailDestination(
                 icon: Icon(item.icon),
@@ -70,7 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }).toList(),
           ),
-          const VerticalDivider(width: 1),
+          VerticalDivider(
+            width: 1,
+            color: isDark ? AppTheme.divider : AppTheme.lightDivider,
+          ),
           Expanded(child: _buildContent()),
         ],
       ),
