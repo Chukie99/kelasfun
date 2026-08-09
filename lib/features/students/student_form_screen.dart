@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:file_picker/file_picker.dart';
 import 'package:kelasfun/core/database/app_database.dart';
-import 'package:kelasfun/core/database/tables/students.dart';
 import 'package:kelasfun/core/utils/qr_generator.dart';
 import 'package:kelasfun/core/utils/photo_helper.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
@@ -85,6 +84,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   Widget _buildAvatar() {
     final name = _nameController.text.isNotEmpty ? _nameController.text : '?';
     final initials = PhotoHelper.getInitials(name);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_photoPath != null && File(_photoPath!).existsSync()) {
       return CircleAvatar(
@@ -95,13 +95,11 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
     return CircleAvatar(
       radius: 50,
-      backgroundColor: AppTheme.cyan.withOpacity(0.2),
+      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
       child: Text(
         initials,
-        style: const TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.cyan,
+        style: AppTheme.h2(context).copyWith(
+          color: isDark ? AppTheme.accent : AppTheme.lightAccent,
         ),
       ),
     );
@@ -111,11 +109,12 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
     final isEditing = widget.student != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(isEditing ? 'Edit Siswa' : 'Tambah Siswa')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spacingBase),
         child: Form(
           key: _formKey,
           child: ListView(
@@ -130,34 +129,79 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.cyan,
+                          padding: const EdgeInsets.all(AppTheme.spacingSm),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppTheme.accent : AppTheme.lightAccent,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: isDark ? AppTheme.textPrimary : Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Center(
-                child: Text('Klik untuk ganti foto', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              const SizedBox(height: AppTheme.spacingSm),
+              Center(
+                child: Text(
+                  'Klik untuk ganti foto',
+                  style: AppTheme.caption(context),
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacingLg),
               AppTextField(label: 'NIS', controller: _nisController, onChanged: (_) {}),
               AppTextField(label: 'Nama Lengkap', controller: _nameController, onChanged: (_) {}),
               AppTextField(label: 'Kelas', controller: _classController, onChanged: (_) {}),
-              DropdownButtonFormField<String>(
-                value: _gender,
-                decoration: const InputDecoration(labelText: 'Jenis Kelamin'),
-                items: const [
-                  DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-laki')),
-                  DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
-                ],
-                onChanged: (value) => setState(() => _gender = value),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+                child: DropdownButtonFormField<String>(
+                  value: _gender,
+                  decoration: InputDecoration(
+                    labelText: 'Jenis Kelamin',
+                    filled: true,
+                    fillColor: isDark ? AppTheme.inputFill : AppTheme.lightInputFill,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMd,
+                      vertical: AppTheme.spacingSm,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+                      borderSide: BorderSide(
+                        color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
+                        width: 1.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+                      borderSide: BorderSide(
+                        color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+                      borderSide: BorderSide(
+                        color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+                        width: 1.5,
+                      ),
+                    ),
+                    labelStyle: AppTheme.caption(context).copyWith(
+                      color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+                    ),
+                  ),
+                  style: AppTheme.bodySmall(context).copyWith(
+                    color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-laki')),
+                    DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
+                  ],
+                  onChanged: (value) => setState(() => _gender = value),
+                ),
               ),
               AppTextField(
                 label: 'Tanggal Lahir (YYYY-MM-DD)',
@@ -168,7 +212,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               AppTextField(label: 'Nama Orang Tua', controller: _parentNameController, onChanged: (_) {}),
               AppTextField(label: 'No. HP Orang Tua', controller: _parentPhoneController, onChanged: (_) {}),
               AppTextField(label: 'Catatan', controller: _notesController, maxLines: 3, onChanged: (_) {}),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacingLg),
               AppButton(
                 label: isEditing ? 'Simpan' : 'Tambah',
                 icon: Icons.save,
