@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/features/android/android_home.dart';
 
 void main() {
@@ -10,9 +11,12 @@ void main() {
   runApp(
     Provider<AppDatabase>.value(
       value: database,
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: AndroidHome(),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.dark,
+        home: const AndroidHome(),
       ),
     ),
   );
