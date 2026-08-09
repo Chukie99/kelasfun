@@ -26,6 +26,7 @@ dependencies:
   shelf_router: ^1.1.0
   excel: ^4.0.6
   fl_chart: ^0.68.0
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
