@@ -24,15 +24,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Jadwal Pelajaran'),
+        title: Text('Jadwal Pelajaran', style: AppTheme.h2(context)),
         actions: [
           DropdownButton<String>(
             value: _selectedClass,
-            dropdownColor: AppTheme.card,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            dropdownColor: isDark ? AppTheme.surface : AppTheme.lightSurface,
+            style: AppTheme.body(context),
             underline: const SizedBox(),
             items: classOptions
                 .map((c) => DropdownMenuItem(value: c, child: Text(c)))
