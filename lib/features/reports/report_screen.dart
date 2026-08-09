@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/pdf_generator.dart';
 import 'package:kelasfun/core/utils/excel_generator.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
@@ -14,33 +15,38 @@ class ReportScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Laporan & Cetak')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spacingBase),
         children: [
           _buildSection(
+            context: context,
             title: 'Form Biodata Siswa',
             subtitle: 'Cetak form lengkap untuk arsip',
             icon: Icons.person,
             onTap: () => _printBiodata(context),
           ),
           _buildSection(
+            context: context,
             title: 'Kartu QR Siswa',
             subtitle: 'Cetak kartu barcode untuk presensi',
             icon: Icons.qr_code,
             onTap: () => _printStudentCards(context),
           ),
           _buildSection(
+            context: context,
             title: 'Rapor Digital',
             subtitle: 'Cetak rapor per siswa',
             icon: Icons.description,
             onTap: () => _selectStudentForReport(context),
           ),
           _buildSection(
+            context: context,
             title: 'Cetak Semua Rapor',
             subtitle: 'Cetak rapor semua siswa dalam satu file',
             icon: Icons.print,
             onTap: () => _showBatchReportDialog(context),
           ),
           _buildSection(
+            context: context,
             title: 'Export ke Excel',
             subtitle: 'Ekspor nilai & presensi ke file Excel',
             icon: Icons.table_chart,
@@ -52,30 +58,34 @@ class ReportScreen extends StatelessWidget {
   }
 
   Widget _buildSection({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? AppTheme.accent : AppTheme.lightAccent;
+    
     return AppCard(
       onTap: onTap,
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF5B9BD5),
-            child: Icon(icon, color: Colors.white),
+            backgroundColor: accentColor,
+            child: Icon(icon, color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppTheme.spacingBase),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(subtitle, style: const TextStyle(color: Colors.grey)),
+                Text(title, style: AppTheme.h2(context)),
+                Text(subtitle, style: AppTheme.bodySmall(context)),
               ],
             ),
           ),
-          const Icon(Icons.print, color: Color(0xFF5B9BD5)),
+          Icon(Icons.print, color: accentColor),
         ],
       ),
     );
@@ -165,7 +175,7 @@ class ReportScreen extends StatelessWidget {
             children: [
               DropdownButtonFormField<String>(
                 value: selectedClass,
-                decoration: const InputDecoration(labelText: 'Kelas', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Kelas'),
                 items: const [
                   DropdownMenuItem(value: 'X RPL 1', child: Text('X RPL 1')),
                   DropdownMenuItem(value: 'X RPL 2', child: Text('X RPL 2')),
@@ -174,10 +184,10 @@ class ReportScreen extends StatelessWidget {
                 ],
                 onChanged: (v) => setState(() => selectedClass = v ?? selectedClass),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.spacingMd),
               DropdownButtonFormField<String>(
                 value: selectedSemester,
-                decoration: const InputDecoration(labelText: 'Semester', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Semester'),
                 items: const [
                   DropdownMenuItem(value: 'Ganjil 2025/2026', child: Text('Ganjil 2025/2026')),
                   DropdownMenuItem(value: 'Genap 2025/2026', child: Text('Genap 2025/2026')),
@@ -275,7 +285,6 @@ class ReportScreen extends StatelessWidget {
                 value: selectedSemester,
                 decoration: const InputDecoration(
                   labelText: 'Semester',
-                  border: OutlineInputBorder(),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'Ganjil 2025/2026', child: Text('Ganjil 2025/2026')),
@@ -285,12 +294,11 @@ class ReportScreen extends StatelessWidget {
                 ],
                 onChanged: (v) => setState(() => selectedSemester = v ?? selectedSemester),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.spacingMd),
               DropdownButtonFormField<String>(
                 value: selectedClass,
                 decoration: const InputDecoration(
                   labelText: 'Kelas',
-                  border: OutlineInputBorder(),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'X RPL 1', child: Text('X RPL 1')),
