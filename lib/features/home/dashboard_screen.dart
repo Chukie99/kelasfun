@@ -7,6 +7,26 @@ import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 
+Color _accentFor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? AppTheme.accent
+        : AppTheme.lightAccent;
+
+Color _mintFor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? AppTheme.mint
+        : AppTheme.lightMint;
+
+Color _amberFor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? AppTheme.amber
+        : AppTheme.lightAmber;
+
+Color _coralFor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? AppTheme.coral
+        : AppTheme.lightCoral;
+
 class DashboardScreen extends StatelessWidget {
   final VoidCallback? onNavigate;
   const DashboardScreen({super.key, this.onNavigate});
@@ -15,7 +35,8 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
     final now = DateTime.now();
-    final today = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final today =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final semester = now.month <= 6 ? 'Ganjil' : 'Genap';
     final year = now.year.toString();
 
@@ -54,37 +75,33 @@ class _SchoolProfileCard extends StatelessWidget {
         final city = settings['school_city'] ?? '';
         final province = settings['school_province'] ?? '';
 
-        final locationParts = [address, city, province].where((s) => s.isNotEmpty).toList();
+        final locationParts =
+            [address, city, province].where((s) => s.isNotEmpty).toList();
         final location = locationParts.join(', ');
+
+        final accent = _accentFor(context);
 
         return AppCard(
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.cyan.withOpacity(0.15),
+              color: accent.withOpacity(0.15),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.cyan.withOpacity(0.3)),
+              border: Border.all(color: accent.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.school, color: AppTheme.cyan, size: 48),
+                Icon(Icons.school, color: accent, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   name.isNotEmpty ? name : 'Nama Sekolah',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTheme.h2(context),
                 ),
                 if (location.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text(
-                    location,
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                  ),
+                  Text(location, style: AppTheme.bodySmall(context)),
                 ],
               ],
             ),
@@ -120,28 +137,25 @@ class _StatsTodayCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Statistik Hari Ini',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: AppTheme.textPrimary)),
+                    Text('Statistik Hari Ini',
+                        style: AppTheme.h3(context)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         _StatItem(
                           count: totalStudents.toString(),
                           label: 'Total',
-                          color: AppTheme.cyan,
+                          color: _accentFor(context),
                         ),
                         _StatItem(
                           count: hadir.toString(),
                           label: 'Hadir',
-                          color: AppTheme.mint,
+                          color: _mintFor(context),
                         ),
                         _StatItem(
                           count: alpha.toString(),
                           label: 'Alpha',
-                          color: AppTheme.coral,
+                          color: _coralFor(context),
                         ),
                       ],
                     ),
@@ -161,7 +175,8 @@ class _StatItem extends StatelessWidget {
   final String label;
   final Color color;
 
-  const _StatItem({required this.count, required this.label, required this.color});
+  const _StatItem(
+      {required this.count, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -178,11 +193,13 @@ class _StatItem extends StatelessWidget {
             child: Center(
               child: Text(count,
                   style: TextStyle(
-                      color: color, fontSize: 24, fontWeight: FontWeight.bold)),
+                      color: color,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
+          Text(label, style: AppTheme.bodySmall(context)),
         ],
       ),
     );
@@ -193,7 +210,8 @@ class _QuickSummaryCard extends StatelessWidget {
   final AppDatabase db;
   final String semester;
   final String year;
-  const _QuickSummaryCard({required this.db, required this.semester, required this.year});
+  const _QuickSummaryCard(
+      {required this.db, required this.semester, required this.year});
 
   @override
   Widget build(BuildContext context) {
@@ -208,14 +226,18 @@ class _QuickSummaryCard extends StatelessWidget {
           future: db.pointDao.getAllTotalPoints(),
           builder: (context, pointSnapshot) {
             final allPoints = pointSnapshot.data ?? {};
-            final totalPoints = allPoints.values.fold<int>(0, (sum, p) => sum + p);
+            final totalPoints =
+                allPoints.values.fold<int>(0, (sum, p) => sum + p);
 
             return FutureBuilder<List<Grade>>(
               future: db.gradeDao.getRanking(semesterKey),
               builder: (context, gradeSnapshot) {
                 final ranking = gradeSnapshot.data ?? [];
                 final avgScore = ranking.isNotEmpty
-                    ? (ranking.fold<double>(0, (sum, g) => sum + g.score) / ranking.length).toStringAsFixed(0)
+                    ? (ranking.fold<double>(
+                                0, (sum, g) => sum + g.score) /
+                            ranking.length)
+                        .toStringAsFixed(0)
                     : '0';
 
                 return AppCard(
@@ -224,11 +246,8 @@ class _QuickSummaryCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Ringkasan Cepat',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: AppTheme.textPrimary)),
+                        Text('Ringkasan Cepat',
+                            style: AppTheme.h3(context)),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -236,19 +255,19 @@ class _QuickSummaryCard extends StatelessWidget {
                               icon: Icons.subject,
                               value: totalSubjects.toString(),
                               label: 'Mapel',
-                              color: AppTheme.cyan,
+                              color: _accentFor(context),
                             ),
                             _SummaryItem(
                               icon: Icons.star,
                               value: totalPoints.toString(),
                               label: 'Poin',
-                              color: AppTheme.amber,
+                              color: _amberFor(context),
                             ),
                             _SummaryItem(
                               icon: Icons.analytics,
                               value: avgScore,
                               label: 'Rata-rata',
-                              color: AppTheme.mint,
+                              color: _mintFor(context),
                             ),
                           ],
                         ),
@@ -287,9 +306,10 @@ class _SummaryItem extends StatelessWidget {
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
-                  color: color, fontSize: 20, fontWeight: FontWeight.bold)),
-          Text(label,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                  color: color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          Text(label, style: AppTheme.caption(context)),
         ],
       ),
     );
@@ -308,11 +328,7 @@ class _QuickActionsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Aksi Cepat',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.textPrimary)),
+            Text('Aksi Cepat', style: AppTheme.h3(context)),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -320,7 +336,7 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.qr_code_scanner,
                     label: 'Presensi',
-                    color: AppTheme.mint,
+                    color: _mintFor(context),
                     onTap: onNavigate ?? () {},
                   ),
                 ),
@@ -329,7 +345,7 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.person_add,
                     label: 'Tambah Siswa',
-                    color: AppTheme.cyan,
+                    color: _accentFor(context),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -342,7 +358,7 @@ class _QuickActionsCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.description,
                     label: 'Laporan',
-                    color: AppTheme.amber,
+                    color: _amberFor(context),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -390,7 +406,9 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(height: 8),
             Text(label,
                 style: TextStyle(
-                    color: color, fontWeight: FontWeight.bold, fontSize: 12),
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12),
                 textAlign: TextAlign.center),
           ],
         ),
@@ -401,12 +419,20 @@ class _ActionButton extends StatelessWidget {
 
 class _AttendancePieChart extends StatelessWidget {
   final int hadir, izin, sakit, alpa;
-  const _AttendancePieChart({required this.hadir, required this.izin, required this.sakit, required this.alpa});
+  const _AttendancePieChart(
+      {required this.hadir,
+      required this.izin,
+      required this.sakit,
+      required this.alpa});
 
   @override
   Widget build(BuildContext context) {
     final total = hadir + izin + sakit + alpa;
-    if (total == 0) return const Center(child: Text('Belum ada data', style: TextStyle(color: AppTheme.textSecondary)));
+    if (total == 0) {
+      return Center(
+          child: Text('Belum ada data',
+              style: AppTheme.bodySmall(context)));
+    }
 
     return SizedBox(
       height: 150,
@@ -415,10 +441,26 @@ class _AttendancePieChart extends StatelessWidget {
           sectionsSpace: 2,
           centerSpaceRadius: 30,
           sections: [
-            PieChartSectionData(value: hadir.toDouble(), color: AppTheme.cyan, title: '$hadir', radius: 40),
-            PieChartSectionData(value: izin.toDouble(), color: AppTheme.amber, title: '$izin', radius: 40),
-            PieChartSectionData(value: sakit.toDouble(), color: AppTheme.mint, title: '$sakit', radius: 40),
-            PieChartSectionData(value: alpa.toDouble(), color: AppTheme.coral, title: '$alpa', radius: 40),
+            PieChartSectionData(
+                value: hadir.toDouble(),
+                color: _accentFor(context),
+                title: '$hadir',
+                radius: 40),
+            PieChartSectionData(
+                value: izin.toDouble(),
+                color: _amberFor(context),
+                title: '$izin',
+                radius: 40),
+            PieChartSectionData(
+                value: sakit.toDouble(),
+                color: _mintFor(context),
+                title: '$sakit',
+                radius: 40),
+            PieChartSectionData(
+                value: alpa.toDouble(),
+                color: _coralFor(context),
+                title: '$alpa',
+                radius: 40),
           ],
         ),
       ),
@@ -432,7 +474,11 @@ class _GradeBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (subjectAverages.isEmpty) return const Center(child: Text('Belum ada data', style: TextStyle(color: AppTheme.textSecondary)));
+    if (subjectAverages.isEmpty) {
+      return Center(
+          child: Text('Belum ada data',
+              style: AppTheme.bodySmall(context)));
+    }
 
     final entries = subjectAverages.entries.toList();
     return SizedBox(
@@ -445,9 +491,10 @@ class _GradeBarChart extends StatelessWidget {
             return BarChartGroupData(x: i, barRods: [
               BarChartRodData(
                 toY: entries[i].value,
-                color: AppTheme.cyan,
+                color: _accentFor(context),
                 width: 20,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(4)),
               ),
             ]);
           }),
@@ -457,13 +504,19 @@ class _GradeBarChart extends StatelessWidget {
                 showTitles: true,
                 getTitlesWidget: (i, meta) {
                   final name = entries[i.toInt()].key;
-                  return Text(name.length > 6 ? name.substring(0, 6) : name, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary));
+                  return Text(
+                      name.length > 6 ? name.substring(0, 6) : name,
+                      style: AppTheme.small(context));
                 },
               ),
             ),
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: const AxisTitles(
+                sideTitles: SideTitles(
+                    showTitles: true, reservedSize: 30)),
+            topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false)),
           ),
           borderData: FlBorderData(show: false),
           gridData: const FlGridData(show: false),
@@ -478,7 +531,11 @@ class _ChartsCard extends StatelessWidget {
   final String today;
   final String semester;
   final String year;
-  const _ChartsCard({required this.db, required this.today, required this.semester, required this.year});
+  const _ChartsCard(
+      {required this.db,
+      required this.today,
+      required this.semester,
+      required this.year});
 
   @override
   Widget build(BuildContext context) {
@@ -488,10 +545,14 @@ class _ChartsCard extends StatelessWidget {
       stream: db.attendanceDao.watchAttendanceByDate(today),
       builder: (context, attendanceSnapshot) {
         final attendance = attendanceSnapshot.data ?? [];
-        final hadir = attendance.where((a) => a.status == 'hadir').length;
-        final sakit = attendance.where((a) => a.status == 'sakit').length;
-        final izin = attendance.where((a) => a.status == 'izin').length;
-        final alpa = attendance.where((a) => a.status == 'alpa').length;
+        final hadir =
+            attendance.where((a) => a.status == 'hadir').length;
+        final sakit =
+            attendance.where((a) => a.status == 'sakit').length;
+        final izin =
+            attendance.where((a) => a.status == 'izin').length;
+        final alpa =
+            attendance.where((a) => a.status == 'alpa').length;
 
         return FutureBuilder<List<Subject>>(
           future: db.subjectDao.getAllSubjects(),
@@ -505,9 +566,13 @@ class _ChartsCard extends StatelessWidget {
                 final subjectAverages = <String, double>{};
 
                 for (final subject in subjects) {
-                  final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
+                  final subjectGrades = grades
+                      .where((g) => g.subjectId == subject.id)
+                      .toList();
                   if (subjectGrades.isNotEmpty) {
-                    final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
+                    final avg = subjectGrades.fold<double>(
+                            0, (sum, g) => sum + g.score) /
+                        subjectGrades.length;
                     subjectAverages[subject.name] = avg;
                   }
                 }
@@ -518,25 +583,22 @@ class _ChartsCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Grafik',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: AppTheme.textPrimary)),
+                        Text('Grafik',
+                            style: AppTheme.h3(context)),
                         const SizedBox(height: 16),
-                        const Text('Kehadiran Hari Ini',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: AppTheme.textSecondary)),
+                        Text('Kehadiran Hari Ini',
+                            style: AppTheme.bodySmall(context)
+                                .copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
-                        _AttendancePieChart(hadir: hadir, izin: izin, sakit: sakit, alpa: alpa),
+                        _AttendancePieChart(
+                            hadir: hadir,
+                            izin: izin,
+                            sakit: sakit,
+                            alpa: alpa),
                         const SizedBox(height: 16),
-                        const Text('Rata-rata Nilai per Mapel',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: AppTheme.textSecondary)),
+                        Text('Rata-rata Nilai per Mapel',
+                            style: AppTheme.bodySmall(context)
+                                .copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         _GradeBarChart(subjectAverages: subjectAverages),
                       ],
