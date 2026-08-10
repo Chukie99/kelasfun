@@ -13,6 +13,7 @@ class AppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final TextInputType? keyboardType;
+  final int? flex;
 
   const AppTextField({
     super.key,
@@ -26,16 +27,17 @@ class AppTextField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.keyboardType,
+    this.flex,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
+    Widget field = Padding(
       padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
       child: SizedBox(
-        height: 44,
+        height: maxLines > 1 ? null : 44,
         child: TextFormField(
           controller: controller,
           onChanged: onChanged,
@@ -115,5 +117,11 @@ class AppTextField extends StatelessWidget {
         ),
       ),
     );
+
+    if (flex != null) {
+      field = Expanded(flex: flex!, child: field);
+    }
+
+    return field;
   }
 }
