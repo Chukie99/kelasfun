@@ -168,7 +168,12 @@ class ScannerService {
         error: data['error'] as String? ?? 'Gagal mengirim scan',
       );
     } catch (e) {
-      return ScanResult(success: false, statusCode: 0, error: e.toString());
+      await addToQueue(PendingScan(nis: nis, timestamp: now ?? DateTime.now()));
+      return const ScanResult(
+        success: false,
+        statusCode: 0,
+        error: 'Tersimpan offline',
+      );
     }
   }
 }

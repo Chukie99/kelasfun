@@ -133,7 +133,60 @@ void main() {
       final result = await service.sendScan('12345');
 
       expect(result.success, isFalse);
-      expect(result.error, contains('Connection refused'));
+      expect(result.error, 'Tersimpan offline');
+    });
+
+    test('queues the scan on transport failure and reports offline', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final service = ScannerService(client: client);
+      final now = DateTime.parse('2026-08-11T01:00:00.000Z');
+
+      final result = await service.sendScan('12345', now: now);
+
+      expect(result.success, isFalse);
+      expect(result.error, 'Tersimpan offline');
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+      expect(queue.single.nis, '12345');
+      expect(queue.single.timestamp.toUtc(), now);
+    });
+
+    test('does NOT queue on HTTP 404 response', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        return http.Response(
+          jsonEncode({'success': false, 'error': 'Siswa tidak ditemukan'}),
+          404,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final service = ScannerService(client: client);
+
+      final result = await service.sendScan('999999');
+
+      expect(result.success, isFalse);
+      expect(result.error, 'Siswa tidak ditemukan');
+      expect(await service.loadQueue(), isEmpty);
+    });
+
+    test('does NOT queue on HTTP 200 success', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        return http.Response(
+          jsonEncode({'success': true, 'student': {'name': 'Rina', 'className': 'X RPL 1', 'status': 'Hadir'}}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final service = ScannerService(client: client);
+
+      final result = await service.sendScan('12345');
+
+      expect(result.success, isTrue);
+      expect(await service.loadQueue(), isEmpty);
     });
   });
 
