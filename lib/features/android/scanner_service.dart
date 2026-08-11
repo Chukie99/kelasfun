@@ -21,6 +21,20 @@ class ScanResult {
   });
 }
 
+class SyncResult {
+  final int syncedCount;
+  final int unknownCount;
+  final bool authError;
+  final bool notPaired;
+
+  const SyncResult({
+    required this.syncedCount,
+    required this.unknownCount,
+    this.authError = false,
+    this.notPaired = false,
+  });
+}
+
 class StudentCacheEntry {
   final String nis;
   final String name;
@@ -197,5 +211,73 @@ class ScannerService {
         error: 'Gagal mengirim scan',
       );
     }
+  }
+
+  Future<SyncResult> syncPending() async {
+    final config = await loadConfig();
+    if (config == null) {
+      return const SyncResult(syncedCount: 0, unknownCount: 0, notPaired: true);
+    }
+
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (config.token != null) 'X-API-Key': config.token!,
+    };
+    final baseUri = Uri.parse('http://${config.ip}:${config.port}');
+
+    // 1. Refresh student cache.
+    try {
+      final studentsResponse = await _client.get(baseUri.replace(path: '/api/students'), headers: headers);
+      if (studentsResponse.statusCode == 401) {
+        return const SyncResult(syncedCount: 0, unknownCount: 0, authError: true);
+      }
+      if (studentsResponse.statusCode == 200) {
+        final data = jsonDecode(studentsResponse.body) as Map<String, dynamic>;
+        final students = (data['students'] as List<dynamic>? ?? const [])
+            .map((s) => StudentCacheEntry(
+                  nis: (s as Map<String, dynamic>)['nis'] as String,
+                  name: s['fullName'] as String,
+                  className: s['className'] as String,
+                ))
+            .toList();
+        await saveStudentCache(students);
+      }
+    } catch (e) {
+      return const SyncResult(syncedCount: 0, unknownCount: 0);
+    }
+
+    // 2. Push queue in order.
+    var synced = 0;
+    var unknown = 0;
+    final queue = await loadQueue();
+    for (final scan in queue) {
+      try {
+        final response = await _client.post(
+          baseUri.replace(path: '/api/scan'),
+          headers: headers,
+          body: jsonEncode({
+            'student_id': scan.nis,
+            'timestamp': scan.timestamp.toUtc().toIso8601String(),
+          }),
+        );
+        if (response.statusCode == 200) {
+          synced++;
+          await removeFromQueue(scan.nis);
+        } else if (response.statusCode == 404) {
+          unknown++;
+          await removeFromQueue(scan.nis);
+        } else if (response.statusCode == 401) {
+          return SyncResult(
+            syncedCount: synced,
+            unknownCount: unknown,
+            authError: true,
+          );
+        }
+      } catch (e) {
+        return SyncResult(syncedCount: synced, unknownCount: unknown);
+      }
+    }
+
+    return SyncResult(syncedCount: synced, unknownCount: unknown);
   }
 }

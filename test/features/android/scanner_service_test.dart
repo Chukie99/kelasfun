@@ -263,4 +263,146 @@ void main() {
       expect(await service.loadQueue(), isEmpty);
     });
   });
+
+  group('syncPending', () {
+    test('returns notPaired when no config', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService(client: MockClient((_) async => http.Response('{}', 200)));
+
+      final result = await service.syncPending();
+
+      expect(result.notPaired, isTrue);
+      expect(result.syncedCount, 0);
+    });
+
+    test('refreshes student cache and drains queue on success', () async {
+      await _seedConfig();
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(
+            jsonEncode({
+              'students': [
+                {'id': 1, 'nis': '12345', 'fullName': 'Rina', 'className': 'X RPL 1', 'qrData': '{}'},
+              ],
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        return http.Response(
+          jsonEncode({'success': true, 'student': {'name': 'Rina', 'className': 'X RPL 1', 'status': 'Hadir'}}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final service = ScannerService(client: client);
+      final ts = DateTime.parse('2026-08-11T01:00:00.000Z');
+      await service.addToQueue(PendingScan(nis: '12345', timestamp: ts));
+
+      final result = await service.syncPending();
+
+      expect(result.notPaired, isFalse);
+      expect(result.authError, isFalse);
+      expect(result.syncedCount, 1);
+      expect(result.unknownCount, 0);
+      expect(await service.loadQueue(), isEmpty);
+      final cache = await service.loadStudentCache();
+      expect(cache.length, 1);
+      expect(cache.first.nis, '12345');
+      // GET came before POST.
+      expect(requests.first.method, 'GET');
+      expect(requests[1].method, 'POST');
+      final body = jsonDecode(requests[1].body) as Map<String, dynamic>;
+      expect(body['timestamp'], '2026-08-11T01:00:00.000Z');
+    });
+
+    test('counts 404 as unknown and removes from queue', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        return http.Response(
+          jsonEncode({'success': false, 'error': 'Siswa tidak ditemukan'}),
+          404,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final service = ScannerService(client: client);
+      await service.addToQueue(PendingScan(nis: '999999', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.syncedCount, 0);
+      expect(result.unknownCount, 1);
+      expect(await service.loadQueue(), isEmpty);
+    });
+
+    test('stops on 401 and keeps queue intact', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        return http.Response(jsonEncode({'error': 'Unauthorized'}), 401,
+            headers: {'content-type': 'application/json'});
+      });
+      final service = ScannerService(client: client);
+      await service.addToQueue(PendingScan(nis: '12345', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.authError, isTrue);
+      expect(await service.loadQueue(), hasLength(1));
+    });
+
+    test('keeps queue intact on GET connection failure', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final service = ScannerService(client: client);
+      await service.addToQueue(PendingScan(nis: '12345', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.syncedCount, 0);
+      expect(result.authError, isFalse);
+      expect(await service.loadQueue(), hasLength(1));
+    });
+
+    test('keeps remaining queue on mid-POST connection failure', () async {
+      await _seedConfig();
+      var postCount = 0;
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        postCount++;
+        if (postCount == 1) {
+          return http.Response(
+            jsonEncode({'success': true, 'student': {'name': 'A', 'className': 'B', 'status': 'Hadir'}}),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        throw http.ClientException('Connection refused');
+      });
+      final service = ScannerService(client: client);
+      await service.addToQueue(PendingScan(nis: '111', timestamp: DateTime.now()));
+      await service.addToQueue(PendingScan(nis: '222', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.syncedCount, 1);
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+      expect(queue.single.nis, '222');
+    });
+  });
 }
