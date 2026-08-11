@@ -56,6 +56,64 @@ void main() {
     });
   });
 
+  group('AndroidHome sync', () {
+    testWidgets('shows pending scan count', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+        'scan_queue': jsonEncode([
+          {'nis': '12345', 'timestamp': '2026-08-11T01:00:00.000Z'},
+          {'nis': '67890', 'timestamp': '2026-08-11T02:00:00.000Z'},
+          {'nis': '11223', 'timestamp': '2026-08-11T03:00:00.000Z'},
+        ]),
+      });
+      final home = AndroidHome(service: ScannerService(), scannerBuilder: FakeScannerController.new);
+      await _pumpApp(tester, home);
+      await tester.pump();
+
+      expect(find.textContaining('3 scan menunggu sinkron'), findsOneWidget);
+    });
+
+    testWidgets('shows "Sinkron" button', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+      });
+      final home = AndroidHome(service: ScannerService(), scannerBuilder: FakeScannerController.new);
+      await _pumpApp(tester, home);
+      await tester.pump();
+
+      expect(find.text('Sinkron'), findsOneWidget);
+    });
+
+    testWidgets('tapping Sinkron shows sync result banner', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+      });
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        return http.Response(
+          jsonEncode({'success': true, 'student': {'name': 'Rina', 'className': 'X RPL 1', 'status': 'Hadir'}}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final home = AndroidHome(
+        service: _serviceWithClient(client),
+        scannerBuilder: FakeScannerController.new,
+      );
+      await _pumpApp(tester, home);
+      await tester.pump();
+
+      await tester.tap(find.text('Sinkron'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('Sinkron selesai'), findsOneWidget);
+    });
+  });
+
   group('AndroidPairingScreen', () {
     testWidgets('saves config from valid laptop QR payload', (tester) async {
       var saved = false;

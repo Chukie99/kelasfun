@@ -21,19 +21,45 @@ class AndroidHome extends StatefulWidget {
 
 class _AndroidHomeState extends State<AndroidHome> {
   String? _status;
+  int _pendingCount = 0;
+  String? _syncResult;
+  DateTime? _lastSync;
 
   @override
   void initState() {
     super.initState();
     _loadStatus();
+    _sync();
   }
 
   Future<void> _loadStatus() async {
     final config = await widget.service.loadConfig();
+    final queue = await widget.service.loadQueue();
     if (!mounted) return;
     setState(() {
       _status = config == null ? 'Belum terhubung' : 'Terhubung: ${config.ip}:${config.port}';
+      _pendingCount = queue.length;
     });
+  }
+
+  Future<void> _sync() async {
+    final result = await widget.service.syncPending();
+    if (!mounted) return;
+    setState(() {
+      _lastSync = DateTime.now();
+      if (result.notPaired) {
+        _syncResult = 'Belum terhubung. Pindai QR laptop dulu.';
+      } else if (result.authError) {
+        _syncResult = 'Token tidak cocok. Pindai QR laptop ulang.';
+      } else {
+        final parts = <String>['${result.syncedCount} tersinkron'];
+        if (result.unknownCount > 0) {
+          parts.add('${result.unknownCount} tidak dikenal');
+        }
+        _syncResult = 'Sinkron selesai: ${parts.join(', ')}';
+      }
+    });
+    await _loadStatus();
   }
 
   void _openPairing() {
@@ -58,6 +84,12 @@ class _AndroidHomeState extends State<AndroidHome> {
     ));
   }
 
+  String _formatSyncTime(DateTime t) {
+    final h = t.hour.toString().padLeft(2, '0');
+    final m = t.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +107,30 @@ class _AndroidHomeState extends State<AndroidHome> {
               textAlign: TextAlign.center,
               style: AppTheme.h2(context),
             ),
+            if (_pendingCount > 0) ...[
+              const SizedBox(height: AppTheme.spacingBase),
+              Text(
+                '$_pendingCount scan menunggu sinkron',
+                textAlign: TextAlign.center,
+                style: AppTheme.body(context).copyWith(color: AppTheme.amber),
+              ),
+            ],
+            if (_lastSync != null) ...[
+              const SizedBox(height: AppTheme.spacingBase),
+              Text(
+                'Terakhir sinkron: ${_formatSyncTime(_lastSync!)}',
+                textAlign: TextAlign.center,
+                style: AppTheme.bodySmall(context),
+              ),
+            ],
+            if (_syncResult != null) ...[
+              const SizedBox(height: AppTheme.spacingBase),
+              Text(
+                _syncResult!,
+                textAlign: TextAlign.center,
+                style: AppTheme.body(context).copyWith(color: AppTheme.amber),
+              ),
+            ],
             const SizedBox(height: AppTheme.spacing2xl),
             FilledButton(
               onPressed: _openPairing,
@@ -84,6 +140,12 @@ class _AndroidHomeState extends State<AndroidHome> {
             OutlinedButton(
               onPressed: _openScanner,
               child: const Text('Buka Scanner'),
+            ),
+            const SizedBox(height: AppTheme.spacingBase),
+            OutlinedButton.icon(
+              onPressed: _sync,
+              icon: const Icon(Icons.sync),
+              label: const Text('Sinkron'),
             ),
           ],
         ),
