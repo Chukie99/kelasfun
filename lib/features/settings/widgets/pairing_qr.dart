@@ -25,11 +25,7 @@ class PairingQr extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final payload = jsonEncode({
-      'ip': ip,
-      'port': port,
-      'token': token,
-    });
+    final payload = this.payload;
 
     return Column(
       children: [
