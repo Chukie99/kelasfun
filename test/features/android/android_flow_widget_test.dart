@@ -285,5 +285,67 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
       expect(find.textContaining('Siswa tidak ditemukan'), findsNothing);
     });
+
+    testWidgets('offline scan shows amber "Tersimpan offline" banner', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+        'student_cache': jsonEncode([
+          {'nis': '12345', 'name': 'Rina', 'className': 'X RPL 1'},
+        ]),
+      });
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final controller = FakeScannerController();
+      await _pumpApp(
+        tester,
+        AndroidScanner(
+          service: _serviceWithClient(client),
+          controller: controller,
+        ),
+      );
+
+      controller.emit('{"n":"12345"}');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('Tersimpan offline'), findsOneWidget);
+      expect(find.textContaining('Rina'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.textContaining('Tersimpan offline'), findsNothing);
+    });
+
+    testWidgets('unknown NIS offline shows "Siswa tidak dikenal" and is queued', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+        'student_cache': jsonEncode([]),
+      });
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final controller = FakeScannerController();
+      await _pumpApp(
+        tester,
+        AndroidScanner(
+          service: _serviceWithClient(client),
+          controller: controller,
+        ),
+      );
+
+      controller.emit('{"n":"999999"}');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('Siswa tidak dikenal'), findsOneWidget);
+
+      final service = ScannerService(client: client);
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+      expect(queue.single.nis, '999999');
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.textContaining('Siswa tidak dikenal'), findsNothing);
+    });
   });
 }

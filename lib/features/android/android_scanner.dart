@@ -23,6 +23,7 @@ class AndroidScanner extends StatefulWidget {
 class _AndroidScannerState extends State<AndroidScanner> {
   String? _banner;
   bool _isSuccess = false;
+  bool _isOffline = false;
   bool _processing = false;
 
   @override
@@ -31,11 +32,20 @@ class _AndroidScannerState extends State<AndroidScanner> {
     widget.controller.barcodes.listen(_onBarcode);
   }
 
+  Future<String?> _displayName(String nis) async {
+    final cache = await widget.service.loadStudentCache();
+    for (final entry in cache) {
+      if (entry.nis == nis) return entry.name;
+    }
+    return null;
+  }
+
   Future<void> _onBarcode(String raw) async {
     if (_processing) return;
     setState(() => _processing = true);
 
     final nis = BarcodeHelpers.extractNisFromScan(raw);
+    final cachedName = await _displayName(nis);
     final result = await widget.service.sendScan(nis);
 
     if (!mounted) return;
@@ -46,12 +56,24 @@ class _AndroidScannerState extends State<AndroidScanner> {
       setState(() {
         _banner = '${result.studentName ?? nis} - Hadir';
         _isSuccess = true;
+        _isOffline = false;
       });
       await Future<void>.delayed(const Duration(seconds: 1));
+    } else if (result.error == 'Tersimpan offline') {
+      final name = cachedName;
+      setState(() {
+        _banner = name == null
+            ? 'Siswa tidak dikenal (tersimpan offline)'
+            : 'Tersimpan offline: $name - Hadir';
+        _isSuccess = false;
+        _isOffline = true;
+      });
+      await Future<void>.delayed(const Duration(seconds: 2));
     } else {
       setState(() {
         _banner = result.error ?? 'Gagal mengirim scan';
         _isSuccess = false;
+        _isOffline = false;
       });
       await Future<void>.delayed(const Duration(seconds: 2));
     }
@@ -67,6 +89,12 @@ class _AndroidScannerState extends State<AndroidScanner> {
   void dispose() {
     widget.controller.dispose();
     super.dispose();
+  }
+
+  Color get _bannerColor {
+    if (_isSuccess) return AppTheme.mint;
+    if (_isOffline) return AppTheme.amber;
+    return AppTheme.coral;
   }
 
   @override
@@ -92,7 +120,7 @@ class _AndroidScannerState extends State<AndroidScanner> {
           if (_banner != null)
             Container(
               width: double.infinity,
-              color: _isSuccess ? AppTheme.mint : AppTheme.coral,
+              color: _bannerColor,
               padding: const EdgeInsets.all(AppTheme.spacingLg),
               child: Text(
                 _banner!,
