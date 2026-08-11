@@ -60,6 +60,8 @@ class _AndroidPairingScreenState extends State<AndroidPairingScreen> {
       ),
     );
 
+    await widget.service.syncStudents();
+
     if (!mounted) return;
     setState(() => _processing = false);
     if (widget.onSaved != null) {

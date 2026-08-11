@@ -160,6 +160,63 @@ void main() {
       expect(saved, isFalse);
       expect(find.text('QR tidak valid'), findsOneWidget);
     });
+
+    testWidgets('pairing downloads students and fills cache', (tester) async {
+      var saved = false;
+      final client = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'students': [
+              {'id': 1, 'nis': '12345', 'fullName': 'Rina', 'className': 'X RPL 1', 'qrData': '{}'},
+            ],
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final controller = FakeScannerController();
+      await _pumpApp(
+        tester,
+        AndroidPairingScreen(
+          service: _serviceWithClient(client),
+          controller: controller,
+          onSaved: () => saved = true,
+        ),
+      );
+
+      controller.emit('{"ip":"192.168.1.55","port":8080,"token":"kelasfun-secret-key"}');
+      await tester.pump();
+      await tester.pump();
+
+      expect(saved, isTrue);
+      final service = ScannerService(client: client);
+      final cache = await service.loadStudentCache();
+      expect(cache.length, 1);
+      expect(cache.first.nis, '12345');
+      expect(cache.first.name, 'Rina');
+    });
+
+    testWidgets('pairing succeeds even if student download fails', (tester) async {
+      var saved = false;
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final controller = FakeScannerController();
+      await _pumpApp(
+        tester,
+        AndroidPairingScreen(
+          service: _serviceWithClient(client),
+          controller: controller,
+          onSaved: () => saved = true,
+        ),
+      );
+
+      controller.emit('{"ip":"192.168.1.55","port":8080,"token":"kelasfun-secret-key"}');
+      await tester.pump();
+      await tester.pump();
+
+      expect(saved, isTrue);
+    });
   });
 
   group('AndroidScanner', () {

@@ -280,4 +280,30 @@ class ScannerService {
 
     return SyncResult(syncedCount: synced, unknownCount: unknown);
   }
+
+  Future<bool> syncStudents() async {
+    final config = await loadConfig();
+    if (config == null) return false;
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (config.token != null) 'X-API-Key': config.token!,
+    };
+    final uri = Uri.parse('http://${config.ip}:${config.port}/api/students');
+    try {
+      final response = await _client.get(uri, headers: headers);
+      if (response.statusCode != 200) return false;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final students = (data['students'] as List<dynamic>? ?? const [])
+          .map((s) => StudentCacheEntry(
+                nis: (s as Map<String, dynamic>)['nis'] as String,
+                name: s['fullName'] as String,
+                className: s['className'] as String,
+              ))
+          .toList();
+      await saveStudentCache(students);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
