@@ -5,16 +5,28 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 
 class PairingQr extends StatelessWidget {
+  final String ip;
   final int port;
   final String token;
 
-  const PairingQr({super.key, required this.port, required this.token});
+  const PairingQr({
+    super.key,
+    required this.ip,
+    required this.port,
+    required this.token,
+  });
+
+  String get payload => jsonEncode({
+        'ip': ip,
+        'port': port,
+        'token': token,
+      });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final payload = jsonEncode({
-      'ip': '192.168.1.100',
+      'ip': ip,
       'port': port,
       'token': token,
     });
@@ -51,7 +63,7 @@ class PairingQr extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'IP: 192.168.1.100',
+                'IP: $ip',
                 style: AppTheme.caption(context).copyWith(fontFamily: 'monospace'),
               ),
               const SizedBox(height: AppTheme.spacingXs),

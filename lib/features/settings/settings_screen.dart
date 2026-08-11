@@ -96,8 +96,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           if (_serverRunning) ...[
             const SizedBox(height: AppTheme.spacingBase),
-            const AppCard(
-              child: PairingQr(port: 8080, token: 'kelasfun-secret-key'),
+            AppCard(
+              child: PairingQr(
+                ip: _localIp,
+                port: 8080,
+                token: 'kelasfun-secret-key',
+              ),
             ),
           ],
           const SizedBox(height: AppTheme.spacingBase),
