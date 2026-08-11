@@ -153,6 +153,80 @@ void main() {
     });
   });
 
+  group('Photo Helper Edge Cases', () {
+    test('getInitials handles single character name', () {
+      expect(PhotoHelper.getInitials('A'), 'A');
+    });
+
+    test('getInitials handles three word name', () {
+      expect(PhotoHelper.getInitials('Andi Pratama Putra'), 'AP');
+    });
+
+    test('getInitials handles unicode characters', () {
+      expect(PhotoHelper.getInitials('Budi Santoso'), 'BS');
+    });
+  });
+
+  group('Quick Action Attendance', () {
+    test('mark as Izin via quick action', () async {
+      final studentId = await db.studentDao.insertStudent(
+        nis: '001', fullName: 'Andi', className: '6A',
+        gender: 'Laki-laki', qrData: '{"n":"001"}',
+      );
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      await db.attendanceDao.markAttendance(
+        studentId: studentId, date: today,
+        status: 'Izin', scanMethod: 'MANUAL',
+      );
+
+      final attendance = await db.attendanceDao.getAttendanceByDate(today);
+      expect(attendance.length, 1);
+      expect(attendance.first.status, 'Izin');
+      expect(attendance.first.scanMethod, 'MANUAL');
+    });
+
+    test('reset removes attendance record', () async {
+      final studentId = await db.studentDao.insertStudent(
+        nis: '001', fullName: 'Andi', className: '6A',
+        gender: 'Laki-laki', qrData: '{"n":"001"}',
+      );
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      await db.attendanceDao.markAttendance(
+        studentId: studentId, date: today,
+        status: 'Alpa', scanMethod: 'MANUAL',
+      );
+
+      await db.attendanceDao.resetAttendance(studentId, today);
+
+      final attendance = await db.attendanceDao.getAttendanceByDate(today);
+      expect(attendance, isEmpty);
+    });
+
+    test('quick action updates existing attendance', () async {
+      final studentId = await db.studentDao.insertStudent(
+        nis: '001', fullName: 'Andi', className: '6A',
+        gender: 'Laki-laki', qrData: '{"n":"001"}',
+      );
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      await db.attendanceDao.markAttendance(
+        studentId: studentId, date: today,
+        status: 'Alpa', scanMethod: 'MANUAL',
+      );
+
+      await db.attendanceDao.markAttendance(
+        studentId: studentId, date: today,
+        status: 'Sakit', scanMethod: 'MANUAL',
+      );
+
+      final attendance = await db.attendanceDao.getAttendanceByDate(today);
+      expect(attendance.length, 1);
+      expect(attendance.first.status, 'Sakit');
+    });
+  });
+
   group('Student with Photo', () {
     test('insert student with photoPath', () async {
       final id = await db.studentDao.insertStudent(

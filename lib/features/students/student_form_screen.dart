@@ -81,6 +81,37 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     }
   }
 
+  Future<void> _pickBirthDate() async {
+    DateTime initialDate = DateTime(2010, 1, 1);
+    if (_birthDateController.text.isNotEmpty) {
+      try {
+        final parts = _birthDateController.text.split('-');
+        if (parts.length == 3) {
+          initialDate = DateTime(
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          );
+        }
+      } catch (_) {}
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1990),
+      lastDate: DateTime.now(),
+      locale: const Locale('id', 'ID'),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _birthDateController.text =
+            '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
   Widget _buildAvatar() {
     final name = _nameController.text.isNotEmpty ? _nameController.text : '?';
     final initials = PhotoHelper.getInitials(name);
@@ -113,27 +144,251 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(isEditing ? 'Edit Siswa' : 'Tambah Siswa')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingLg),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: _buildTwoPanelLayout(isDark),
-                  ),
-                  const SizedBox(height: AppTheme.spacingLg),
-                  _buildButtonArea(db, isEditing, isDark),
-                ],
-              ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 768;
+          
+          if (isDesktop) {
+            return _buildDesktopLayout(db, isEditing, isDark);
+          } else {
+            return _buildMobileLayout(db, isEditing, isDark);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(AppDatabase db, bool isEditing, bool isDark) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacingLg),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Expanded(
+                  child: _buildTwoPanelLayout(isDark),
+                ),
+                const SizedBox(height: AppTheme.spacingLg),
+                _buildButtonArea(db, isEditing, isDark),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(AppDatabase db, bool isEditing, bool isDark) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppTheme.spacingLg),
+              child: Column(
+                children: [
+                  _buildMobileAvatarSection(isDark),
+                  const SizedBox(height: AppTheme.spacingLg),
+                  _buildMobileFormSection(isDark),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingLg),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.surface : AppTheme.lightSurface,
+              border: Border(
+                top: BorderSide(
+                  color: isDark ? AppTheme.border : AppTheme.lightBorder,
+                ),
+              ),
+            ),
+            child: _buildButtonArea(db, isEditing, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileAvatarSection(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppTheme.spacingLg),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.surface : AppTheme.lightSurface,
+        border: Border.all(
+          color: isDark ? AppTheme.border : AppTheme.lightBorder,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: _pickPhoto,
+            child: Stack(
+              children: [
+                _buildAvatar(),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(AppTheme.spacingSm),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingSm),
+          Text(
+            'Klik untuk ganti foto',
+            style: AppTheme.caption(context),
+          ),
+          const SizedBox(height: AppTheme.spacingLg),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Ubah Foto',
+                  icon: Icons.camera_alt,
+                  type: AppButtonType.secondary,
+                  isOutlined: true,
+                  onPressed: _pickPhoto,
+                ),
+              ),
+              if (_photoPath != null) ...[
+                const SizedBox(width: AppTheme.spacingSm),
+                Expanded(
+                  child: AppButton(
+                    label: 'Hapus Foto',
+                    icon: Icons.delete_outline,
+                    type: AppButtonType.danger,
+                    isOutlined: true,
+                    onPressed: () => setState(() => _photoPath = null),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileFormSection(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppTheme.spacingLg),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.surface : AppTheme.lightSurface,
+        border: Border.all(
+          color: isDark ? AppTheme.border : AppTheme.lightBorder,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader('Data Pribadi', isDark),
+          const SizedBox(height: AppTheme.spacingMd),
+          _buildMobileDataPribadiGrid(isDark),
+          const SizedBox(height: AppTheme.spacingLg),
+          _buildSectionHeader('Data Orang Tua', isDark),
+          const SizedBox(height: AppTheme.spacingMd),
+          _buildMobileDataOrangTuaGrid(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileDataPribadiGrid(bool isDark) {
+    return Column(
+      children: [
+        AppTextField(
+          label: 'NIS',
+          controller: _nisController,
+          onChanged: (_) => setState(() {}),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'NIS wajib diisi';
+            }
+            return null;
+          },
+        ),
+        AppTextField(
+          label: 'Nama Lengkap',
+          controller: _nameController,
+          onChanged: (_) {},
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Nama wajib diisi';
+            }
+            return null;
+          },
+        ),
+        AppTextField(
+          label: 'Kelas',
+          controller: _classController,
+          onChanged: (_) => setState(() {}),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kelas wajib diisi';
+            }
+            return null;
+          },
+        ),
+        _buildGenderDropdown(isDark),
+        AppTextField(
+          label: 'Tanggal Lahir',
+          controller: _birthDateController,
+          readOnly: true,
+          onTap: _pickBirthDate,
+          suffixIcon: Icons.calendar_today,
+          onChanged: (_) {},
+        ),
+        AppTextField(
+          label: 'Alamat',
+          controller: _addressController,
+          onChanged: (_) {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileDataOrangTuaGrid(bool isDark) {
+    return Column(
+      children: [
+        AppTextField(
+          label: 'Nama Orang Tua',
+          controller: _parentNameController,
+          onChanged: (_) {},
+        ),
+        AppTextField(
+          label: 'No. HP Orang Tua',
+          controller: _parentPhoneController,
+          onChanged: (_) {},
+        ),
+        AppTextField(
+          label: 'Catatan',
+          controller: _notesController,
+          maxLines: 3,
+          onChanged: (_) {},
+        ),
+      ],
     );
   }
 
@@ -332,6 +587,12 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               controller: _nisController,
               onChanged: (_) => setState(() {}),
               flex: 1,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'NIS wajib diisi';
+                }
+                return null;
+              },
             ),
             const SizedBox(width: AppTheme.spacingMd),
             AppTextField(
@@ -339,6 +600,12 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               controller: _nameController,
               onChanged: (_) {},
               flex: 1,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Nama wajib diisi';
+                }
+                return null;
+              },
             ),
           ],
         ),
@@ -349,16 +616,25 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               controller: _classController,
               onChanged: (_) => setState(() {}),
               flex: 1,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Kelas wajib diisi';
+                }
+                return null;
+              },
             ),
             const SizedBox(width: AppTheme.spacingMd),
-            _buildGenderDropdown(isDark),
+            Expanded(child: _buildGenderDropdown(isDark)),
           ],
         ),
         Row(
           children: [
             AppTextField(
-              label: 'Tanggal Lahir (YYYY-MM-DD)',
+              label: 'Tanggal Lahir',
               controller: _birthDateController,
+              readOnly: true,
+              onTap: _pickBirthDate,
+              suffixIcon: Icons.calendar_today,
               onChanged: (_) {},
               flex: 1,
             ),
@@ -376,53 +652,71 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   }
 
   Widget _buildGenderDropdown(bool isDark) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-        child: DropdownButtonFormField<String>(
-          value: _gender,
-          decoration: InputDecoration(
-            labelText: 'Jenis Kelamin',
-            filled: true,
-            fillColor: isDark ? AppTheme.inputFill : AppTheme.lightInputFill,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingMd,
-              vertical: AppTheme.spacingSm,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusInput),
-              borderSide: BorderSide(
-                color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
-                width: 1.5,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusInput),
-              borderSide: BorderSide(
-                color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
-                width: 1.5,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusInput),
-              borderSide: BorderSide(
-                color: isDark ? AppTheme.accent : AppTheme.lightAccent,
-                width: 1.5,
-              ),
-            ),
-            labelStyle: AppTheme.caption(context).copyWith(
-              color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
+      child: DropdownButtonFormField<String>(
+        value: _gender,
+        decoration: InputDecoration(
+          labelText: 'Jenis Kelamin',
+          filled: true,
+          fillColor: isDark ? AppTheme.inputFill : AppTheme.lightInputFill,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMd,
+            vertical: AppTheme.spacingSm,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+            borderSide: BorderSide(
+              color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
+              width: 1.5,
             ),
           ),
-          style: AppTheme.bodySmall(context).copyWith(
-            color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+            borderSide: BorderSide(
+              color: isDark ? AppTheme.inputBorder : AppTheme.lightInputBorder,
+              width: 1.5,
+            ),
           ),
-          items: const [
-            DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-laki')),
-            DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
-          ],
-          onChanged: (value) => setState(() => _gender = value),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+            borderSide: BorderSide(
+              color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+            borderSide: BorderSide(
+              color: isDark ? AppTheme.coral : AppTheme.lightCoral,
+              width: 1.5,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusInput),
+            borderSide: BorderSide(
+              color: isDark ? AppTheme.coral : AppTheme.lightCoral,
+              width: 1.5,
+            ),
+          ),
+          labelStyle: AppTheme.caption(context).copyWith(
+            color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+          ),
         ),
+        style: AppTheme.bodySmall(context).copyWith(
+          color: isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary,
+        ),
+        items: const [
+          DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-laki')),
+          DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
+        ],
+        onChanged: (value) => setState(() => _gender = value),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Jenis kelamin wajib dipilih';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -465,43 +759,94 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         icon: Icons.save,
         onPressed: () async {
           if (!_formKey.currentState!.validate()) return;
-          final nis = _nisController.text;
-          final name = _nameController.text;
-          final className = _classController.text;
+          
+          final nis = _nisController.text.trim();
+          final name = _nameController.text.trim();
+          final className = _classController.text.trim();
+          final gender = _gender ?? '';
+          
+          if (gender.isEmpty) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Jenis kelamin wajib dipilih'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+          
           final qrData = QrGenerator.encodePayload(
             nis: nis, name: name, className: className,
           );
           final notes = _notesController.text.isNotEmpty ? _notesController.text : null;
+          final birthDate = _birthDateController.text.isNotEmpty ? _birthDateController.text : null;
+          final address = _addressController.text.isNotEmpty ? _addressController.text : null;
+          final parentName = _parentNameController.text.isNotEmpty ? _parentNameController.text : null;
+          final parentPhone = _parentPhoneController.text.isNotEmpty ? _parentPhoneController.text : null;
 
-          if (isEditing) {
-            await db.studentDao.updateStudent(StudentsCompanion(
-              id: Value(widget.student!.id),
-              nis: Value(nis),
-              fullName: Value(name),
-              className: Value(className),
-              gender: Value(_gender ?? ''),
-              birthDate: Value(_birthDateController.text),
-              address: Value(_addressController.text),
-              parentName: Value(_parentNameController.text),
-              parentPhone: Value(_parentPhoneController.text),
-              photoPath: Value(_photoPath),
-              qrData: Value(qrData),
-              notes: Value(notes),
-            ));
-          } else {
-            await db.studentDao.insertStudent(
-              nis: nis, fullName: name,
-              className: className, gender: _gender ?? '',
-              qrData: qrData,
-              birthDate: _birthDateController.text,
-              address: _addressController.text,
-              parentName: _parentNameController.text,
-              parentPhone: _parentPhoneController.text,
-              photoPath: _photoPath,
-              notes: notes,
-            );
+          try {
+            if (isEditing) {
+              await db.studentDao.updateStudent(StudentsCompanion(
+                id: Value(widget.student!.id),
+                nis: Value(nis),
+                fullName: Value(name),
+                className: Value(className),
+                gender: Value(gender),
+                birthDate: Value.absentIfNull(birthDate),
+                address: Value.absentIfNull(address),
+                parentName: Value.absentIfNull(parentName),
+                parentPhone: Value.absentIfNull(parentPhone),
+                photoPath: Value(_photoPath),
+                qrData: Value(qrData),
+                notes: Value.absentIfNull(notes),
+              ));
+            } else {
+              await db.studentDao.insertStudent(
+                nis: nis, fullName: name,
+                className: className, gender: gender,
+                qrData: qrData,
+                birthDate: birthDate,
+                address: address,
+                parentName: parentName,
+                parentPhone: parentPhone,
+                photoPath: _photoPath,
+                notes: notes,
+              );
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isEditing ? 'Data siswa berhasil diperbarui' : 'Siswa baru berhasil ditambahkan'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.pop(context);
+            }
+          } catch (e, stackTrace) {
+            debugPrint('SAVE ERROR: $e');
+            debugPrint('STACK TRACE: $stackTrace');
+            if (mounted) {
+              String errorMessage = 'Gagal menyimpan data: $e';
+              if (e.toString().contains('UNIQUE constraint failed')) {
+                if (e.toString().contains('students.nis')) {
+                  errorMessage = 'NIS sudah digunakan oleh siswa lain';
+                } else if (e.toString().contains('students.qr_data')) {
+                  errorMessage = 'Data QR sudah ada, coba lagi';
+                } else {
+                  errorMessage = 'Data duplikat ditemukan';
+                }
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(errorMessage),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
           }
-          if (context.mounted) Navigator.pop(context);
         },
       ),
     );

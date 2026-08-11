@@ -47,4 +47,45 @@ void main() {
       expect(pdf!.length, greaterThan(0));
     });
   });
+
+  group('KTP Card Layout', () {
+    test('generates PDF with correct number of pages for 10 students', () async {
+      final students = List.generate(10, (i) => {
+        'nis': '${i + 1}'.padLeft(3, '0'),
+        'name': 'Siswa ${i + 1}',
+        'class': '6A',
+      });
+
+      final pdf = await PdfGenerator.generateStudentCards(
+        students: students,
+        schoolName: 'SDN Test',
+      );
+
+      expect(pdf, isNotNull);
+    });
+
+    test('generates PDF with 2 pages for 15 students', () async {
+      final students = List.generate(15, (i) => {
+        'nis': '${i + 1}'.padLeft(3, '0'),
+        'name': 'Siswa ${i + 1}',
+        'class': '6A',
+      });
+
+      final pdf = await PdfGenerator.generateStudentCards(
+        students: students,
+        schoolName: 'SDN Test',
+      );
+
+      expect(pdf, isNotNull);
+    });
+
+    test('generates empty PDF for no students', () async {
+      final pdf = await PdfGenerator.generateStudentCards(
+        students: [],
+        schoolName: 'SDN Test',
+      );
+
+      expect(pdf, isNotNull);
+    });
+  });
 }

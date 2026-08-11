@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
@@ -10,7 +11,7 @@ class KelasFunApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final db = database ?? AppDatabase();
+    final db = database!;
     return Provider<AppDatabase>.value(
       value: db,
       child: StreamBuilder<String?>(
@@ -34,6 +35,16 @@ class KelasFunApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('id', 'ID'),
+              Locale('en', 'US'),
+            ],
+            locale: const Locale('id', 'ID'),
             home: const HomeScreen(),
           );
         },

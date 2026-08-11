@@ -10,15 +10,19 @@ AppDatabase createTestDb() => AppDatabase.forTesting(DatabaseConnection(NativeDa
 
 void main() {
   testWidgets('AttendanceScreen shows presensi title', (tester) async {
-    final db = createTestDb();
-    await tester.pumpWidget(MaterialApp(
-      home: Provider<AppDatabase>.value(
-        value: db,
-        child: const AttendanceScreen(),
-      ),
-    ));
-    await tester.pump();
-    expect(find.textContaining('Presensi'), findsWidgets);
-    await db.close();
+    await tester.runAsync(() async {
+      final db = createTestDb();
+      await tester.pumpWidget(MaterialApp(
+        home: Provider<AppDatabase>.value(
+          value: db,
+          child: const AttendanceScreen(),
+        ),
+      ));
+      await tester.pump();
+      expect(find.textContaining('Presensi'), findsWidgets);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      await db.close();
+    });
   });
 }

@@ -8,10 +8,13 @@ class AppTextField extends StatelessWidget {
   final String? hint;
   final IconData? prefixIcon;
   final Widget? suffix;
+  final IconData? suffixIcon;
   final bool obscureText;
+  final bool readOnly;
   final int maxLines;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final VoidCallback? onTap;
   final TextInputType? keyboardType;
   final int? flex;
 
@@ -22,10 +25,13 @@ class AppTextField extends StatelessWidget {
     this.hint,
     this.prefixIcon,
     this.suffix,
+    this.suffixIcon,
     this.obscureText = false,
+    this.readOnly = false,
     this.maxLines = 1,
     this.validator,
     this.onChanged,
+    this.onTap,
     this.keyboardType,
     this.flex,
   });
@@ -42,6 +48,8 @@ class AppTextField extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           obscureText: obscureText,
+          readOnly: readOnly,
+          onTap: onTap,
           keyboardType: keyboardType,
           maxLines: maxLines,
           validator: validator,
@@ -59,7 +67,13 @@ class AppTextField extends StatelessWidget {
                     color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
                   )
                 : null,
-            suffixIcon: suffix,
+            suffixIcon: suffix ?? (suffixIcon != null
+                ? Icon(
+                    suffixIcon,
+                    size: 18,
+                    color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
+                  )
+                : null),
             filled: true,
             fillColor: isDark ? AppTheme.inputFill : AppTheme.lightInputFill,
             contentPadding: const EdgeInsets.symmetric(

@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
   drift: ^2.14.0
   sqlite3_flutter_libs: ^0.5.0
@@ -20,7 +22,7 @@ dependencies:
   pdf: ^3.10.0
   intl: ^0.19.0
   file_picker: ^6.1.0
-  mobile_scanner: ^5.2.3
+  # mobile_scanner: ^5.2.3  # DISABLED: causes crash on Windows desktop
   http: ^1.1.0
   shelf: ^1.4.0
   shelf_router: ^1.1.0

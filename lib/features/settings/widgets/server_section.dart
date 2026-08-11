@@ -16,7 +16,10 @@ class ServerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final statusColor = isRunning
+        ? (isDark ? AppTheme.mint : AppTheme.lightMint)
+        : (isDark ? AppTheme.coral : AppTheme.lightCoral);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +30,7 @@ class ServerSection extends StatelessWidget {
           children: [
             Icon(
               isRunning ? Icons.check_circle : Icons.cancel,
-              color: isRunning ? colorScheme.secondary : colorScheme.error,
+              color: statusColor,
             ),
             const SizedBox(width: AppTheme.spacingSm),
             Text(
