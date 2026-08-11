@@ -143,6 +143,27 @@ void main() {
       expect(rows.length, 1);
     });
 
+    test('UTC timestamp is bucketed by local date, not UTC date', () async {
+      await _insertStudent(db, '12345');
+
+      const raw = '2026-08-10T23:00:00.000Z';
+      final local = DateTime.parse(raw).toLocal();
+      final dateKey =
+          '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+
+      final response = await postScan({
+        'student_id': '12345',
+        'timestamp': raw,
+      });
+      final data = await readJson(response);
+
+      expect(response.statusCode, 200);
+      expect(data['success'], true);
+
+      final rows = await db.attendanceDao.getAttendanceByDate(dateKey);
+      expect(rows.length, 1);
+    });
+
     test('missing student_id returns 400', () async {
       final response = await postScan({'timestamp': '2026-08-10T08:15:00.000Z'});
       final data = await readJson(response);

@@ -96,7 +96,7 @@ class SyncHandler {
       }
 
       final timestamp = _parseTimestamp(data['timestamp']);
-      final date = DateFormat('yyyy-MM-dd').format(timestamp);
+      final date = DateFormat('yyyy-MM-dd').format(timestamp.toLocal());
 
       await db.attendanceDao.markAttendance(
         studentId: student.id,
