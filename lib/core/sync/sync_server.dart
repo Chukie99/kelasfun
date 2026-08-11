@@ -27,7 +27,8 @@ class SyncServer {
     final router = Router()
       ..get('/api/health', handler.healthCheck)
       ..get('/api/students', handler.getStudents)
-      ..post('/api/attendance', handler.syncAttendance);
+      ..post('/api/attendance', handler.syncAttendance)
+      ..post('/api/scan', handler.scanAttendance);
 
     final pipeline = const Pipeline()
         .addMiddleware(logRequests())
