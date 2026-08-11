@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pairing_config.dart';
@@ -167,12 +169,32 @@ class ScannerService {
         statusCode: response.statusCode,
         error: data['error'] as String? ?? 'Gagal mengirim scan',
       );
-    } catch (e) {
+    } on SocketException {
       await addToQueue(PendingScan(nis: nis, timestamp: now ?? DateTime.now()));
       return const ScanResult(
         success: false,
         statusCode: 0,
         error: 'Tersimpan offline',
+      );
+    } on http.ClientException {
+      await addToQueue(PendingScan(nis: nis, timestamp: now ?? DateTime.now()));
+      return const ScanResult(
+        success: false,
+        statusCode: 0,
+        error: 'Tersimpan offline',
+      );
+    } on TimeoutException {
+      await addToQueue(PendingScan(nis: nis, timestamp: now ?? DateTime.now()));
+      return const ScanResult(
+        success: false,
+        statusCode: 0,
+        error: 'Tersimpan offline',
+      );
+    } catch (_) {
+      return const ScanResult(
+        success: false,
+        statusCode: 0,
+        error: 'Gagal mengirim scan',
       );
     }
   }

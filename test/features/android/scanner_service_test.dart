@@ -188,6 +188,21 @@ void main() {
       expect(result.success, isTrue);
       expect(await service.loadQueue(), isEmpty);
     });
+
+    test('does NOT queue on malformed non-JSON HTTP response', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        return http.Response('<html>captive portal</html>', 200,
+            headers: {'content-type': 'text/html'});
+      });
+      final service = ScannerService(client: client);
+
+      final result = await service.sendScan('12345');
+
+      expect(result.success, isFalse);
+      expect(result.error, isNot('Tersimpan offline'));
+      expect(await service.loadQueue(), isEmpty);
+    });
   });
 
   group('student cache and pending queue', () {
