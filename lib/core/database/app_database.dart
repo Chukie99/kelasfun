@@ -44,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -52,7 +52,23 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (m) async {
         await m.createAll();
       },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          await _ensureStudentsColumn(m, 'isActive');
+          await _ensureStudentsColumn(m, 'notes');
+        }
+      },
     );
+  }
+
+  Future<void> _ensureStudentsColumn(Migrator m, String column) async {
+    final info = await m.database.customSelect(
+      'PRAGMA table_info(students)',
+    ).get();
+    final exists = info.any((row) => row.data['name'] == column);
+    if (!exists) {
+      await m.addColumn(students, column == 'isActive' ? students.isActive : students.notes);
+    }
   }
 
   Future<String> getDatabasePath() async {
