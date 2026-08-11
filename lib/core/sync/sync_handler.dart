@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:shelf/shelf.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 
@@ -69,5 +70,61 @@ class SyncHandler {
     }).toList();
 
     return _jsonResponse({'students': data});
+  }
+
+  Future<Response> scanAttendance(Request request) async {
+    if (!_validateAuth(request)) {
+      return _jsonResponse({'error': 'Unauthorized'}, status: 401);
+    }
+
+    try {
+      final body = await request.readAsString();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+
+      final rawStudentId = data['student_id'];
+      if (rawStudentId == null || rawStudentId.toString().isEmpty) {
+        return _jsonResponse({'error': 'student_id is required'}, status: 400);
+      }
+      final studentId = rawStudentId.toString();
+
+      final student = await db.studentDao.getStudentByNis(studentId);
+      if (student == null) {
+        return _jsonResponse(
+          {'success': false, 'error': 'Siswa tidak ditemukan'},
+          status: 404,
+        );
+      }
+
+      final timestamp = _parseTimestamp(data['timestamp']);
+      final date = DateFormat('yyyy-MM-dd').format(timestamp);
+
+      await db.attendanceDao.markAttendance(
+        studentId: student.id,
+        date: date,
+        status: 'Hadir',
+        scanMethod: 'WIRELESS',
+      );
+
+      return _jsonResponse({
+        'success': true,
+        'student': {
+          'name': student.fullName,
+          'className': student.className,
+          'status': 'Hadir',
+        },
+      });
+    } on FormatException {
+      return _jsonResponse({'error': 'Malformed JSON'}, status: 400);
+    } catch (e) {
+      return _jsonResponse({'error': e.toString()}, status: 400);
+    }
+  }
+
+  DateTime _parseTimestamp(dynamic raw) {
+    if (raw is String) {
+      final parsed = DateTime.tryParse(raw);
+      if (parsed != null) return parsed;
+    }
+    return DateTime.now().toLocal();
   }
 }
