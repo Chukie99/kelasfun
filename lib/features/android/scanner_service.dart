@@ -19,8 +19,52 @@ class ScanResult {
   });
 }
 
+class StudentCacheEntry {
+  final String nis;
+  final String name;
+  final String className;
+
+  const StudentCacheEntry({
+    required this.nis,
+    required this.name,
+    required this.className,
+  });
+
+  factory StudentCacheEntry.fromJson(Map<String, dynamic> json) {
+    return StudentCacheEntry(
+      nis: json['nis'] as String,
+      name: json['name'] as String,
+      className: json['className'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'nis': nis, 'name': name, 'className': className};
+  }
+}
+
+class PendingScan {
+  final String nis;
+  final DateTime timestamp;
+
+  const PendingScan({required this.nis, required this.timestamp});
+
+  factory PendingScan.fromJson(Map<String, dynamic> json) {
+    return PendingScan(
+      nis: json['nis'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'nis': nis, 'timestamp': timestamp.toIso8601String()};
+  }
+}
+
 class ScannerService {
   static const configKey = 'pairing_config';
+  static const cacheKey = 'student_cache';
+  static const queueKey = 'scan_queue';
 
   final http.Client _client;
 
@@ -36,6 +80,58 @@ class ScannerService {
   Future<void> saveConfig(PairingConfig config) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(configKey, jsonEncode(config.toJson()));
+  }
+
+  Future<List<StudentCacheEntry>> loadStudentCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(cacheKey);
+    if (raw == null) return const [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => StudentCacheEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> saveStudentCache(List<StudentCacheEntry> entries) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      cacheKey,
+      jsonEncode(entries.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  Future<List<PendingScan>> loadQueue() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(queueKey);
+    if (raw == null) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list.map((e) => PendingScan.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> addToQueue(PendingScan scan) async {
+    final queue = await loadQueue();
+    queue.add(scan);
+    await _saveQueue(queue);
+  }
+
+  Future<void> removeFromQueue(String nis) async {
+    final queue = await loadQueue();
+    final index = queue.indexWhere((s) => s.nis == nis);
+    if (index >= 0) queue.removeAt(index);
+    await _saveQueue(queue);
+  }
+
+  Future<void> clearQueue() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(queueKey);
+  }
+
+  Future<void> _saveQueue(List<PendingScan> queue) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      queueKey,
+      jsonEncode(queue.map((s) => s.toJson()).toList()),
+    );
   }
 
   Future<ScanResult> sendScan(String nis, {DateTime? now}) async {

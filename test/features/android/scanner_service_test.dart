@@ -136,4 +136,63 @@ void main() {
       expect(result.error, contains('Connection refused'));
     });
   });
+
+  group('student cache and pending queue', () {
+    test('student cache round-trips', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService();
+
+      await service.saveStudentCache(const [
+        StudentCacheEntry(nis: '12345', name: 'Rina', className: 'X RPL 1'),
+      ]);
+      final loaded = await service.loadStudentCache();
+
+      expect(loaded.length, 1);
+      expect(loaded.first.nis, '12345');
+      expect(loaded.first.name, 'Rina');
+      expect(loaded.first.className, 'X RPL 1');
+    });
+
+    test('empty cache returns empty list', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService();
+      expect(await service.loadStudentCache(), isEmpty);
+    });
+
+    test('queue add/load round-trips in order', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService();
+      final ts = DateTime.parse('2026-08-11T01:00:00.000Z');
+
+      await service.addToQueue(PendingScan(nis: '111', timestamp: ts));
+      await service.addToQueue(PendingScan(nis: '222', timestamp: ts));
+
+      final queue = await service.loadQueue();
+      expect(queue.length, 2);
+      expect(queue[0].nis, '111');
+      expect(queue[1].nis, '222');
+      expect(queue[0].timestamp.toUtc(), ts);
+    });
+
+    test('removeFromQueue removes first matching nis only', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService();
+      final ts = DateTime.parse('2026-08-11T01:00:00.000Z');
+
+      await service.addToQueue(PendingScan(nis: '111', timestamp: ts));
+      await service.addToQueue(PendingScan(nis: '111', timestamp: ts));
+      await service.removeFromQueue('111');
+
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+    });
+
+    test('clearQueue empties the queue', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ScannerService();
+      await service.addToQueue(PendingScan(nis: '111', timestamp: DateTime.now()));
+      await service.clearQueue();
+      expect(await service.loadQueue(), isEmpty);
+    });
+  });
 }
