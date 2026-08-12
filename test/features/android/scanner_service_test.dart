@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -203,6 +204,25 @@ void main() {
       expect(result.error, isNot('Tersimpan offline'));
       expect(await service.loadQueue(), isEmpty);
     });
+
+    test('queues the scan when the POST times out', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        await Completer<void>().future;
+        return http.Response('{}', 200);
+      });
+      final service =
+          ScannerService(client: client, timeout: const Duration(milliseconds: 50));
+      final now = DateTime.parse('2026-08-11T01:00:00.000Z');
+
+      final result = await service.sendScan('12345', now: now);
+
+      expect(result.success, isFalse);
+      expect(result.error, 'Tersimpan offline');
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+      expect(queue.single.nis, '12345');
+    });
   });
 
   group('student cache and pending queue', () {
@@ -403,6 +423,106 @@ void main() {
       final queue = await service.loadQueue();
       expect(queue.length, 1);
       expect(queue.single.nis, '222');
+    });
+  });
+
+  group('timeouts', () {
+    test('syncPending keeps queue when the students GET times out', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          await Completer<void>().future;
+        }
+        return http.Response('{}', 200);
+      });
+      final service =
+          ScannerService(client: client, timeout: const Duration(milliseconds: 50));
+      await service.addToQueue(PendingScan(nis: '12345', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.syncedCount, 0);
+      expect(result.authError, isFalse);
+      expect(await service.loadQueue(), hasLength(1));
+    });
+
+    test('syncPending keeps remaining queue when a POST times out', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        await Completer<void>().future;
+        return http.Response('{}', 200);
+      });
+      final service =
+          ScannerService(client: client, timeout: const Duration(milliseconds: 50));
+      await service.addToQueue(PendingScan(nis: '111', timestamp: DateTime.now()));
+      await service.addToQueue(PendingScan(nis: '222', timestamp: DateTime.now()));
+
+      final result = await service.syncPending();
+
+      expect(result.syncedCount, 0);
+      final queue = await service.loadQueue();
+      expect(queue.length, 2);
+      expect(queue.map((s) => s.nis), containsAll(['111', '222']));
+    });
+
+    test('syncStudents returns false when the GET times out', () async {
+      await _seedConfig();
+      final client = MockClient((request) async {
+        await Completer<void>().future;
+        return http.Response('{}', 200);
+      });
+      final service =
+          ScannerService(client: client, timeout: const Duration(milliseconds: 50));
+
+      final result = await service.syncStudents();
+
+      expect(result, isFalse);
+    });
+  });
+
+  group('queue serialization', () {
+    test('addToQueue during an in-flight drain is not lost', () async {
+      await _seedConfig();
+      final postStarted = Completer<void>();
+      final gate = Completer<void>();
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        postStarted.complete();
+        await gate.future;
+        return http.Response(
+          jsonEncode({
+            'success': true,
+            'student': {'name': 'A', 'className': 'B', 'status': 'Hadir'},
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final service = ScannerService(client: client);
+      await service.addToQueue(PendingScan(nis: '111', timestamp: DateTime.now()));
+
+      final sync = service.syncPending();
+      await postStarted.future;
+
+      final adds = Future.wait([
+        service.addToQueue(PendingScan(nis: '222', timestamp: DateTime.now())),
+        service.addToQueue(PendingScan(nis: '333', timestamp: DateTime.now())),
+      ]);
+
+      gate.complete();
+      final result = await sync;
+      await adds;
+
+      expect(result.syncedCount, 1);
+      final queue = await service.loadQueue();
+      expect(queue.map((s) => s.nis), containsAll(['222', '333']));
     });
   });
 }

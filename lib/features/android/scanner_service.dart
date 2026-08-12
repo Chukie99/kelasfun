@@ -83,8 +83,10 @@ class ScannerService {
   static const queueKey = 'scan_queue';
 
   final http.Client _client;
+  final Duration timeout;
 
-  ScannerService({http.Client? client}) : _client = client ?? http.Client();
+  ScannerService({http.Client? client, this.timeout = const Duration(seconds: 5)})
+      : _client = client ?? http.Client();
 
   Future<PairingConfig?> loadConfig() async {
     final prefs = await SharedPreferences.getInstance();
@@ -116,7 +118,9 @@ class ScannerService {
     );
   }
 
-  Future<List<PendingScan>> loadQueue() async {
+  Future<List<PendingScan>> loadQueue() => _withQueueLock(_readQueue);
+
+  Future<List<PendingScan>> _readQueue() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(queueKey);
     if (raw == null) return [];
@@ -124,22 +128,36 @@ class ScannerService {
     return list.map((e) => PendingScan.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  Future<void> addToQueue(PendingScan scan) async {
-    final queue = await loadQueue();
-    queue.add(scan);
-    await _saveQueue(queue);
+  Future<void> addToQueue(PendingScan scan) {
+    return _withQueueLock(() async {
+      final queue = await _readQueue();
+      queue.add(scan);
+      await _saveQueue(queue);
+    });
   }
 
-  Future<void> removeFromQueue(String nis) async {
-    final queue = await loadQueue();
-    final index = queue.indexWhere((s) => s.nis == nis);
-    if (index >= 0) queue.removeAt(index);
-    await _saveQueue(queue);
+  Future<void> removeFromQueue(String nis) {
+    return _withQueueLock(() async {
+      final queue = await _readQueue();
+      final index = queue.indexWhere((s) => s.nis == nis);
+      if (index >= 0) queue.removeAt(index);
+      await _saveQueue(queue);
+    });
   }
 
-  Future<void> clearQueue() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(queueKey);
+  Future<void> clearQueue() {
+    return _withQueueLock(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(queueKey);
+    });
+  }
+
+  Future<void> _queueLock = Future.value();
+
+  Future<T> _withQueueLock<T>(Future<T> Function() action) {
+    final result = _queueLock.then((_) => action());
+    _queueLock = result.then((_) {}, onError: (_) {});
+    return result;
   }
 
   Future<void> _saveQueue(List<PendingScan> queue) async {
@@ -165,7 +183,8 @@ class ScannerService {
     final body = jsonEncode({'student_id': nis, 'timestamp': timestamp});
 
     try {
-      final response = await _client.post(uri, headers: headers, body: body);
+      final response =
+          await _client.post(uri, headers: headers, body: body).timeout(timeout);
       final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200 && data['success'] == true) {
@@ -227,7 +246,9 @@ class ScannerService {
 
     // 1. Refresh student cache.
     try {
-      final studentsResponse = await _client.get(baseUri.replace(path: '/api/students'), headers: headers);
+      final studentsResponse = await _client
+          .get(baseUri.replace(path: '/api/students'), headers: headers)
+          .timeout(timeout);
       if (studentsResponse.statusCode == 401) {
         return const SyncResult(syncedCount: 0, unknownCount: 0, authError: true);
       }
@@ -252,14 +273,16 @@ class ScannerService {
     final queue = await loadQueue();
     for (final scan in queue) {
       try {
-        final response = await _client.post(
-          baseUri.replace(path: '/api/scan'),
-          headers: headers,
-          body: jsonEncode({
-            'student_id': scan.nis,
-            'timestamp': scan.timestamp.toUtc().toIso8601String(),
-          }),
-        );
+        final response = await _client
+              .post(
+                baseUri.replace(path: '/api/scan'),
+                headers: headers,
+                body: jsonEncode({
+                  'student_id': scan.nis,
+                  'timestamp': scan.timestamp.toUtc().toIso8601String(),
+                }),
+              )
+              .timeout(timeout);
         if (response.statusCode == 200) {
           synced++;
           await removeFromQueue(scan.nis);
@@ -290,7 +313,7 @@ class ScannerService {
     };
     final uri = Uri.parse('http://${config.ip}:${config.port}/api/students');
     try {
-      final response = await _client.get(uri, headers: headers);
+      final response = await _client.get(uri, headers: headers).timeout(timeout);
       if (response.statusCode != 200) return false;
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final students = (data['students'] as List<dynamic>? ?? const [])

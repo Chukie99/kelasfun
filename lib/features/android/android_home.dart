@@ -24,6 +24,7 @@ class _AndroidHomeState extends State<AndroidHome> {
   int _pendingCount = 0;
   String? _syncResult;
   DateTime? _lastSync;
+  bool _syncing = false;
 
   @override
   void initState() {
@@ -43,23 +44,29 @@ class _AndroidHomeState extends State<AndroidHome> {
   }
 
   Future<void> _sync() async {
-    final result = await widget.service.syncPending();
-    if (!mounted) return;
-    setState(() {
-      _lastSync = DateTime.now();
-      if (result.notPaired) {
-        _syncResult = 'Belum terhubung. Pindai QR laptop dulu.';
-      } else if (result.authError) {
-        _syncResult = 'Token tidak cocok. Pindai QR laptop ulang.';
-      } else {
-        final parts = <String>['${result.syncedCount} tersinkron'];
-        if (result.unknownCount > 0) {
-          parts.add('${result.unknownCount} tidak dikenal');
+    if (_syncing) return;
+    _syncing = true;
+    try {
+      final result = await widget.service.syncPending();
+      if (!mounted) return;
+      setState(() {
+        _lastSync = DateTime.now();
+        if (result.notPaired) {
+          _syncResult = 'Belum terhubung. Pindai QR laptop dulu.';
+        } else if (result.authError) {
+          _syncResult = 'Token tidak cocok. Pindai QR laptop ulang.';
+        } else {
+          final parts = <String>['${result.syncedCount} tersinkron'];
+          if (result.unknownCount > 0) {
+            parts.add('${result.unknownCount} tidak dikenal');
+          }
+          _syncResult = 'Sinkron selesai: ${parts.join(', ')}';
         }
-        _syncResult = 'Sinkron selesai: ${parts.join(', ')}';
-      }
-    });
-    await _loadStatus();
+      });
+      await _loadStatus();
+    } finally {
+      _syncing = false;
+    }
   }
 
   void _openPairing() {
@@ -75,13 +82,15 @@ class _AndroidHomeState extends State<AndroidHome> {
     ));
   }
 
-  void _openScanner() {
-    Navigator.of(context).push(MaterialPageRoute(
+  Future<void> _openScanner() async {
+    await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => AndroidScanner(
         service: widget.service,
         controller: widget.scannerBuilder(),
       ),
     ));
+    if (!mounted) return;
+    await _loadStatus();
   }
 
   String _formatSyncTime(DateTime t) {

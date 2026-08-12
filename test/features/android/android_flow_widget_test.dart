@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -112,6 +113,76 @@ void main() {
 
       expect(find.textContaining('Sinkron selesai'), findsOneWidget);
     });
+
+    testWidgets('refreshes pending count after returning from scanner', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+      });
+      final client = MockClient((request) async {
+        throw http.ClientException('Connection refused');
+      });
+      final controller = FakeScannerController();
+      final home = AndroidHome(
+        service: _serviceWithClient(client),
+        scannerBuilder: () => controller,
+      );
+      await _pumpApp(tester, home);
+      await tester.pump();
+
+      expect(find.textContaining('scan menunggu sinkron'), findsNothing);
+
+      await tester.tap(find.text('Buka Scanner'));
+      await tester.pumpAndSettle();
+
+      controller.emit('{"n":"12345"}');
+      await tester.pump();
+      await tester.pump();
+      expect(find.textContaining('Siswa tidak dikenal'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('1 scan menunggu sinkron'), findsOneWidget);
+    });
+
+    testWidgets('auto-sync in flight does not double-submit when Sinkron is tapped', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'pairing_config': jsonEncode({'ip': '192.168.1.50', 'port': 8080, 'token': 'kelasfun-secret-key'}),
+        'scan_queue': jsonEncode([
+          {'nis': '12345', 'timestamp': '2026-08-11T01:00:00.000Z'},
+        ]),
+      });
+      final posts = <http.Request>[];
+      final client = MockClient((request) async {
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode({'students': []}), 200,
+              headers: {'content-type': 'application/json'});
+        }
+        posts.add(request);
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        return http.Response(
+          jsonEncode({'success': true, 'student': {'name': 'Rina', 'className': 'X RPL 1', 'status': 'Hadir'}}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final home = AndroidHome(
+        service: _serviceWithClient(client),
+        scannerBuilder: FakeScannerController.new,
+      );
+      await _pumpApp(tester, home);
+      await tester.pump();
+
+      await tester.tap(find.text('Sinkron'));
+      await tester.pump();
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(posts.length, 1);
+    });
   });
 
   group('AndroidPairingScreen', () {
@@ -214,6 +285,32 @@ void main() {
       controller.emit('{"ip":"192.168.1.55","port":8080,"token":"kelasfun-secret-key"}');
       await tester.pump();
       await tester.pump();
+
+      expect(saved, isTrue);
+    });
+
+    testWidgets('pairing completes even when the student download never responds', (tester) async {
+      var saved = false;
+      final client = MockClient((request) async {
+        await Completer<void>().future;
+        return http.Response('{}', 200);
+      });
+      final controller = FakeScannerController();
+      await _pumpApp(
+        tester,
+        AndroidPairingScreen(
+          service: ScannerService(
+            client: client,
+            timeout: const Duration(milliseconds: 50),
+          ),
+          controller: controller,
+          onSaved: () => saved = true,
+        ),
+      );
+
+      controller.emit('{"ip":"192.168.1.55","port":8080,"token":"kelasfun-secret-key"}');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(saved, isTrue);
     });
