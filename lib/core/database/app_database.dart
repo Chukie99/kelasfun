@@ -44,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -54,20 +54,30 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: (m, from, to) async {
         if (from < 2) {
-          await _ensureStudentsColumn(m, 'isActive');
-          await _ensureStudentsColumn(m, 'notes');
+          await _ensureColumn(m, students, students.isActive);
+          await _ensureColumn(m, students, students.notes);
+        }
+        if (from < 3) {
+          await _ensureColumn(m, students, students.photoPath);
+          await _ensureColumn(m, attendance, attendance.description);
+          await m.createTable(schedules);
         }
       },
     );
   }
 
-  Future<void> _ensureStudentsColumn(Migrator m, String column) async {
+  Future<void> _ensureColumn(
+    Migrator m,
+    TableInfo table,
+    GeneratedColumn column,
+  ) async {
     final info = await m.database.customSelect(
-      'PRAGMA table_info(students)',
+      'PRAGMA table_info(${table.actualTableName})',
     ).get();
-    final exists = info.any((row) => row.data['name'] == column);
+    if (info.isEmpty) return; // table doesn't exist; nothing to alter
+    final exists = info.any((row) => row.data['name'] == column.name);
     if (!exists) {
-      await m.addColumn(students, column == 'isActive' ? students.isActive : students.notes);
+      await m.addColumn(table, column);
     }
   }
 
