@@ -64,12 +64,7 @@ class _MobileHomeState extends State<MobileHome> {
               item.icon,
               color: isDark ? AppTheme.accent : AppTheme.lightAccent,
             ),
-            label: Text(
-              item.label,
-              style: TextStyle(
-                color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
-              ),
-            ),
+            label: item.label,
           );
         }).toList(),
       ),
