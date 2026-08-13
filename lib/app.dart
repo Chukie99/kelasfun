@@ -3,7 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/utils/responsive.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
+import 'package:kelasfun/features/home/mobile_home.dart';
 
 class KelasFunApp extends StatelessWidget {
   final AppDatabase? database;
@@ -45,7 +47,9 @@ class KelasFunApp extends StatelessWidget {
               Locale('en', 'US'),
             ],
             locale: const Locale('id', 'ID'),
-            home: const HomeScreen(),
+            home: Responsive.isMobilePlatform || Responsive.isMobile(context)
+                ? const MobileHome()
+                : const HomeScreen(),
           );
         },
       ),
