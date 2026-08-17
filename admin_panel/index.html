@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - kelasFun License Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: #16213e;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #4fd1c5;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #0f0f23;
+            color: #fff;
+            font-size: 14px;
+        }
+        button {
+            background: #4fd1c5;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #38bdf8;
+        }
+        button.danger {
+            background: #fb7185;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: #0f0f23;
+            color: #4fd1c5;
+        }
+        tr:hover {
+            background: #1f1f3a;
+        }
+        .status-active {
+            color: #4fd1c5;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: #fb7185;
+            font-weight: bold;
+        }
+        .generate-section {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .generate-section input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Panel - kelasFun License Manager</h1>
+            <p>Kelola lisensi aplikasi kelasFun</p>
+        </header>
+
+        <div class="card">
+            <h2>Generate License Key</h2>
+            <div class="generate-section">
+                <div class="form-group">
+                    <label>Jumlah Key</label>
+                    <input type="number" id="generateCount" value="1" min="1" max="100">
+                </div>
+                <button onclick="generateKeys()">Generate</button>
+            </div>
+            <div id="generatedKeys" style="margin-top: 15px; display: none;">
+                <label>License Keys yang di-generate:</label>
+                <textarea id="keysOutput" rows="5" readonly style="width: 100%; margin-top: 5px;"></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Aktivasi Manual</h2>
+            <div class="form-group">
+                <label>License Key</label>
+                <input type="text" id="manualKey" placeholder="XXXX-XXXX-XXXX-XXXX">
+            </div>
+            <div class="form-group">
+                <label>Device ID</label>
+                <input type="text" id="manualDeviceId" placeholder="Device ID dari user">
+            </div>
+            <div class="form-group">
+                <label>Nama User</label>
+                <input type="text" id="manualUserName" placeholder="Nama pemilik">
+            </div>
+            <button onclick="manualActivate()">Aktivasi Manual</button>
+        </div>
+
+        <div class="card">
+            <h2>Daftar Lisensi</h2>
+            <div class="form-group">
+                <input type="text" id="searchInput" placeholder="Cari berdasarkan key, device ID, atau nama..." oninput="filterLicenses()">
+            </div>
+            <table id="licenseTable">
+                <thead>
+                    <tr>
+                        <th>License Key</th>
+                        <th>Device ID</th>
+                        <th>Nama User</th>
+                        <th>Tanggal Aktivasi</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="licenseBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Reset Lisensi (Device Hilang/Rusak)</h2>
+            <div class="form-group">
+                <label>License Key yang akan di-reset</label>
+                <input type="text" id="resetKey" placeholder="XXXX-XXXX-XXXX-XXXX">
+            </div>
+            <button class="danger" onclick="resetLicense()">Reset Lisensi</button>
+            <p style="margin-top: 10px; color: #aaa; font-size: 14px;">
+                Reset akan melepas ikatan device, sehingga user bisa aktivasi di device baru.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Database sederhana (dalam implementasi nyata, gunakan database server)
+        let licenses = JSON.parse(localStorage.getItem('kelasfun_licenses') || '[]');
+
+        function saveToStorage() {
+            localStorage.setItem('kelasfun_licenses', JSON.stringify(licenses));
+        }
+
+        function generateKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let key = '';
+            for (let i = 0; i < 4; i++) {
+                if (i > 0) key += '-';
+                for (let j = 0; j < 4; j++) {
+                    key += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+            }
+            return key;
+        }
+
+        function generateKeys() {
+            const count = parseInt(document.getElementById('generateCount').value);
+            const keys = [];
+            
+            for (let i = 0; i < count; i++) {
+                let key;
+                do {
+                    key = generateKey();
+                } while (licenses.some(l => l.key === key));
+                
+                licenses.push({
+                    key: key,
+                    deviceId: null,
+                    userName: null,
+                    activatedAt: null,
+                    status: 'unused'
+                });
+                
+                keys.push(key);
+            }
+            
+            saveToStorage();
+            
+            document.getElementById('keysOutput').value = keys.join('\n');
+            document.getElementById('generatedKeys').style.display = 'block';
+            renderTable();
+            
+            alert(`${count} license key berhasil di-generate!`);
+        }
+
+        function manualActivate() {
+            const key = document.getElementById('manualKey').value.toUpperCase();
+            const deviceId = document.getElementById('manualDeviceId').value;
+            const userName = document.getElementById('manualUserName').value;
+            
+            if (!key || !deviceId || !userName) {
+                alert('Semua field harus diisi!');
+                return;
+            }
+            
+            const existing = licenses.find(l => l.key === key);
+            if (existing) {
+                if (existing.status === 'active') {
+                    alert('License key sudah aktif di device lain!');
+                    return;
+                }
+                existing.deviceId = deviceId;
+                existing.userName = userName;
+                existing.activatedAt = new Date().toISOString();
+                existing.status = 'active';
+            } else {
+                licenses.push({
+                    key: key,
+                    deviceId: deviceId,
+                    userName: userName,
+                    activatedAt: new Date().toISOString(),
+                    status: 'active'
+                });
+            }
+            
+            saveToStorage();
+            renderTable();
+            
+            document.getElementById('manualKey').value = '';
+            document.getElementById('manualDeviceId').value = '';
+            document.getElementById('manualUserName').value = '';
+            
+            alert('Lisensi berhasil diaktifkan!');
+        }
+
+        function resetLicense() {
+            const key = document.getElementById('resetKey').value.toUpperCase();
+            
+            if (!key) {
+                alert('Masukkan license key!');
+                return;
+            }
+            
+            const license = licenses.find(l => l.key === key);
+            if (!license) {
+                alert('License key tidak ditemukan!');
+                return;
+            }
+            
+            if (confirm(`Reset lisensi ${key}?\nUser: ${license.userName || '-'}\nDevice: ${license.deviceId || '-'}`)) {
+                license.deviceId = null;
+                license.userName = null;
+                license.activatedAt = null;
+                license.status = 'unused';
+                
+                saveToStorage();
+                renderTable();
+                
+                document.getElementById('resetKey').value = '';
+                alert('Lisensi berhasil di-reset! User bisa aktivasi di device baru.');
+            }
+        }
+
+        function revokeLicense(key) {
+            if (confirm(`Revoke lisensi ${key}?`)) {
+                licenses = licenses.filter(l => l.key !== key);
+                saveToStorage();
+                renderTable();
+            }
+        }
+
+        function filterLicenses() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = licenses.filter(l => 
+                (l.key && l.key.toLowerCase().includes(search)) ||
+                (l.deviceId && l.deviceId.toLowerCase().includes(search)) ||
+                (l.userName && l.userName.toLowerCase().includes(search))
+            );
+            renderTable(filtered);
+        }
+
+        function renderTable(data = licenses) {
+            const tbody = document.getElementById('licenseBody');
+            tbody.innerHTML = data.map(l => `
+                <tr>
+                    <td>${l.key}</td>
+                    <td style="font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${l.deviceId || '-'}</td>
+                    <td>${l.userName || '-'}</td>
+                    <td>${l.activatedAt ? new Date(l.activatedAt).toLocaleDateString('id-ID') : '-'}</td>
+                    <td class="${l.status === 'active' ? 'status-active' : 'status-inactive'}">
+                        ${l.status === 'active' ? 'Aktif' : 'Belum Digunakan'}
+                    </td>
+                    <td>
+                        ${l.status === 'active' ? 
+                            `<button class="danger" onclick="revokeLicense('${l.key}')" style="padding: 5px 10px; font-size: 12px;">Revoke</button>` : 
+                            '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render table saat pertama kali load
+        renderTable();
+    </script>
+</body>
+</html>
