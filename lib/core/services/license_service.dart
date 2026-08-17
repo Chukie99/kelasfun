@@ -26,8 +26,8 @@ class LicenseService {
       
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
-        // Gunakan Android ID (unik per device)
-        return androidInfo.androidId ?? _getFallbackDeviceId();
+        // Gunakan model + brand + id (unik per device)
+        return '${androidInfo.model}-${androidInfo.brand}-${androidInfo.id}'.hashCode.toRadixString(16);
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
         return iosInfo.identifierForVendor ?? _getFallbackDeviceId();
@@ -45,7 +45,7 @@ class LicenseService {
   /// Fallback device ID (jaga-jaga)
   static String _getFallbackDeviceId() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random =.hashCode.toRadixString(16);
+    final random = timestamp.hashCode.toRadixString(16);
     return '$timestamp-$random';
   }
   
@@ -57,9 +57,9 @@ class LicenseService {
   
   /// Validasi license key ke Supabase
   static Future<LicenseResult> validateLicense(String licenseKey) async {
+    final deviceId = await getDeviceId();
+    
     try {
-      final deviceId = await getDeviceId();
-      
       // Format license key: XXXX-XXXX-XXXX-XXXX
       if (!_isValidFormat(licenseKey)) {
         return LicenseResult(

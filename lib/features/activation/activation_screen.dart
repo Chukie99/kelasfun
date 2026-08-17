@@ -56,10 +56,8 @@ class _ActivationScreenState extends State<ActivationScreen> {
     });
     
     if (result.isValid) {
-      // Aktivasi berhasil
       widget.onActivated();
     } else {
-      // Aktivasi gagal
       setState(() {
         _errorMessage = result.message;
       });
@@ -69,12 +67,13 @@ class _ActivationScreenState extends State<ActivationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Card(
+              color: AppTheme.surface,
               elevation: 8,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -84,12 +83,11 @@ class _ActivationScreenState extends State<ActivationScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Logo
                     Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.accent,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -100,39 +98,44 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Title
                     Text(
                       'Aktivasi kelasFun',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Masukkan license key yang Anda dapatkan',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppTheme.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     
-                    // Form
                     Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // License Key Input
                           TextFormField(
                             controller: _licenseController,
+                            style: const TextStyle(color: AppTheme.textPrimary),
                             decoration: InputDecoration(
                               labelText: 'License Key',
+                              labelStyle: const TextStyle(color: AppTheme.textSecondary),
                               hintText: 'XXXX-XXXX-XXXX-XXXX',
-                              prefixIcon: const Icon(Icons.vpn_key),
-                              border: OutlineInputBorder(
+                              hintStyle: const TextStyle(color: AppTheme.textTertiary),
+                              prefixIcon: const Icon(Icons.vpn_key, color: AppTheme.accent),
+                              enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: AppTheme.border),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: AppTheme.accent),
                               ),
                             ),
                             textCapitalization: TextCapitalization.characters,
@@ -148,12 +151,11 @@ class _ActivationScreenState extends State<ActivationScreen> {
                           ),
                           const SizedBox(height: 16),
                           
-                          // Device ID
                           if (_deviceId != null) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: AppTheme.surfaceLight,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
@@ -163,7 +165,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                                     'Device ID Anda:',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: AppTheme.textTertiary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -172,6 +174,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                                     style: const TextStyle(
                                       fontSize: 10,
                                       fontFamily: 'monospace',
+                                      color: AppTheme.textSecondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -182,28 +185,26 @@ class _ActivationScreenState extends State<ActivationScreen> {
                             const SizedBox(height: 16),
                           ],
                           
-                          // Error Message
                           if (_errorMessage != null) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red[50],
+                                color: AppTheme.coralSoft,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red[200]!),
+                                border: Border.all(color: AppTheme.coral),
                               ),
                               child: Text(
                                 _errorMessage!,
-                                style: TextStyle(color: Colors.red[700]),
+                                style: const TextStyle(color: AppTheme.coral),
                               ),
                             ),
                             const SizedBox(height: 16),
                           ],
                           
-                          // Activate Button
                           ElevatedButton(
                             onPressed: _isLoading ? null : _activate,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor,
+                              backgroundColor: AppTheme.accent,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -229,22 +230,18 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Help Text
                     Text(
                       'Belum punya license key?',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     OutlinedButton(
-                      onPressed: () {
-                        // TODO: Buka WhatsApp/Email untuk beli license
-                        // Bisa pakai url_launcher
-                      },
+                      onPressed: () {},
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primaryColor,
-                        side: BorderSide(color: AppTheme.primaryColor),
+                        foregroundColor: AppTheme.accent,
+                        side: const BorderSide(color: AppTheme.accent),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -253,11 +250,10 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     ),
                     const SizedBox(height: 16),
                     
-                    // Info
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: AppTheme.accentSoft,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
@@ -266,7 +262,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                             'Cara Mendapatkan License Key:',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue[800],
+                              color: AppTheme.accent,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -276,7 +272,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                             '3. Masukkan key di atas',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.blue[700],
+                              color: AppTheme.textSecondary,
                             ),
                             textAlign: TextAlign.left,
                           ),
