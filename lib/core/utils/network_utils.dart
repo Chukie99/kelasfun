@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class NetworkUtils {
   static Future<String> getLocalIp() async {
@@ -16,7 +17,7 @@ class NetworkUtils {
         }
       }
     } catch (e) {
-      // ignore
+      debugPrint('Error getting local IP: $e');
     }
     return 'localhost';
   }

@@ -2,18 +2,15 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'qr_generator.dart';
+import 'image_helper.dart';
+import 'qr_image_helper.dart';
 
 class PdfGenerator {
-  // KTP Card dimensions: 85.6mm x 53.9mm
-  static const double ktpWidthMm = 85.6;
-  static const double ktpHeightMm = 53.9;
-  static const double ktpWidth = ktpWidthMm * PdfPageFormat.mm;
-  static const double ktpHeight = ktpHeightMm * PdfPageFormat.mm;
-
-  // A4 grid: 2 columns x 5 rows = 10 cards per page
-  static const int cardsPerRow = 2;
-  static const int rowsPerPage = 5;
-  static const int cardsPerPage = cardsPerRow * rowsPerPage;
+  // ID Card dimensions: 54mm x 86mm (standard ID Card)
+  static const double tagWidthMm = 54;
+  static const double tagHeightMm = 86;
+  static const double tagWidth = tagWidthMm * PdfPageFormat.mm;
+  static const double tagHeight = tagHeightMm * PdfPageFormat.mm;
 
   static Future<Uint8List?> generateBiodata({
     required String nis,
@@ -62,146 +59,223 @@ class PdfGenerator {
   }
 
   static Future<Uint8List?> generateStudentCards({
-    required List<Map<String, String>> students,
+    required List<Map<String, dynamic>> students,
     String? schoolName,
   }) async {
     final pdf = pw.Document();
 
-    for (var i = 0; i < students.length; i += cardsPerPage) {
-      final batch = students.skip(i).take(cardsPerPage).toList();
+    // Each student = 1 page with ID Card size (54mm x 86mm)
+    for (final student in students) {
+      // Process photo with auto-rotate
+      Uint8List? photoBytes = student['photoBytes'] as Uint8List?;
+      if (photoBytes != null) {
+        photoBytes = ImageHelper.autoRotatePhoto(photoBytes);
+      }
+
+      // Generate QR Code PNG
+      final payload = QrGenerator.encodePayload(
+        nis: (student['nis'] as String?) ?? '',
+        name: (student['name'] as String?) ?? '',
+        className: (student['class'] as String?) ?? '',
+      );
+      final qrCodeBytes = QrImageHelper.generatePng(payload, size: 200);
+
       pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(20),
-        build: (context) => pw.Column(
-          children: _buildCardGrid(batch, schoolName),
-        ),
+        pageFormat: PdfPageFormat(tagWidth, tagHeight),
+        margin: pw.EdgeInsets.zero,
+        build: (context) => _buildIdCard(student, schoolName, photoBytes, qrCodeBytes),
       ));
     }
 
     return pdf.save();
   }
 
-  static List<pw.Widget> _buildCardGrid(
-      List<Map<String, String>> students, String? schoolName) {
-    final rows = <pw.Widget>[];
-
-    for (var row = 0; row < rowsPerPage; row++) {
-      final startIndex = row * cardsPerRow;
-      final rowStudents = students
-          .skip(startIndex)
-          .take(cardsPerRow)
-          .toList();
-
-      if (rowStudents.isEmpty) break;
-
-      final cards = rowStudents.map((s) {
-        return _buildKtpCard(s, schoolName);
-      }).toList();
-
-      // Pad with empty containers if row is not full
-      while (cards.length < cardsPerRow) {
-        cards.add(pw.SizedBox(width: ktpWidth, height: ktpHeight));
-      }
-
-      rows.add(pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.center,
-        children: cards,
-      ));
-
-      // Add crop marks between rows
-      if (row < rowsPerPage - 1) {
-        rows.add(pw.SizedBox(height: 4));
-        rows.add(pw.Container(
-          height: 0.5,
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              bottom: pw.BorderSide(
-                color: PdfColors.grey400,
-                width: 0.5,
-                style: pw.BorderStyle.dashed,
-              ),
-            ),
-          ),
-        ));
-        rows.add(pw.SizedBox(height: 4));
-      }
-    }
-
-    return rows;
-  }
-
-  static pw.Widget _buildKtpCard(
-      Map<String, String> student, String? schoolName) {
-    final payload = QrGenerator.encodePayload(
-      nis: student['nis']!,
-      name: student['name']!,
-      className: student['class']!,
-    );
+  static pw.Widget _buildIdCard(
+    Map<String, dynamic> student,
+    String? schoolName,
+    Uint8List? photoBytes,
+    Uint8List? qrCodeBytes,
+  ) {
+    // Colors
+    final headerColor = PdfColor.fromHex('#2D3748');
+    final accentColor = PdfColor.fromHex('#4FD1C5');
+    final lightBg = PdfColor.fromHex('#F7FAFC');
+    final borderColor = PdfColor.fromHex('#CBD5E0');
 
     return pw.Container(
-      width: ktpWidth,
-      height: ktpHeight,
-      margin: const pw.EdgeInsets.all(4),
-      padding: const pw.EdgeInsets.all(8),
+      width: tagWidth,
+      height: tagHeight,
       decoration: pw.BoxDecoration(
-        border: pw.Border.all(
-          color: PdfColors.grey400,
-          width: 0.5,
-        ),
-        borderRadius: pw.BorderRadius.circular(4),
+        color: PdfColors.white,
+        borderRadius: pw.BorderRadius.circular(8),
+        border: pw.Border.all(color: borderColor, width: 1),
       ),
       child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           // Header
-          pw.Text(
-            schoolName ?? 'SEKOLAH',
-            style: pw.TextStyle(
-              fontSize: 8,
-              fontWeight: pw.FontWeight.bold,
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: pw.BoxDecoration(
+              color: headerColor,
+              borderRadius: const pw.BorderRadius.only(
+                topLeft: pw.Radius.circular(8),
+                topRight: pw.Radius.circular(8),
+              ),
             ),
-          ),
-          pw.Divider(height: 4, color: PdfColors.grey400),
-          pw.SizedBox(height: 4),
-
-          // Content
-          pw.Expanded(
-            child: pw.Row(
+            child: pw.Column(
               children: [
-                // QR Code
-                pw.BarcodeWidget(
-                  barcode: pw.Barcode.qrCode(),
-                  data: payload,
-                  width: 50,
-                  height: 50,
+                pw.Text(
+                  schoolName ?? 'SEKOLAH',
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.white,
+                  ),
+                  textAlign: pw.TextAlign.center,
                 ),
-                pw.SizedBox(width: 8),
-
-                // Student info
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    mainAxisAlignment: pw.MainAxisAlignment.center,
-                    children: [
-                      pw.Text(
-                        student['name']!,
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      pw.Text(
-                        'NIS: ${student['nis']}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        'Kelas: ${student['class']}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
+                pw.SizedBox(height: 4),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: pw.BoxDecoration(
+                    color: accentColor,
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Text(
+                    'KARTU SISWA',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.white,
+                    ),
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // Content
+          pw.Expanded(
+            child: pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              color: lightBg,
+              child: pw.Column(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  // Photo
+                  if (photoBytes != null)
+                    pw.Container(
+                      width: 50,
+                      height: 60,
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(
+                          color: accentColor,
+                          width: 2,
+                        ),
+                        borderRadius: pw.BorderRadius.circular(4),
+                      ),
+                      child: pw.ClipRRect(
+                        horizontalRadius: 4,
+                        verticalRadius: 4,
+                        child: pw.Image(
+                          pw.MemoryImage(photoBytes),
+                          fit: pw.BoxFit.cover,
+                        ),
+                      ),
+                    )
+                  else
+                    pw.Container(
+                      width: 50,
+                      height: 60,
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.grey200,
+                        border: pw.Border.all(
+                          color: accentColor,
+                          width: 2,
+                        ),
+                        borderRadius: pw.BorderRadius.circular(4),
+                      ),
+                      child: pw.Center(
+                        child: pw.Text(
+                          'FOTO',
+                          style: pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  pw.SizedBox(height: 8),
+
+                  // Student Info
+                  pw.Text(
+                    'NIS   : ${student['nis'] ?? ''}',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
+                  pw.SizedBox(height: 2),
+                  pw.Text(
+                    'Nama  : ${student['name'] ?? ''}',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: headerColor,
+                    ),
+                  ),
+                  pw.SizedBox(height: 2),
+                  pw.Text(
+                    'Kelas : ${student['class'] ?? ''}',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // QR Code footer
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.symmetric(vertical: 6),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.white,
+              border: pw.Border(
+                top: pw.BorderSide(color: borderColor, width: 0.5),
+              ),
+            ),
+            child: pw.Column(
+              children: [
+                if (qrCodeBytes != null)
+                  pw.Image(
+                    pw.MemoryImage(qrCodeBytes),
+                    width: 40,
+                    height: 40,
+                  ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  'SCAN UNTUK VERIFIKASI',
+                  style: pw.TextStyle(
+                    fontSize: 6,
+                    color: PdfColors.grey500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Bottom accent line
+          pw.Container(
+            height: 4,
+            decoration: pw.BoxDecoration(
+              color: accentColor,
+              borderRadius: const pw.BorderRadius.only(
+                bottomLeft: pw.Radius.circular(8),
+                bottomRight: pw.Radius.circular(8),
+              ),
             ),
           ),
         ],

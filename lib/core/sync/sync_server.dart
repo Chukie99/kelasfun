@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_router/shelf_router.dart';
@@ -27,6 +28,7 @@ class SyncServer {
     final router = Router()
       ..get('/api/health', handler.healthCheck)
       ..get('/api/students', handler.getStudents)
+      ..post('/api/students', handler.createStudent)
       ..post('/api/attendance', handler.syncAttendance)
       ..post('/api/scan', handler.scanAttendance);
 
@@ -34,14 +36,19 @@ class SyncServer {
         .addMiddleware(logRequests())
         .addHandler(router.call);
 
-    _server = await io.serve(pipeline, InternetAddress.anyIPv4, port);
-    print('Sync server running on port $port');
+    try {
+      _server = await io.serve(pipeline, InternetAddress.anyIPv4, port);
+      debugPrint('Sync server running on port $port');
+    } catch (e) {
+      debugPrint('Failed to start sync server: $e');
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
     await _server?.close();
     _server = null;
-    print('Sync server stopped');
+    debugPrint('Sync server stopped');
   }
 
   String getServerUrl() {

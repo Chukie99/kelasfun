@@ -1,0 +1,14 @@
+This application uses the following Google Fonts:
+
+1. Poppins
+   - License: SIL Open Font License 1.1
+   - Source: https://fonts.google.com/specimen/Poppins
+   - Copyright: Copyright 2014 Google Inc.
+
+2. Inter
+   - License: SIL Open Font License 1.1
+   - Source: https://fonts.google.com/specimen/Inter
+   - Copyright: Copyright 2017 The Inter Project Authors
+
+These fonts are downloaded at runtime via the google_fonts package.
+For full license text, see: https://fonts.google.com/about/

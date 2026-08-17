@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
@@ -6,6 +8,24 @@ import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/pdf_generator.dart';
 import 'package:kelasfun/core/utils/excel_generator.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
+
+String _currentSemester() {
+  final now = DateTime.now();
+  if (now.month >= 7) {
+    return 'Ganjil ${now.year}/${now.year + 1}';
+  } else {
+    return 'Genap ${now.year - 1}/${now.year}';
+  }
+}
+
+List<String> _semesterOptions() {
+  final now = DateTime.now();
+  if (now.month >= 7) {
+    return ['Ganjil ${now.year}/${now.year + 1}', 'Genap ${now.year}/${now.year + 1}'];
+  } else {
+    return ['Ganjil ${now.year - 1}/${now.year}', 'Genap ${now.year - 1}/${now.year}'];
+  }
+}
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
@@ -92,39 +112,67 @@ class ReportScreen extends StatelessWidget {
   }
 
   Future<void> _printBiodata(BuildContext context) async {
-    final db = context.read<AppDatabase>();
-    final students = await db.studentDao.getAllStudents();
+    try {
+      final db = context.read<AppDatabase>();
+      final students = await db.studentDao.getAllStudents();
 
-    for (final student in students) {
-      final pdf = await PdfGenerator.generateBiodata(
-        nis: student.nis,
-        fullName: student.fullName,
-        className: student.className,
-        gender: student.gender,
-        birthDate: student.birthDate,
-        address: student.address,
-        parentName: student.parentName,
-        parentPhone: student.parentPhone,
-      );
-      if (pdf != null) {
-        await Printing.layoutPdf(onLayout: (format) => pdf);
+      for (final student in students) {
+        final pdf = await PdfGenerator.generateBiodata(
+          nis: student.nis,
+          fullName: student.fullName,
+          className: student.className,
+          gender: student.gender,
+          birthDate: student.birthDate,
+          address: student.address,
+          parentName: student.parentName,
+          parentPhone: student.parentPhone,
+        );
+        if (!context.mounted) break;
+        if (pdf != null) {
+          await Printing.layoutPdf(onLayout: (format) => pdf);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal cetak biodata: $e')),
+        );
       }
     }
   }
 
   Future<void> _printStudentCards(BuildContext context) async {
-    final db = context.read<AppDatabase>();
-    final students = await db.studentDao.getAllStudents();
+    try {
+      final db = context.read<AppDatabase>();
+      final students = await db.studentDao.getAllStudents();
 
-    final studentData = students.map((s) => {
-      'nis': s.nis,
-      'name': s.fullName,
-      'class': s.className,
-    }).toList();
+      final studentData = <Map<String, dynamic>>[];
+      for (final s in students) {
+        Uint8List? photoBytes;
+        if (s.photoPath != null && s.photoPath!.isNotEmpty) {
+          final file = File(s.photoPath!);
+          if (file.existsSync()) {
+            photoBytes = await file.readAsBytes();
+          }
+        }
+        studentData.add({
+          'nis': s.nis,
+          'name': s.fullName,
+          'class': s.className,
+          'photoBytes': photoBytes,
+        });
+      }
 
-    final pdf = await PdfGenerator.generateStudentCards(students: studentData);
-    if (pdf != null) {
-      await Printing.layoutPdf(onLayout: (format) => pdf);
+      final pdf = await PdfGenerator.generateStudentCards(students: studentData);
+      if (pdf != null && context.mounted) {
+        await Printing.layoutPdf(onLayout: (format) => pdf);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal cetak kartu: $e')),
+        );
+      }
     }
   }
 
@@ -163,7 +211,9 @@ class ReportScreen extends StatelessWidget {
 
   void _showBatchReportDialog(BuildContext context) {
     String selectedClass = 'X RPL 1';
-    String selectedSemester = 'Ganjil 2025/2026';
+    final currentSemester = _currentSemester();
+    final semOptions = _semesterOptions();
+    String selectedSemester = currentSemester;
 
     showDialog(
       context: context,
@@ -188,10 +238,7 @@ class ReportScreen extends StatelessWidget {
               DropdownButtonFormField<String>(
                 value: selectedSemester,
                 decoration: const InputDecoration(labelText: 'Semester'),
-                items: const [
-                  DropdownMenuItem(value: 'Ganjil 2025/2026', child: Text('Ganjil 2025/2026')),
-                  DropdownMenuItem(value: 'Genap 2025/2026', child: Text('Genap 2025/2026')),
-                ],
+                items: semOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                 onChanged: (v) => setState(() => selectedSemester = v ?? selectedSemester),
               ),
             ],
@@ -258,7 +305,7 @@ class ReportScreen extends StatelessWidget {
           await Printing.layoutPdf(onLayout: (format) => pdf);
         }
       } catch (e) {
-        // Skip failed student, continue with others
+        debugPrint('Failed report for ${student.fullName}: $e');
       }
     }
 
@@ -270,7 +317,9 @@ class ReportScreen extends StatelessWidget {
   }
 
   void _showExcelExportDialog(BuildContext context) {
-    String selectedSemester = 'Ganjil 2025/2026';
+    final currentSemester = _currentSemester();
+    final semOptions = _semesterOptions();
+    String selectedSemester = currentSemester;
     String selectedClass = 'X RPL 1';
 
     showDialog(
@@ -286,12 +335,7 @@ class ReportScreen extends StatelessWidget {
                 decoration: const InputDecoration(
                   labelText: 'Semester',
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'Ganjil 2025/2026', child: Text('Ganjil 2025/2026')),
-                  DropdownMenuItem(value: 'Genap 2025/2026', child: Text('Genap 2025/2026')),
-                  DropdownMenuItem(value: 'Ganjil 2024/2025', child: Text('Ganjil 2024/2025')),
-                  DropdownMenuItem(value: 'Genap 2024/2025', child: Text('Genap 2024/2025')),
-                ],
+                items: semOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                 onChanged: (v) => setState(() => selectedSemester = v ?? selectedSemester),
               ),
               const SizedBox(height: AppTheme.spacingMd),
@@ -330,70 +374,71 @@ class ReportScreen extends StatelessWidget {
   }
 
   Future<void> _exportToExcel(BuildContext context, String semester, String className) async {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menyiapkan data...')),
-    );
-
-    final db = context.read<AppDatabase>();
-    final students = await db.studentDao.getAllStudents();
-    final subjects = await db.subjectDao.getAllSubjects();
-
-    final studentsData = <Map<String, dynamic>>[];
-
-    for (final student in students) {
-      final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
-      final gradeMap = <String, double>{};
-      for (final subject in subjects) {
-        final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
-        if (subjectGrades.isNotEmpty) {
-          final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
-          gradeMap[subject.name] = double.parse(avg.toStringAsFixed(1));
-        }
-      }
-
-      final attendance = await db.attendanceDao.getAttendanceByStudent(
-        studentId: student.id,
-        startDate: '2025-01-01',
-        endDate: '2025-12-31',
+    try {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Menyiapkan data...')),
       );
 
-      int hadir = 0, izin = 0, sakit = 0, alpa = 0;
-      for (final a in attendance) {
-        switch (a.status.toLowerCase()) {
-          case 'hadir': hadir++; break;
-          case 'izin': izin++; break;
-          case 'sakit': sakit++; break;
-          case 'alpa': alpa++; break;
+      final db = context.read<AppDatabase>();
+      final students = await db.studentDao.getAllStudents();
+      final subjects = await db.subjectDao.getAllSubjects();
+
+      final studentsData = <Map<String, dynamic>>[];
+
+      for (final student in students) {
+        final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
+        final gradeMap = <String, double>{};
+        for (final subject in subjects) {
+          final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
+          if (subjectGrades.isNotEmpty) {
+            final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
+            gradeMap[subject.name] = double.parse(avg.toStringAsFixed(1));
+          }
         }
+
+        final now = DateTime.now();
+        final attendance = await db.attendanceDao.getAttendanceByStudent(
+          studentId: student.id,
+          startDate: '${now.year}-01-01',
+          endDate: '${now.year}-12-31',
+        );
+
+        int hadir = 0, izin = 0, sakit = 0, alpa = 0;
+        for (final a in attendance) {
+          switch (a.status.toLowerCase()) {
+            case 'hadir': hadir++; break;
+            case 'izin': izin++; break;
+            case 'sakit': sakit++; break;
+            case 'alpa': alpa++; break;
+          }
+        }
+
+        studentsData.add({
+          'id': student.id,
+          'nis': student.nis,
+          'fullName': student.fullName,
+          'className': student.className,
+          'grades': gradeMap,
+          'attendance': {
+            'hadir': hadir,
+            'izin': izin,
+            'sakit': sakit,
+            'alpa': alpa,
+          },
+        });
       }
 
-      studentsData.add({
-        'id': student.id,
-        'nis': student.nis,
-        'fullName': student.fullName,
-        'className': student.className,
-        'grades': gradeMap,
-        'attendance': {
-          'hadir': hadir,
-          'izin': izin,
-          'sakit': sakit,
-          'alpa': alpa,
-        },
+      studentsData.sort((a, b) {
+        final avgA = (a['grades'] as Map<String, double>).isEmpty ? 0.0 :
+          (a['grades'] as Map<String, double>).values.fold<double>(0, (s, v) => s + v) /
+          (a['grades'] as Map<String, double>).length;
+        final avgB = (b['grades'] as Map<String, double>).isEmpty ? 0.0 :
+          (b['grades'] as Map<String, double>).values.fold<double>(0, (s, v) => s + v) /
+          (b['grades'] as Map<String, double>).length;
+        return avgB.compareTo(avgA);
       });
-    }
 
-    studentsData.sort((a, b) {
-      final avgA = (a['grades'] as Map<String, double>).isEmpty ? 0.0 :
-        (a['grades'] as Map<String, double>).values.fold<double>(0, (s, v) => s + v) /
-        (a['grades'] as Map<String, double>).length;
-      final avgB = (b['grades'] as Map<String, double>).isEmpty ? 0.0 :
-        (b['grades'] as Map<String, double>).values.fold<double>(0, (s, v) => s + v) /
-        (b['grades'] as Map<String, double>).length;
-      return avgB.compareTo(avgA);
-    });
-
-    try {
       final filePath = await ExcelGenerator.generateReport(
         semester: semester,
         className: className,
@@ -422,42 +467,51 @@ class ReportScreen extends StatelessWidget {
   }
 
   Future<void> _generateReport(BuildContext context, Student student) async {
-    final db = context.read<AppDatabase>();
-    final grades = await db.gradeDao.getGradesByStudent(student.id);
-    final totalPoints = await db.pointDao.getTotalPoints(student.id);
-    final ranking = await db.gradeDao.getRanking('Ganjil 2025/2026');
-    final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
+    try {
+      final db = context.read<AppDatabase>();
+      final grades = await db.gradeDao.getGradesByStudent(student.id);
+      final totalPoints = await db.pointDao.getTotalPoints(student.id);
+      final semester = _currentSemester();
+      final ranking = await db.gradeDao.getRanking(semester);
+      final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
 
-    final subjects = await db.subjectDao.getAllSubjects();
-    final gradeData = <Map<String, dynamic>>[];
-    for (final subject in subjects) {
-      final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
-      if (subjectGrades.isNotEmpty) {
-        final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
-        gradeData.add({
-          'subject': subject.name,
-          'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
-          'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
-          'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
-          'average': avg,
-        });
+      final subjects = await db.subjectDao.getAllSubjects();
+      final gradeData = <Map<String, dynamic>>[];
+      for (final subject in subjects) {
+        final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
+        if (subjectGrades.isNotEmpty) {
+          final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
+          gradeData.add({
+            'subject': subject.name,
+            'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
+            'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
+            'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
+            'average': avg,
+          });
+        }
       }
-    }
 
-    final pdf = await PdfGenerator.generateReportCard(
-      studentName: student.fullName,
-      nis: student.nis,
-      className: student.className,
-      semester: 'Ganjil 2025/2026',
-      grades: gradeData,
-      totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
-      totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
-      rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
-      totalStudents: ranking.length,
-    );
+      final pdf = await PdfGenerator.generateReportCard(
+        studentName: student.fullName,
+        nis: student.nis,
+        className: student.className,
+        semester: semester,
+        grades: gradeData,
+        totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
+        totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
+        rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
+        totalStudents: ranking.length,
+      );
 
-    if (pdf != null && context.mounted) {
-      await Printing.layoutPdf(onLayout: (format) => pdf);
+      if (pdf != null && context.mounted) {
+        await Printing.layoutPdf(onLayout: (format) => pdf);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal cetak rapor: $e')),
+        );
+      }
     }
   }
 }

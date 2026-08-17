@@ -12,8 +12,18 @@ class SyncConfig {
     'apiKey': apiKey,
   };
 
-  factory SyncConfig.fromJson(Map<String, dynamic> json) => SyncConfig(
-    serverUrl: json['serverUrl'] as String,
-    apiKey: json['apiKey'] as String,
-  );
+  factory SyncConfig.fromJson(Map<String, dynamic> json) {
+    final serverUrl = json['serverUrl'] as String?;
+    if (serverUrl == null || serverUrl.isEmpty) {
+      throw ArgumentError('serverUrl is required');
+    }
+    final apiKey = json['apiKey'] as String?;
+    if (apiKey == null || apiKey.isEmpty) {
+      throw ArgumentError('apiKey is required');
+    }
+    return SyncConfig(
+      serverUrl: serverUrl,
+      apiKey: apiKey,
+    );
+  }
 }

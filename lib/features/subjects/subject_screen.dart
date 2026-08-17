@@ -49,7 +49,17 @@ class SubjectScreen extends StatelessWidget {
                       Icons.delete,
                       color: isDark ? AppTheme.coral : AppTheme.lightCoral,
                     ),
-                    onPressed: () => db.subjectDao.deleteSubject(subject.id),
+                    onPressed: () async {
+                      try {
+                        await db.subjectDao.deleteSubject(subject.id);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Gagal menghapus mapel: $e')),
+                          );
+                        }
+                      }
+                    },
                   ),
                 ),
               );
@@ -79,12 +89,21 @@ class SubjectScreen extends StatelessWidget {
           AppButton(
             label: 'Simpan',
             onPressed: () async {
+              if (nameController.text.isEmpty || codeController.text.isEmpty) return;
               final db = context.read<AppDatabase>();
-              await db.subjectDao.insertSubject(
-                name: nameController.text,
-                code: codeController.text,
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
+              try {
+                await db.subjectDao.insertSubject(
+                  name: nameController.text,
+                  code: codeController.text,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+              } catch (e) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text('Gagal menambahkan mapel: $e')),
+                  );
+                }
+              }
             },
           ),
         ],

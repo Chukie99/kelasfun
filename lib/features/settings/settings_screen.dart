@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -24,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _serverRunning = false;
   String _serverUrl = '';
   String _localIp = '';
+  String _apiKey = '';
 
   @override
   void initState() {
@@ -31,30 +33,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadServerStatus();
   }
 
+  String _generateApiKey() {
+    final random = Random.secure();
+    final values = List<int>.generate(32, (_) => random.nextInt(256));
+    return values.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  }
+
+  Future<String> _getOrCreateApiKey() async {
+    final db = context.read<AppDatabase>();
+    final existing = await db.settingsDao.getSetting('api_key');
+    if (existing != null && existing.isNotEmpty) return existing;
+    final newKey = _generateApiKey();
+    await db.settingsDao.setSetting('api_key', newKey);
+    return newKey;
+  }
+
   Future<void> _loadServerStatus() async {
     final ip = await NetworkUtils.getLocalIp();
+    if (!mounted) return;
     setState(() => _localIp = ip);
   }
 
   Future<void> _toggleServer() async {
-    final db = context.read<AppDatabase>();
+    try {
+      final db = context.read<AppDatabase>();
 
-    if (_serverRunning) {
-      await _server?.stop();
-      setState(() {
-        _serverRunning = false;
-        _serverUrl = '';
-      });
-    } else {
-      _server = SyncServer(
-        db: db,
-        apiKey: 'kelasfun-secret-key',
-      );
-      await _server!.start();
-      setState(() {
-        _serverRunning = true;
-        _serverUrl = 'http://$_localIp:8080';
-      });
+      if (_serverRunning) {
+        await _server?.stop();
+        if (!mounted) return;
+        setState(() {
+          _serverRunning = false;
+          _serverUrl = '';
+        });
+      } else {
+        final apiKey = await _getOrCreateApiKey();
+        _apiKey = apiKey;
+        _server = SyncServer(
+          db: db,
+          apiKey: apiKey,
+        );
+        await _server!.start();
+        if (!mounted) return;
+        setState(() {
+          _serverRunning = true;
+          _serverUrl = 'http://$_localIp:8080';
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error server: $e')),
+        );
+      }
     }
   }
 
@@ -100,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: PairingQr(
                 ip: _localIp,
                 port: 8080,
-                token: 'kelasfun-secret-key',
+                token: _apiKey,
               ),
             ),
           ],
@@ -274,6 +304,7 @@ class _SchoolProfileSectionState extends State<_SchoolProfileSection> {
     _provinceController.text = settings['school_province'] ?? '';
     _phoneController.text = settings['school_phone'] ?? '';
     _emailController.text = settings['school_email'] ?? '';
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -346,19 +377,27 @@ class _SchoolProfileSectionState extends State<_SchoolProfileSection> {
   }
 
   Future<void> _saveProfile() async {
-    final db = context.read<AppDatabase>();
-    await db.settingsDao.setSchoolProfile(
-      name: _nameController.text,
-      address: _addressController.text,
-      city: _cityController.text,
-      province: _provinceController.text,
-      phone: _phoneController.text,
-      email: _emailController.text,
-    );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profil sekolah berhasil disimpan')),
+    try {
+      final db = context.read<AppDatabase>();
+      await db.settingsDao.setSchoolProfile(
+        name: _nameController.text,
+        address: _addressController.text,
+        city: _cityController.text,
+        province: _provinceController.text,
+        phone: _phoneController.text,
+        email: _emailController.text,
       );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profil sekolah berhasil disimpan')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan profil: $e')),
+        );
+      }
     }
   }
 }

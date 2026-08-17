@@ -128,8 +128,8 @@ class _StatsTodayCard extends StatelessWidget {
           stream: db.attendanceDao.watchAttendanceByDate(today),
           builder: (context, attendanceSnapshot) {
             final attendance = attendanceSnapshot.data ?? [];
-            final hadir = attendance.where((a) => a.status == 'hadir').length;
-            final alpha = totalStudents - hadir;
+            final hadir = attendance.where((a) => a.status == 'Hadir').length;
+            final alpha = attendance.where((a) => a.status == 'Alpa').length;
 
             return AppCard(
               child: Padding(
@@ -546,13 +546,13 @@ class _ChartsCard extends StatelessWidget {
       builder: (context, attendanceSnapshot) {
         final attendance = attendanceSnapshot.data ?? [];
         final hadir =
-            attendance.where((a) => a.status == 'hadir').length;
+            attendance.where((a) => a.status == 'Hadir').length;
         final sakit =
-            attendance.where((a) => a.status == 'sakit').length;
+            attendance.where((a) => a.status == 'Sakit').length;
         final izin =
-            attendance.where((a) => a.status == 'izin').length;
+            attendance.where((a) => a.status == 'Izin').length;
         final alpa =
-            attendance.where((a) => a.status == 'alpa').length;
+            attendance.where((a) => a.status == 'Alpa').length;
 
         return FutureBuilder<List<Subject>>(
           future: db.subjectDao.getAllSubjects(),

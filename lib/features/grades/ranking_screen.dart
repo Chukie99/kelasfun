@@ -5,18 +5,45 @@ import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/features/grades/widgets/ranking_card.dart';
 
-class RankingScreen extends StatelessWidget {
+class RankingScreen extends StatefulWidget {
   const RankingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<RankingScreen> createState() => _RankingScreenState();
+}
+
+class _RankingScreenState extends State<RankingScreen> {
+  late final Future<List<RankingEntry>> _dataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _dataFuture = _loadData();
+  }
+
+  Future<List<RankingEntry>> _loadData() async {
     final db = context.read<AppDatabase>();
+    final now = DateTime.now();
+    final semester = '${now.month <= 6 ? "Ganjil" : "Genap"} ${now.year}/${now.year + 1}';
+
+    final ranking = await db.gradeDao.getRanking(semester);
+    final allStudents = await db.studentDao.getAllStudents();
+    final studentMap = {for (final s in allStudents) s.id: s};
+
+    return ranking
+        .where((g) => studentMap.containsKey(g.studentId))
+        .map((g) => RankingEntry(grade: g, student: studentMap[g.studentId]!))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text('Papan Peringkat', style: AppTheme.h2(context))),
-      body: FutureBuilder<List<Grade>>(
-        future: db.gradeDao.getRanking('Ganjil 2025/2026'),
+      body: FutureBuilder<List<RankingEntry>>(
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -25,26 +52,19 @@ class RankingScreen extends StatelessWidget {
               ),
             );
           }
-          final ranking = snapshot.data ?? [];
-          if (ranking.isEmpty) {
+          final entries = snapshot.data ?? [];
+          if (entries.isEmpty) {
             return Center(child: Text('Belum ada data nilai', style: AppTheme.bodySmall(context)));
           }
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-            itemCount: ranking.length,
+            itemCount: entries.length,
             itemBuilder: (context, index) {
-              final entry = ranking[index];
-              return FutureBuilder<Student?>(
-                future: db.studentDao.getStudentById(entry.studentId),
-                builder: (context, studentSnap) {
-                  final student = studentSnap.data;
-                  if (student == null) return const SizedBox();
-                  return RankingCard(
-                    rank: index + 1,
-                    student: student,
-                    averageScore: entry.score,
-                  );
-                },
+              final entry = entries[index];
+              return RankingCard(
+                rank: index + 1,
+                student: entry.student,
+                averageScore: entry.grade.score,
               );
             },
           );
@@ -52,4 +72,10 @@ class RankingScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class RankingEntry {
+  final Grade grade;
+  final Student student;
+  RankingEntry({required this.grade, required this.student});
 }

@@ -35,10 +35,22 @@ class SyncHandler {
       final body = await request.readAsString();
       final data = jsonDecode(body) as Map<String, dynamic>;
 
-      final studentId = data['studentId'] as int;
-      final date = data['date'] as String;
-      final status = data['status'] as String;
-      final scanMethod = data['scanMethod'] as String;
+      final studentId = data['studentId'] as int?;
+      if (studentId == null) {
+        return _jsonResponse({'error': 'studentId is required'}, status: 400);
+      }
+      final date = data['date'] as String?;
+      if (date == null || date.isEmpty) {
+        return _jsonResponse({'error': 'date is required'}, status: 400);
+      }
+      final status = data['status'] as String?;
+      if (status == null || status.isEmpty) {
+        return _jsonResponse({'error': 'status is required'}, status: 400);
+      }
+      final scanMethod = data['scanMethod'] as String?;
+      if (scanMethod == null || scanMethod.isEmpty) {
+        return _jsonResponse({'error': 'scanMethod is required'}, status: 400);
+      }
       final description = data['description'] as String?;
 
       await db.attendanceDao.markAttendance(
@@ -111,6 +123,71 @@ class SyncHandler {
           'name': student.fullName,
           'className': student.className,
           'status': 'Hadir',
+        },
+      });
+    } on FormatException {
+      return _jsonResponse({'error': 'Malformed JSON'}, status: 400);
+    } catch (e) {
+      return _jsonResponse({'error': e.toString()}, status: 400);
+    }
+  }
+
+  Future<Response> createStudent(Request request) async {
+    if (!_validateAuth(request)) {
+      return _jsonResponse({'error': 'Unauthorized'}, status: 401);
+    }
+
+    try {
+      final body = await request.readAsString();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+
+      final nis = data['nis'] as String?;
+      if (nis == null || nis.isEmpty) {
+        return _jsonResponse({'error': 'nis is required'}, status: 400);
+      }
+      final fullName = data['fullName'] as String?;
+      if (fullName == null || fullName.isEmpty) {
+        return _jsonResponse({'error': 'fullName is required'}, status: 400);
+      }
+      final className = data['className'] as String?;
+      if (className == null || className.isEmpty) {
+        return _jsonResponse({'error': 'className is required'}, status: 400);
+      }
+      final gender = data['gender'] as String?;
+      if (gender == null || gender.isEmpty) {
+        return _jsonResponse({'error': 'gender is required'}, status: 400);
+      }
+
+      final existing = await db.studentDao.getStudentByNis(nis);
+      if (existing != null) {
+        return _jsonResponse({'error': 'NIS sudah digunakan'}, status: 409);
+      }
+
+      final qrData = data['qrData'] as String? ?? nis;
+      final birthDate = data['birthDate'] as String?;
+      final address = data['address'] as String?;
+      final parentName = data['parentName'] as String?;
+      final parentPhone = data['parentPhone'] as String?;
+
+      final id = await db.studentDao.insertStudent(
+        nis: nis,
+        fullName: fullName,
+        className: className,
+        gender: gender,
+        qrData: qrData,
+        birthDate: birthDate,
+        address: address,
+        parentName: parentName,
+        parentPhone: parentPhone,
+      );
+
+      return _jsonResponse({
+        'success': true,
+        'student': {
+          'id': id,
+          'nis': nis,
+          'fullName': fullName,
+          'className': className,
         },
       });
     } on FormatException {

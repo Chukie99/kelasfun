@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
@@ -17,10 +18,10 @@ class AttendanceScreen extends StatefulWidget {
 class _AttendanceScreenState extends State<AttendanceScreen> {
   final _scanBuffer = StringBuffer();
   Timer? _scanTimer;
-  final _focusNode = FocusNode();
   String? _lastScanResult;
   String _selectedFilter = 'Semua';
   DateTime _selectedDate = DateTime.now();
+  late final Stream<List<Student>> _studentsStream;
 
   static const List<String> _filters = [
     'Semua', 'Hadir', 'Sakit', 'Izin', 'Alpa', 'Belum Absen',
@@ -29,6 +30,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
+    final db = context.read<AppDatabase>();
+    _studentsStream = db.studentDao.watchAllStudents();
     _scanTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
       if (_scanBuffer.isNotEmpty) {
         final scanned = _scanBuffer.toString();
@@ -41,7 +44,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void dispose() {
     _scanTimer?.cancel();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -53,17 +55,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _handleScan(String nis) async {
     final db = context.read<AppDatabase>();
     final student = await db.studentDao.getStudentByNis(nis);
+    if (!mounted) return;
     if (student == null) {
       setState(() => _lastScanResult = 'Siswa tidak ditemukan: $nis');
       return;
     }
 
-    await db.attendanceDao.markAttendance(
-      studentId: student.id,
-      date: _dateStr,
-      status: 'Hadir',
-      scanMethod: 'QR_SCAN',
-    );
+    try {
+      await db.attendanceDao.markAttendance(
+        studentId: student.id,
+        date: _dateStr,
+        status: 'Hadir',
+        scanMethod: 'QR_SCAN',
+      );
+    } catch (e) {
+      debugPrint('Error marking attendance: $e');
+    }
+    if (!mounted) return;
 
     setState(() => _lastScanResult = '${student.fullName} - Hadir');
   }
@@ -75,13 +83,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }) async {
     final db = context.read<AppDatabase>();
 
-    await db.attendanceDao.markAttendance(
-      studentId: student.id,
-      date: _dateStr,
-      status: status,
-      scanMethod: 'MANUAL',
-      description: description,
-    );
+    try {
+      await db.attendanceDao.markAttendance(
+        studentId: student.id,
+        date: _dateStr,
+        status: status,
+        scanMethod: 'MANUAL',
+        description: description,
+      );
+    } catch (e) {
+      debugPrint('Error marking attendance: $e');
+    }
+    if (!mounted) return;
 
     setState(() => _lastScanResult = '${student.fullName} - $status');
   }
@@ -89,7 +102,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _resetAttendance(Student student) async {
     final db = context.read<AppDatabase>();
 
-    await db.attendanceDao.resetAttendance(student.id, _dateStr);
+    try {
+      await db.attendanceDao.resetAttendance(student.id, _dateStr);
+    } catch (e) {
+      debugPrint('Error resetting attendance: $e');
+    }
+    if (!mounted) return;
 
     setState(() => _lastScanResult = '${student.fullName} - Status direset');
   }
@@ -130,6 +148,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         description: result.isNotEmpty ? result : null,
       );
     }
+    controller.dispose();
   }
 
   Widget _buildFilterChip(String label, int count, bool isDark) {
@@ -153,6 +172,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String get _dateStr =>
       '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
 
+  void _openCameraScan() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _CameraScanScreen(
+          onScanned: (nis) {
+            _handleScan(nis);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
@@ -173,6 +205,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: _openCameraScan,
+          ),
+          IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: () async {
               final picked = await showDatePicker(
@@ -181,24 +217,33 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 firstDate: DateTime(2024),
                 lastDate: DateTime.now(),
               );
+              if (!mounted) return;
               if (picked != null) setState(() => _selectedDate = picked);
             },
           ),
         ],
       ),
-      body: RawKeyboardListener(
-        focusNode: _focusNode,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openCameraScan,
+        icon: const Icon(Icons.qr_code_scanner),
+        label: const Text('Scan Kamera'),
+      ),
+      body: Focus(
         autofocus: true,
-        onKey: (event) {
-          if (event is RawKeyDownEvent && event.character != null) {
-            if (event.logicalKey == LogicalKeyboardKey.enter) {
-              final scanned = _scanBuffer.toString();
-              _scanBuffer.clear();
-              if (scanned.isNotEmpty) _processScan(scanned);
-            } else {
-              _scanBuffer.write(event.character);
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            final character = event.character;
+            if (character != null) {
+              if (event.logicalKey == LogicalKeyboardKey.enter) {
+                final scanned = _scanBuffer.toString();
+                _scanBuffer.clear();
+                if (scanned.isNotEmpty) _processScan(scanned);
+              } else {
+                _scanBuffer.write(character);
+              }
             }
           }
+          return KeyEventResult.handled;
         },
         child: Column(
           children: [
@@ -232,7 +277,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
               ),
             StreamBuilder<List<Student>>(
-              stream: db.studentDao.watchAllStudents(),
+              stream: _studentsStream,
               builder: (context, studentSnapshot) {
                 final allStudents = studentSnapshot.data ?? [];
 
@@ -334,6 +379,78 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onReset: () => _resetAttendance(student),
         );
       },
+    );
+  }
+}
+
+class _CameraScanScreen extends StatefulWidget {
+  final Function(String nis) onScanned;
+  const _CameraScanScreen({required this.onScanned});
+
+  @override
+  State<_CameraScanScreen> createState() => _CameraScanScreenState();
+}
+
+class _CameraScanScreenState extends State<_CameraScanScreen> {
+  MobileScannerController? _controller;
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_isProcessing) return;
+    final barcode = capture.barcodes.firstOrNull;
+    if (barcode == null || barcode.rawValue == null) return;
+
+    _isProcessing = true;
+    final nis = BarcodeHelpers.extractNisFromScan(barcode.rawValue!);
+
+    widget.onScanned(nis);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Scan: $nis'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan QR Siswa'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on, color: Colors.white),
+            onPressed: () => _controller?.toggleTorch(),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black,
+      body: MobileScanner(
+        controller: _controller!,
+        onDetect: _onDetect,
+      ),
     );
   }
 }

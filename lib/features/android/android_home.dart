@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'android_pairing_screen.dart';
 import 'android_scanner.dart';
+import 'android_student_list.dart';
 import 'scanner_controller.dart';
 import 'scanner_service.dart';
 
@@ -82,6 +83,12 @@ class _AndroidHomeState extends State<AndroidHome> {
     ));
   }
 
+  void _openStudentList() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => AndroidStudentList(service: widget.service),
+    ));
+  }
+
   Future<void> _openScanner() async {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => AndroidScanner(
@@ -103,7 +110,7 @@ class _AndroidHomeState extends State<AndroidHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('kelasFun Scanner')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppTheme.spacingXl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,6 +151,12 @@ class _AndroidHomeState extends State<AndroidHome> {
             FilledButton(
               onPressed: _openPairing,
               child: const Text('Pindai QR Laptop'),
+            ),
+            const SizedBox(height: AppTheme.spacingBase),
+            OutlinedButton.icon(
+              onPressed: _openStudentList,
+              icon: const Icon(Icons.people),
+              label: const Text('Daftar Siswa'),
             ),
             const SizedBox(height: AppTheme.spacingBase),
             OutlinedButton(

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:kelasfun/core/database/app_database.dart';
 import 'sync_config.dart';
@@ -26,7 +28,7 @@ class SyncService {
             'status': record.status,
             'scanMethod': record.scanMethod,
           }),
-        );
+        ).timeout(const Duration(seconds: 30));
 
         if (response.statusCode == 200) {
           await db.attendanceDao.markSynced(record.id);
@@ -34,6 +36,7 @@ class SyncService {
       }
       return true;
     } catch (e) {
+      debugPrint('Sync attendance failed: $e');
       return false;
     }
   }
@@ -43,9 +46,10 @@ class SyncService {
       final response = await http.get(
         Uri.parse('${config.serverUrl}/api/health'),
         headers: {'X-API-Key': config.apiKey},
-      );
+      ).timeout(const Duration(seconds: 30));
       return response.statusCode == 200;
     } catch (e) {
+      debugPrint('Test connection failed: $e');
       return false;
     }
   }

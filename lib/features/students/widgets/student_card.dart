@@ -12,6 +12,29 @@ class StudentCard extends StatelessWidget {
 
   const StudentCard({super.key, required this.student, this.onTap, this.onDelete});
 
+  Widget _buildPhoto(Student student, String initials, bool isDark) {
+    if (student.photoPath != null && student.photoPath!.isNotEmpty) {
+      try {
+        final file = File(student.photoPath!);
+        if (file.existsSync()) {
+          return CircleAvatar(
+            backgroundImage: FileImage(file),
+          );
+        }
+      } catch (_) {}
+    }
+    return CircleAvatar(
+      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: isDark ? AppTheme.accent : AppTheme.lightAccent,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final initials = PhotoHelper.getInitials(student.fullName);
@@ -21,19 +44,7 @@ class StudentCard extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          student.photoPath != null && File(student.photoPath!).existsSync()
-              ? CircleAvatar(
-                  backgroundImage: FileImage(File(student.photoPath!)),
-                )
-              : CircleAvatar(
-                  backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
-                  child: Text(
-                    initials,
-                    style: AppTheme.body(context).copyWith(
-                        color: isDark ? AppTheme.accent : AppTheme.lightAccent,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
+          _buildPhoto(student, initials, isDark),
           const SizedBox(width: AppTheme.spacingMd),
           Expanded(
             child: Column(

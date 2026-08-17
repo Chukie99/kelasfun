@@ -4,21 +4,54 @@ import 'package:path/path.dart' as p;
 
 class PhotoHelper {
   static Future<String> get _photoDir async {
-    final appDir = await getApplicationDocumentsDirectory();
-    final photoDir = Directory(p.join(appDir.path, 'kelasFun', 'student_photos'));
-    if (!await photoDir.exists()) {
-      await photoDir.create(recursive: true);
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final photoDir = Directory(p.join(appDir.path, 'kelasFun', 'student_photos'));
+      if (!await photoDir.exists()) {
+        await photoDir.create(recursive: true);
+      }
+      return photoDir.path;
+    } catch (e) {
+      final tempDir = Directory.systemTemp;
+      final photoDir = Directory(p.join(tempDir.path, 'kelasFun', 'student_photos'));
+      if (!await photoDir.exists()) {
+        await photoDir.create(recursive: true);
+      }
+      return photoDir.path;
     }
-    return photoDir.path;
+  }
+
+  static Future<String> savePhotoBytes({
+    required String nis,
+    required List<int> bytes,
+  }) async {
+    final dir = await _photoDir;
+    final safeName = nis.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+    final fileName = '$safeName.jpg';
+    final targetPath = p.join(dir, fileName);
+    final targetFile = File(targetPath);
+
+    if (await targetFile.exists()) {
+      await targetFile.delete();
+    }
+
+    await targetFile.writeAsBytes(bytes);
+    return targetPath;
   }
 
   static Future<String> savePhoto({
     required String nis,
     required File sourceFile,
   }) async {
+    if (!await sourceFile.exists()) {
+      throw Exception('Source file does not exist: ${sourceFile.path}');
+    }
+
     final dir = await _photoDir;
     final ext = p.extension(sourceFile.path).toLowerCase();
-    final fileName = '$nis$ext';
+    final safeExt = ext.isEmpty ? '.jpg' : ext;
+    final safeName = nis.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+    final fileName = '$safeName$safeExt';
     final targetPath = p.join(dir, fileName);
     final targetFile = File(targetPath);
 

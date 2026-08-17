@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
-import 'package:kelasfun/features/android/android_home.dart';
-import 'package:kelasfun/features/android/scanner_controller.dart';
-import 'package:kelasfun/features/android/scanner_service.dart';
+import 'package:provider/provider.dart';
+import 'features/android/android_main_home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MaterialApp(
-    title: 'kelasFun Scanner',
-    debugShowCheckedModeBanner: false,
-    theme: AppTheme.darkTheme,
-    home: AndroidHome(
-      service: ScannerService(),
-      scannerBuilder: MobileScannerControllerImpl.new,
+  final db = AppDatabase();
+  runApp(
+    ChangeNotifierProvider.value(
+      value: db,
+      child: MaterialApp(
+        title: 'kelasFun',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme,
+        home: const AndroidMainHome(),
+      ),
     ),
-  ));
+  );
 }

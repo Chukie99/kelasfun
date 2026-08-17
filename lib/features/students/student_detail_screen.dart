@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/photo_helper.dart';
+import 'package:kelasfun/core/utils/pdf_generator.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 import 'package:kelasfun/features/students/student_form_screen.dart';
@@ -59,22 +62,29 @@ class _PhotoPreview extends StatelessWidget {
     final accentColor = isDark ? AppTheme.accent : AppTheme.lightAccent;
     final accentSoftColor = isDark ? AppTheme.accentSoft : AppTheme.lightAccentSoft;
 
-    return AppCard(
-      child: Center(
-        child: student.photoPath != null && File(student.photoPath!).existsSync()
-            ? CircleAvatar(
-                radius: 60,
-                backgroundImage: FileImage(File(student.photoPath!)),
-              )
-            : CircleAvatar(
-                radius: 60,
-                backgroundColor: accentSoftColor,
-                child: Text(
-                  initials,
-                  style: AppTheme.h1(context).copyWith(color: accentColor),
-                ),
-              ),
+    Widget avatar = CircleAvatar(
+      radius: 60,
+      backgroundColor: accentSoftColor,
+      child: Text(
+        initials,
+        style: AppTheme.h1(context).copyWith(color: accentColor),
       ),
+    );
+
+    if (student.photoPath != null && student.photoPath!.isNotEmpty) {
+      try {
+        final file = File(student.photoPath!);
+        if (file.existsSync()) {
+          avatar = CircleAvatar(
+            radius: 60,
+            backgroundImage: FileImage(file),
+          );
+        }
+      } catch (_) {}
+    }
+
+    return AppCard(
+      child: Center(child: avatar),
     );
   }
 }
@@ -197,6 +207,70 @@ class _PrintActionsCard extends StatelessWidget {
   final Student student;
   const _PrintActionsCard({required this.student});
 
+  Future<void> _printStudentCard(BuildContext context) async {
+    try {
+      Uint8List? photoBytes;
+      if (student.photoPath != null && student.photoPath!.isNotEmpty) {
+        final file = File(student.photoPath!);
+        if (file.existsSync()) {
+          photoBytes = await file.readAsBytes();
+        }
+      }
+
+      final studentData = {
+        'nis': student.nis,
+        'name': student.fullName,
+        'class': student.className,
+        'photoBytes': photoBytes,
+      };
+
+      final db = context.read<AppDatabase>();
+      final schoolName = await db.settingsDao.getSetting('school_name');
+
+      final pdf = await PdfGenerator.generateStudentCards(
+        students: [studentData],
+        schoolName: schoolName,
+      );
+      if (pdf != null && context.mounted) {
+        await Printing.layoutPdf(onLayout: (format) => pdf);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal cetak: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _printBiodata(BuildContext context) async {
+    try {
+      final db = context.read<AppDatabase>();
+      final schoolName = await db.settingsDao.getSetting('school_name');
+
+      final pdf = await PdfGenerator.generateBiodata(
+        nis: student.nis,
+        fullName: student.fullName,
+        className: student.className,
+        gender: student.gender,
+        birthDate: student.birthDate,
+        address: student.address,
+        parentName: student.parentName,
+        parentPhone: student.parentPhone,
+        schoolName: schoolName,
+      );
+      if (pdf != null && context.mounted) {
+        await Printing.layoutPdf(onLayout: (format) => pdf);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal cetak: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -206,24 +280,16 @@ class _PrintActionsCard extends StatelessWidget {
           Text('Cetak', style: AppTheme.h3(context)),
           const SizedBox(height: AppTheme.spacingBase),
           AppButton(
-            label: 'Cetak Kartu KTP (10/A4)',
+            label: 'Cetak Kartu Siswa',
             icon: Icons.print,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cetak Kartu KTP - Fitur dalam pengembangan')),
-              );
-            },
+            onPressed: () => _printStudentCard(context),
           ),
           const SizedBox(height: AppTheme.spacingMd),
           AppButton(
             label: 'Cetak Biodata (A4)',
             icon: Icons.print,
             isOutlined: true,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cetak Biodata - Fitur dalam pengembangan')),
-              );
-            },
+            onPressed: () => _printBiodata(context),
           ),
         ],
       ),
@@ -265,8 +331,13 @@ class _ArchiveCard extends StatelessWidget {
               );
               if (confirm == true && context.mounted) {
                 final db = context.read<AppDatabase>();
-                await db.studentDao.softDeleteStudent(student.id);
-                if (context.mounted) Navigator.pop(context);
+                try {
+                  await db.studentDao.softDeleteStudent(student.id);
+                  if (context.mounted) Navigator.pop(context);
+                } catch (e, stackTrace) {
+                  debugPrint('SOFT DELETE ERROR: $e');
+                  debugPrint('STACK TRACE: $stackTrace');
+                }
               }
             },
             icon: const Icon(Icons.archive),

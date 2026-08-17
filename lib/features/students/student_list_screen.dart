@@ -19,6 +19,14 @@ class StudentListScreen extends StatefulWidget {
 class _StudentListScreenState extends State<StudentListScreen> {
   String _searchQuery = '';
   String _selectedClass = 'Semua';
+  late final Stream<List<Student>> _studentsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final db = context.read<AppDatabase>();
+    _studentsStream = db.studentDao.watchAllStudents();
+  }
 
   Future<void> _importCSV(BuildContext context) async {
     final db = context.read<AppDatabase>();
@@ -44,6 +52,15 @@ class _StudentListScreenState extends State<StudentListScreen> {
       final name = parts[1].trim();
       final className = parts[2].trim();
       final gender = parts[3].trim();
+
+      if (nis.isEmpty || name.isEmpty || className.isEmpty || gender.isEmpty) {
+        failed++;
+        continue;
+      }
+      if (gender != 'Laki-laki' && gender != 'Perempuan') {
+        failed++;
+        continue;
+      }
 
       try {
         final existing = await db.studentDao.getStudentByNis(nis);
@@ -93,16 +110,20 @@ class _StudentListScreenState extends State<StudentListScreen> {
         child: const Icon(Icons.add),
       ),
       body: StreamBuilder<List<Student>>(
-        stream: db.studentDao.watchAllStudents(),
+        stream: _studentsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
                 child: CircularProgressIndicator(
                     color: isDark ? AppTheme.accent : AppTheme.lightAccent));
           }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
           final students = snapshot.data ?? [];
           
-          final classes = ['Semua', ...students.map((s) => s.className).toSet()];
+          final classSet = <String>{};
+          final classes = ['Semua', ...students.map((s) => s.className).where((c) => classSet.add(c))];
           if (!classes.contains(_selectedClass)) {
             _selectedClass = 'Semua';
           }
@@ -211,7 +232,12 @@ class _StudentListScreenState extends State<StudentListScreen> {
                               ),
                             ),
                             onDelete: () async {
-                              await db.studentDao.deleteStudent(student.id);
+                              try {
+                                await db.studentDao.deleteStudent(student.id);
+                              } catch (e, stackTrace) {
+                                debugPrint('DELETE ERROR: $e');
+                                debugPrint('STACK TRACE: $stackTrace');
+                              }
                             },
                           );
                         },

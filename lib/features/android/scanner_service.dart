@@ -35,6 +35,16 @@ class SyncResult {
   });
 }
 
+class CreateStudentResult {
+  final bool success;
+  final String? error;
+
+  const CreateStudentResult({
+    required this.success,
+    this.error,
+  });
+}
+
 class StudentCacheEntry {
   final String nis;
   final String name;
@@ -327,6 +337,55 @@ class ScannerService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<CreateStudentResult> createStudent({
+    required String nis,
+    required String fullName,
+    required String className,
+    required String gender,
+    String? birthDate,
+    String? address,
+    String? parentName,
+    String? parentPhone,
+  }) async {
+    final config = await loadConfig();
+    if (config == null) {
+      return const CreateStudentResult(success: false, error: 'Belum terhubung');
+    }
+
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (config.token != null) 'X-API-Key': config.token!,
+    };
+    final uri = Uri.parse('http://${config.ip}:${config.port}/api/students');
+    final body = jsonEncode({
+      'nis': nis,
+      'fullName': fullName,
+      'className': className,
+      'gender': gender,
+      'birthDate': birthDate,
+      'address': address,
+      'parentName': parentName,
+      'parentPhone': parentPhone,
+    });
+
+    try {
+      final response = await _client.post(uri, headers: headers, body: body).timeout(timeout);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        await syncStudents();
+        return const CreateStudentResult(success: true);
+      }
+
+      return CreateStudentResult(
+        success: false,
+        error: data['error'] as String? ?? 'Gagal menyimpan siswa',
+      );
+    } catch (e) {
+      return CreateStudentResult(success: false, error: 'Gagal koneksi: $e');
     }
   }
 }

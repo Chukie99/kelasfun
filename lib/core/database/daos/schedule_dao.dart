@@ -45,4 +45,45 @@ class ScheduleDao extends DatabaseAccessor<AppDatabase> with _$ScheduleDaoMixin 
   Future<void> deleteSchedule(int id) {
     return (delete(schedules)..where((t) => t.id.equals(id))).go();
   }
+
+  Future<Schedule?> getScheduleByClassDayPeriod({
+    required String className,
+    required String day,
+    required int period,
+  }) {
+    return (select(schedules)
+      ..where((t) => 
+          t.className.equals(className) & 
+          t.day.equals(day) & 
+          t.period.equals(period))
+    ).getSingleOrNull();
+  }
+
+  Future<void> upsertSchedule({
+    required String day,
+    required int period,
+    required int subjectId,
+    required String className,
+  }) async {
+    final existing = await getScheduleByClassDayPeriod(
+      className: className,
+      day: day,
+      period: period,
+    );
+    
+    if (existing != null) {
+      // Update existing schedule
+      await (update(schedules)..where((t) => t.id.equals(existing.id))).write(
+        SchedulesCompanion(subjectId: Value(subjectId)),
+      );
+    } else {
+      // Insert new schedule
+      await insertSchedule(
+        day: day,
+        period: period,
+        subjectId: subjectId,
+        className: className,
+      );
+    }
+  }
 }

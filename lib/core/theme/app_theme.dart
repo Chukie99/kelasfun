@@ -181,7 +181,7 @@ class AppTheme {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: surface,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -283,7 +283,7 @@ class AppTheme {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: lightSurface,
           elevation: 0,
           shape: RoundedRectangleBorder(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/utils/qr_generator.dart';
 import 'package:kelasfun/core/utils/photo_helper.dart';
@@ -61,21 +62,34 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
   Future<void> _pickPhoto() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
       );
 
-      if (result != null && result.files.single.path != null) {
-        final sourceFile = File(result.files.single.path!);
-        final nis = _nisController.text.isNotEmpty ? _nisController.text : 'temp_${DateTime.now().millisecondsSinceEpoch}';
-        final savedPath = await PhotoHelper.savePhoto(nis: nis, sourceFile: sourceFile);
+      if (pickedFile == null) return;
+
+      final nis = _nisController.text.isNotEmpty
+          ? _nisController.text
+          : 'temp_${DateTime.now().millisecondsSinceEpoch}';
+
+      final bytes = await pickedFile.readAsBytes();
+      final savedPath = await PhotoHelper.savePhotoBytes(nis: nis, bytes: bytes);
+      if (mounted) {
         setState(() => _photoPath = savedPath);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('PICK PHOTO ERROR: $e');
+      debugPrint('STACK TRACE: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memilih foto: $e')),
+          SnackBar(
+            content: const Text('Gagal memilih foto'),
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     }
@@ -104,6 +118,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       locale: const Locale('id', 'ID'),
     );
 
+    if (!mounted) return;
+
     if (picked != null) {
       setState(() {
         _birthDateController.text =
@@ -117,11 +133,16 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     final initials = PhotoHelper.getInitials(name);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (_photoPath != null && File(_photoPath!).existsSync()) {
-      return CircleAvatar(
-        radius: 50,
-        backgroundImage: FileImage(File(_photoPath!)),
-      );
+    if (_photoPath != null && _photoPath!.isNotEmpty) {
+      try {
+        final file = File(_photoPath!);
+        if (file.existsSync()) {
+          return CircleAvatar(
+            radius: 50,
+            backgroundImage: FileImage(file),
+          );
+        }
+      } catch (_) {}
     }
 
     return CircleAvatar(
@@ -758,7 +779,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         label: isEditing ? 'Simpan' : 'Tambah',
         icon: Icons.save,
         onPressed: () async {
-          if (!_formKey.currentState!.validate()) return;
+          if (_formKey.currentState == null || !_formKey.currentState!.validate()) return;
           
           final nis = _nisController.text.trim();
           final name = _nameController.text.trim();

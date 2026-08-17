@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 class ExcelGenerator {
-  static Future<String> generateReport({
+  static Future<String?> generateReport({
     required String semester,
     required String className,
     required List<Map<String, dynamic>> students,
@@ -134,11 +134,9 @@ class ExcelGenerator {
     final filePath = p.join(appDir.path, fileName);
 
     final fileBytes = excel.save();
-    if (fileBytes != null) {
-      final file = File(filePath);
-      await file.writeAsBytes(fileBytes);
-    }
-
+    if (fileBytes == null) return null;
+    final file = File(filePath);
+    await file.writeAsBytes(fileBytes);
     return filePath;
   }
 }

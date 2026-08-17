@@ -5,6 +5,24 @@ import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
 
+String _currentSemester() {
+  final now = DateTime.now();
+  if (now.month >= 7) {
+    return 'Ganjil ${now.year}/${now.year + 1}';
+  } else {
+    return 'Genap ${now.year - 1}/${now.year}';
+  }
+}
+
+List<String> _semesterOptions() {
+  final now = DateTime.now();
+  if (now.month >= 7) {
+    return ['Ganjil ${now.year}/${now.year + 1}', 'Genap ${now.year}/${now.year + 1}'];
+  } else {
+    return ['Ganjil ${now.year - 1}/${now.year}', 'Genap ${now.year - 1}/${now.year}'];
+  }
+}
+
 class GradeScreen extends StatefulWidget {
   const GradeScreen({super.key});
 
@@ -14,7 +32,7 @@ class GradeScreen extends StatefulWidget {
 
 class _GradeScreenState extends State<GradeScreen> {
   int? _selectedStudentId;
-  String _semester = 'Ganjil 2025/2026';
+  String _semester = _currentSemester();
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +49,7 @@ class _GradeScreenState extends State<GradeScreen> {
                 const Text('Semester: '),
                 DropdownButton<String>(
                   value: _semester,
-                  items: const [
-                    DropdownMenuItem(value: 'Ganjil 2025/2026', child: Text('Ganjil 2025/2026')),
-                    DropdownMenuItem(value: 'Genap 2025/2026', child: Text('Genap 2025/2026')),
-                  ],
+                  items: _semesterOptions().map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                   onChanged: (v) => setState(() => _semester = v ?? _semester),
                 ),
               ],
@@ -124,17 +139,24 @@ class _GradeScreenState extends State<GradeScreen> {
             AppButton(
               label: 'Simpan',
               onPressed: () async {
-                if (selectedSubject == null || scoreController.text.isEmpty) return;
-                final subject = await db.subjectDao.getSubjectByCode(selectedSubject!);
-                if (subject == null) return;
-                await db.gradeDao.insertGrade(
-                  studentId: student.id,
-                  subjectId: subject.id,
-                  score: double.parse(scoreController.text),
-                  examType: examType,
-                  semester: _semester,
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
+                try {
+                  if (selectedSubject == null || scoreController.text.isEmpty) return;
+                  final score = double.tryParse(scoreController.text);
+                  if (score == null) return;
+                  if (score < 0 || score > 100) return;
+                  final subject = await db.subjectDao.getSubjectByCode(selectedSubject!);
+                  if (subject == null) return;
+                  await db.gradeDao.insertGrade(
+                    studentId: student.id,
+                    subjectId: subject.id,
+                    score: score,
+                    examType: examType,
+                    semester: _semester,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                } catch (e) {
+                  debugPrint('Error inserting grade: $e');
+                }
               },
             ),
           ],

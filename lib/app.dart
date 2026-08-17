@@ -9,7 +9,7 @@ import 'package:kelasfun/features/home/mobile_home.dart';
 
 class KelasFunApp extends StatelessWidget {
   final AppDatabase? database;
-  const KelasFunApp({super.key, this.database});
+  const KelasFunApp({super.key, required this.database});
 
   @override
   Widget build(BuildContext context) {

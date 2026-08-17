@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ class QrGenerator {
     required String name,
     required String className,
   }) {
-    return '{"n":"$nis","nama":"$name","k":"$className"}';
+    return jsonEncode({'n': nis, 'nama': name, 'k': className});
   }
 
   static Future<Uint8List?> generateImage({

@@ -93,7 +93,7 @@ class _PointScreenState extends State<PointScreen> {
           ),
         ],
       ),
-    );
+    ).then((_) => nameController.dispose());
   }
 
   void _showPointDialog(BuildContext context, Student student) {
@@ -147,20 +147,24 @@ class _PointScreenState extends State<PointScreen> {
             AppButton(
               label: 'Simpan',
               onPressed: () async {
-                await db.pointDao.insertPoint(
-                  studentId: student.id,
-                  type: type,
-                  category: category,
-                  pointValue: pointValue,
-                  date: DateTime.now().toIso8601String().substring(0, 10),
-                  description: descController.text.isNotEmpty ? descController.text : null,
-                );
+                try {
+                  await db.pointDao.insertPoint(
+                    studentId: student.id,
+                    type: type,
+                    category: category,
+                    pointValue: pointValue,
+                    date: DateTime.now().toIso8601String().substring(0, 10),
+                    description: descController.text.isNotEmpty ? descController.text : null,
+                  );
+                } catch (e) {
+                  debugPrint('Error inserting point: $e');
+                }
                 if (ctx.mounted) Navigator.pop(ctx);
               },
             ),
           ],
         ),
       ),
-    );
+    ).then((_) => descController.dispose());
   }
 }
