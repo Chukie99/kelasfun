@@ -12,10 +12,9 @@ class LicenseService {
   
   // ============================================================
   // SUPABASE CONFIGURATION
-  // Ganti dengan URL dan Key dari Supabase project lu
   // ============================================================
-  static const String _supabaseUrl = 'https://YOUR_PROJECT.supabase.co';
-  static const String _supabaseKey = 'YOUR_ANON_KEY';
+  static const String _supabaseUrl = 'https://cdgnqhdmsnrlzygolecz.supabase.co';
+  static const String _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25xaGRtc25ybHp5bGdvZWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzUyNzgsImV4cCI6MjEwMjU1MTI3OH0.a3mH4gFGPV_aRvgFCJFHMjQQsc3AQc0YBvrLEeFM_HA';
   
   // Grace period: 30 hari offline
   static const int _gracePeriodDays = 30;
