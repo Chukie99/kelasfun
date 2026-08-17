@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:kelasfun/core/services/license_service.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 
+// Script untuk generate key baru:
+// void main() {
+//   final key = LicenseService.generateNewKey();
+//   final hash = LicenseService.getHashForNewKey(key);
+//   print('Key: $key');
+//   print('Hash: $hash');
+// }
+
 class ActivationScreen extends StatefulWidget {
   final VoidCallback onActivated;
   
