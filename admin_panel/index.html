@@ -3,338 +3,564 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - kelasFun License Manager</title>
+    <title>Admin Panel - kelasFun License</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
-            min-height: 100vh;
+            background: #f5f5f5;
+            color: #333;
         }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
+        
         header {
-            background: #16213e;
-            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
             margin-bottom: 30px;
             border-radius: 10px;
         }
-        h1 {
-            color: #4fd1c5;
+        
+        header h1 {
+            text-align: center;
+            margin-bottom: 10px;
         }
+        
+        header p {
+            text-align: center;
+            opacity: 0.9;
+        }
+        
         .card {
-            background: #16213e;
+            background: white;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
+        .card h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
         .form-group {
             margin-bottom: 15px;
         }
-        label {
+        
+        .form-group label {
             display: block;
             margin-bottom: 5px;
-            color: #aaa;
+            font-weight: 500;
         }
-        input, select {
+        
+        .form-group input,
+        .form-group select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #333;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            background: #0f0f23;
-            color: #fff;
             font-size: 14px;
         }
-        button {
-            background: #4fd1c5;
-            color: #000;
-            border: none;
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
             padding: 10px 20px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            margin-right: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
         }
-        button:hover {
-            background: #38bdf8;
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
         }
-        button.danger {
-            background: #fb7185;
+        
+        .btn-primary:hover {
+            background: #5a6fd6;
         }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
+        
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #ddd;
         }
+        
         th {
-            background: #0f0f23;
-            color: #4fd1c5;
+            background: #f8f9fa;
+            font-weight: 600;
         }
+        
         tr:hover {
-            background: #1f1f3a;
+            background: #f5f5f5;
         }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-unused {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
         .status-active {
-            color: #4fd1c5;
-            font-weight: bold;
+            background: #d4edda;
+            color: #155724;
         }
-        .status-inactive {
-            color: #fb7185;
-            font-weight: bold;
+        
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
         }
-        .generate-section {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
         }
-        .generate-section input {
-            flex: 1;
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Admin Panel - kelasFun License Manager</h1>
-            <p>Kelola lisensi aplikasi kelasFun</p>
+            <h1>🎓 kelasFun Admin Panel</h1>
+            <p>Kelola license key untuk aplikasi kelasFun</p>
         </header>
-
-        <div class="card">
-            <h2>Generate License Key</h2>
-            <div class="generate-section">
+        
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalKeys">0</h3>
+                <p>Total Keys</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="unusedKeys">0</h3>
+                <p>Belum Dipakai</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="activeKeys">0</h3>
+                <p>Aktif</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="expiredKeys">0</h3>
+                <p>Expired</p>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Generate Key -->
+            <div class="card">
+                <h2>🔑 Generate License Key</h2>
                 <div class="form-group">
-                    <label>Jumlah Key</label>
+                    <label for="generateCount">Jumlah Key:</label>
                     <input type="number" id="generateCount" value="1" min="1" max="100">
                 </div>
-                <button onclick="generateKeys()">Generate</button>
+                <div class="form-group">
+                    <label for="userEmail">Email User (opsional):</label>
+                    <input type="email" id="userEmail" placeholder="user@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="userName">Nama User (opsional):</label>
+                    <input type="text" id="userName" placeholder="Nama User">
+                </div>
+                <button class="btn btn-primary" onclick="generateKeys()">Generate Key</button>
+                <div id="generateResult" class="result"></div>
             </div>
-            <div id="generatedKeys" style="margin-top: 15px; display: none;">
-                <label>License Keys yang di-generate:</label>
-                <textarea id="keysOutput" rows="5" readonly style="width: 100%; margin-top: 5px;"></textarea>
+            
+            <!-- Validate Key -->
+            <div class="card">
+                <h2>✅ Validasi License Key</h2>
+                <div class="form-group">
+                    <label for="validateKey">License Key:</label>
+                    <input type="text" id="validateKey" placeholder="XXXX-XXXX-XXXX-XXXX">
+                </div>
+                <button class="btn btn-success" onclick="validateKey()">Validasi</button>
+                <div id="validateResult" class="result"></div>
+            </div>
+            
+            <!-- Reset Key -->
+            <div class="card">
+                <h2>🔄 Reset License Key</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Reset digunakan jika user kehilangan device dan ingin aktivasi di device baru.
+                </p>
+                <div class="form-group">
+                    <label for="resetKey">License Key:</label>
+                    <input type="text" id="resetKey" placeholder="XXXX-XXXX-XXXX-XXXX">
+                </div>
+                <button class="btn btn-danger" onclick="resetKey()">Reset Key</button>
+                <div id="resetResult" class="result"></div>
             </div>
         </div>
-
+        
+        <!-- License List -->
         <div class="card">
-            <h2>Aktivasi Manual</h2>
-            <div class="form-group">
-                <label>License Key</label>
-                <input type="text" id="manualKey" placeholder="XXXX-XXXX-XXXX-XXXX">
-            </div>
-            <div class="form-group">
-                <label>Device ID</label>
-                <input type="text" id="manualDeviceId" placeholder="Device ID dari user">
-            </div>
-            <div class="form-group">
-                <label>Nama User</label>
-                <input type="text" id="manualUserName" placeholder="Nama pemilik">
-            </div>
-            <button onclick="manualActivate()">Aktivasi Manual</button>
-        </div>
-
-        <div class="card">
-            <h2>Daftar Lisensi</h2>
-            <div class="form-group">
-                <input type="text" id="searchInput" placeholder="Cari berdasarkan key, device ID, atau nama..." oninput="filterLicenses()">
-            </div>
-            <table id="licenseTable">
+            <h2>📋 Daftar License</h2>
+            <button class="btn btn-secondary" onclick="loadLicenses()">Refresh</button>
+            <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+            <table>
                 <thead>
                     <tr>
                         <th>License Key</th>
-                        <th>Device ID</th>
-                        <th>Nama User</th>
-                        <th>Tanggal Aktivasi</th>
                         <th>Status</th>
+                        <th>Device ID</th>
+                        <th>User</th>
+                        <th>Aktivasi</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="licenseBody">
+                <tbody id="licenseTable">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px;">
+                            <div class="loading">Loading...</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
-
-        <div class="card">
-            <h2>Reset Lisensi (Device Hilang/Rusak)</h2>
-            <div class="form-group">
-                <label>License Key yang akan di-reset</label>
-                <input type="text" id="resetKey" placeholder="XXXX-XXXX-XXXX-XXXX">
-            </div>
-            <button class="danger" onclick="resetLicense()">Reset Lisensi</button>
-            <p style="margin-top: 10px; color: #aaa; font-size: 14px;">
-                Reset akan melepas ikatan device, sehingga user bisa aktivasi di device baru.
-            </p>
-        </div>
     </div>
-
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        // Database sederhana (dalam implementasi nyata, gunakan database server)
-        let licenses = JSON.parse(localStorage.getItem('kelasfun_licenses') || '[]');
-
-        function saveToStorage() {
-            localStorage.setItem('kelasfun_licenses', JSON.stringify(licenses));
-        }
-
-        function generateKey() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let key = '';
-            for (let i = 0; i < 4; i++) {
-                if (i > 0) key += '-';
-                for (let j = 0; j < 4; j++) {
-                    key += chars.charAt(Math.floor(Math.random() * chars.length));
+        // ============================================================
+        // GANTI DENGAN URL DAN KEY DARI SUPABASE PROJECT LU
+        // ============================================================
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_KEY = 'YOUR_SERVICE_ROLE_KEY'; // PAKAI SERVICE ROLE KEY!
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Load licenses on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLicenses();
+        });
+        
+        // Generate Keys
+        async function generateKeys() {
+            const count = document.getElementById('generateCount').value;
+            const email = document.getElementById('userEmail').value || null;
+            const name = document.getElementById('userName').value || null;
+            
+            showLoading('generateResult');
+            
+            try {
+                const keys = [];
+                for (let i = 0; i < count; i++) {
+                    const { data, error } = await supabase.rpc('generate_license', {
+                        p_user_email: email,
+                        p_user_name: name
+                    });
+                    
+                    if (error) throw error;
+                    keys.push(data[0].license_key);
                 }
-            }
-            return key;
-        }
-
-        function generateKeys() {
-            const count = parseInt(document.getElementById('generateCount').value);
-            const keys = [];
-            
-            for (let i = 0; i < count; i++) {
-                let key;
-                do {
-                    key = generateKey();
-                } while (licenses.some(l => l.key === key));
                 
-                licenses.push({
-                    key: key,
-                    deviceId: null,
-                    userName: null,
-                    activatedAt: null,
-                    status: 'unused'
-                });
+                showResult('generateResult', 'success', 
+                    `${keys.length} key berhasil dibuat:\n${keys.join('\n')}`
+                );
                 
-                keys.push(key);
+                loadLicenses(); // Refresh list
+            } catch (error) {
+                showResult('generateResult', 'error', error.message);
             }
-            
-            saveToStorage();
-            
-            document.getElementById('keysOutput').value = keys.join('\n');
-            document.getElementById('generatedKeys').style.display = 'block';
-            renderTable();
-            
-            alert(`${count} license key berhasil di-generate!`);
         }
-
-        function manualActivate() {
-            const key = document.getElementById('manualKey').value.toUpperCase();
-            const deviceId = document.getElementById('manualDeviceId').value;
-            const userName = document.getElementById('manualUserName').value;
-            
-            if (!key || !deviceId || !userName) {
-                alert('Semua field harus diisi!');
-                return;
-            }
-            
-            const existing = licenses.find(l => l.key === key);
-            if (existing) {
-                if (existing.status === 'active') {
-                    alert('License key sudah aktif di device lain!');
-                    return;
-                }
-                existing.deviceId = deviceId;
-                existing.userName = userName;
-                existing.activatedAt = new Date().toISOString();
-                existing.status = 'active';
-            } else {
-                licenses.push({
-                    key: key,
-                    deviceId: deviceId,
-                    userName: userName,
-                    activatedAt: new Date().toISOString(),
-                    status: 'active'
-                });
-            }
-            
-            saveToStorage();
-            renderTable();
-            
-            document.getElementById('manualKey').value = '';
-            document.getElementById('manualDeviceId').value = '';
-            document.getElementById('manualUserName').value = '';
-            
-            alert('Lisensi berhasil diaktifkan!');
-        }
-
-        function resetLicense() {
-            const key = document.getElementById('resetKey').value.toUpperCase();
+        
+        // Validate Key
+        async function validateKey() {
+            const key = document.getElementById('validateKey').value;
             
             if (!key) {
-                alert('Masukkan license key!');
+                showResult('validateResult', 'error', 'Masukkan license key');
                 return;
             }
             
-            const license = licenses.find(l => l.key === key);
-            if (!license) {
-                alert('License key tidak ditemukan!');
+            showLoading('validateResult');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('licenses')
+                    .select('*')
+                    .eq('license_key', key.toUpperCase())
+                    .single();
+                
+                if (error) throw error;
+                
+                if (data) {
+                    let status = '';
+                    if (data.status === 'unused') status = 'Belum Dipakai';
+                    else if (data.status === 'active') status = 'Aktif';
+                    else if (data.status === 'expired') status = 'Expired';
+                    
+                    showResult('validateResult', 'success',
+                        `✅ Key Valid!\n` +
+                        `Status: ${status}\n` +
+                        `Device: ${data.device_id || '-'}\n` +
+                        `User: ${data.user_email || '-'}\n` +
+                        `Aktivasi: ${data.activated_at ? new Date(data.activated_at).toLocaleString() : '-'}`
+                    );
+                } else {
+                    showResult('validateResult', 'error', 'Key tidak ditemukan');
+                }
+            } catch (error) {
+                showResult('validateResult', 'error', error.message);
+            }
+        }
+        
+        // Reset Key
+        async function resetKey() {
+            const key = document.getElementById('resetKey').value;
+            
+            if (!key) {
+                showResult('resetResult', 'error', 'Masukkan license key');
                 return;
             }
             
-            if (confirm(`Reset lisensi ${key}?\nUser: ${license.userName || '-'}\nDevice: ${license.deviceId || '-'}`)) {
-                license.deviceId = null;
-                license.userName = null;
-                license.activatedAt = null;
-                license.status = 'unused';
+            if (!confirm(`Yakin mau reset key ${key}?\nUser akan bisa aktivasi di device baru.`)) {
+                return;
+            }
+            
+            showLoading('resetResult');
+            
+            try {
+                const { data, error } = await supabase.rpc('reset_license', {
+                    p_license_key: key.toUpperCase()
+                });
                 
-                saveToStorage();
-                renderTable();
+                if (error) throw error;
                 
-                document.getElementById('resetKey').value = '';
-                alert('Lisensi berhasil di-reset! User bisa aktivasi di device baru.');
+                if (data[0].success) {
+                    showResult('resetResult', 'success', data[0].message);
+                    loadLicenses(); // Refresh list
+                } else {
+                    showResult('resetResult', 'error', data[0].message);
+                }
+            } catch (error) {
+                showResult('resetResult', 'error', error.message);
             }
         }
-
-        function revokeLicense(key) {
-            if (confirm(`Revoke lisensi ${key}?`)) {
-                licenses = licenses.filter(l => l.key !== key);
-                saveToStorage();
-                renderTable();
+        
+        // Load Licenses
+        async function loadLicenses() {
+            const tbody = document.getElementById('licenseTable');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Loading...</td></tr>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('licenses')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                // Update stats
+                document.getElementById('totalKeys').textContent = data.length;
+                document.getElementById('unusedKeys').textContent = data.filter(l => l.status === 'unused').length;
+                document.getElementById('activeKeys').textContent = data.filter(l => l.status === 'active').length;
+                document.getElementById('expiredKeys').textContent = data.filter(l => l.status === 'expired').length;
+                
+                // Update table
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Belum ada license</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = data.map(license => `
+                    <tr>
+                        <td><strong>${license.license_key}</strong></td>
+                        <td><span class="status status-${license.status}">${license.status}</span></td>
+                        <td style="font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${license.device_id || '-'}</td>
+                        <td>${license.user_email || '-'}</td>
+                        <td>${license.activated_at ? new Date(license.activated_at).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" 
+                                onclick="resetLicense('${license.license_key}')">
+                                Reset
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: red;">Error: ${error.message}</td></tr>`;
             }
         }
-
-        function filterLicenses() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = licenses.filter(l => 
-                (l.key && l.key.toLowerCase().includes(search)) ||
-                (l.deviceId && l.deviceId.toLowerCase().includes(search)) ||
-                (l.userName && l.userName.toLowerCase().includes(search))
-            );
-            renderTable(filtered);
+        
+        // Reset License (from table)
+        async function resetLicense(key) {
+            if (!confirm(`Yakin mau reset key ${key}?`)) return;
+            
+            try {
+                const { data, error } = await supabase.rpc('reset_license', {
+                    p_license_key: key
+                });
+                
+                if (error) throw error;
+                
+                alert(data[0].message);
+                loadLicenses();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
-
-        function renderTable(data = licenses) {
-            const tbody = document.getElementById('licenseBody');
-            tbody.innerHTML = data.map(l => `
-                <tr>
-                    <td>${l.key}</td>
-                    <td style="font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${l.deviceId || '-'}</td>
-                    <td>${l.userName || '-'}</td>
-                    <td>${l.activatedAt ? new Date(l.activatedAt).toLocaleDateString('id-ID') : '-'}</td>
-                    <td class="${l.status === 'active' ? 'status-active' : 'status-inactive'}">
-                        ${l.status === 'active' ? 'Aktif' : 'Belum Digunakan'}
-                    </td>
-                    <td>
-                        ${l.status === 'active' ? 
-                            `<button class="danger" onclick="revokeLicense('${l.key}')" style="padding: 5px 10px; font-size: 12px;">Revoke</button>` : 
-                            '-'}
-                    </td>
-                </tr>
-            `).join('');
+        
+        // Export CSV
+        function exportCSV() {
+            const table = document.getElementById('licenseTable');
+            const rows = table.querySelectorAll('tr');
+            
+            let csv = 'License Key,Status,Device ID,User Email,User Name,Aktivasi\n';
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length >= 5) {
+                    const key = cols[0].textContent.trim();
+                    const status = cols[1].textContent.trim();
+                    const device = cols[2].textContent.trim();
+                    const email = cols[3].textContent.trim();
+                    const date = cols[4].textContent.trim();
+                    
+                    csv += `"${key}","${status}","${device}","${email}","","${date}"\n`;
+                }
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `licenses_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
         }
-
-        // Render table saat pertama kali load
-        renderTable();
+        
+        // Helper functions
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+        
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result';
+            element.textContent = 'Loading...';
+        }
     </script>
 </body>
 </html>
