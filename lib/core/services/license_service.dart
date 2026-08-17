@@ -58,19 +58,24 @@ class LicenseService {
   /// Validasi license key ke Supabase
   static Future<LicenseResult> validateLicense(String licenseKey) async {
     final deviceId = await getDeviceId();
+    print('Device ID: $deviceId');
     
     try {
       // Format license key: XXXX-XXXX-XXXX-XXXX
       if (!_isValidFormat(licenseKey)) {
+        print('Invalid format');
         return LicenseResult(
           isValid: false,
           message: 'Format license key tidak valid.\nContoh: A1B2-C3D4-E5F6-G7H8',
         );
       }
       
+      final url = '$_supabaseUrl/rest/v1/rpc/validate_license';
+      print('Calling: $url');
+      
       // Kirim ke Supabase untuk validasi
       final response = await http.post(
-        Uri.parse('$_supabaseUrl/rest/v1/rpc/validate_license'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'apikey': _supabaseKey,
@@ -81,6 +86,9 @@ class LicenseService {
           'p_device_id': deviceId,
         }),
       );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -103,6 +111,7 @@ class LicenseService {
           );
         }
       } else {
+        print('Server error, fallback ke offline mode');
         // Server error, fallback ke offline mode
         return await _validateOffline(licenseKey, deviceId);
       }

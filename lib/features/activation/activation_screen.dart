@@ -49,17 +49,28 @@ class _ActivationScreenState extends State<ActivationScreen> {
     });
     
     final licenseKey = _licenseController.text.trim();
-    final result = await LicenseService.validateLicense(licenseKey);
+    print('Activating with key: $licenseKey');
     
-    setState(() {
-      _isLoading = false;
-    });
-    
-    if (result.isValid) {
-      widget.onActivated();
-    } else {
+    try {
+      final result = await LicenseService.validateLicense(licenseKey);
+      print('Result: ${result.isValid} - ${result.message}');
+      
       setState(() {
-        _errorMessage = result.message;
+        _isLoading = false;
+      });
+      
+      if (result.isValid) {
+        widget.onActivated();
+      } else {
+        setState(() {
+          _errorMessage = result.message;
+        });
+      }
+    } catch (e) {
+      print('Error during activation: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Terjadi error: $e';
       });
     }
   }
