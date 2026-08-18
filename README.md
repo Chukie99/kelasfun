@@ -4,7 +4,7 @@
 
 **Aplikasi Manajemen Kelas Offline-First untuk Sekolah Indonesia**
 
-![Version](https://img.shields.io/badge/version-1.2.4-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.3.0-blue?style=flat-square)
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
@@ -61,7 +61,10 @@ KelasFun adalah aplikasi manajemen kelas berbasis Flutter yang dirancang untuk s
 - Offline queue untuk scan saat offline
 - REST API (GET/POST students, attendance, scan)
 
-### Sistem Lisensi
+### Sistem Lisensi & Autentikasi
+- Login dengan Google (Supabase Auth)
+- Beli lisensi langsung dari lynk.id
+- License key dikirim otomatis via email
 - Aktivasi lisensi online (Supabase backend)
 - Device binding untuk mencegah multi-device
 - Grace period 30 hari untuk mode offline
@@ -100,7 +103,9 @@ KelasFun adalah aplikasi manajemen kelas berbasis Flutter yang dirancang untuk s
 | Framework | Flutter 3.x |
 | Bahasa | Dart 3.x |
 | Database Lokal | Drift (SQLite) |
-| Backend | Supabase (lisensi) |
+| Backend | Supabase (auth + lisensi) |
+| Autentikasi | Google OAuth (Supabase Auth) |
+| Email Service | Resend |
 | State Management | Provider |
 | Charts | fl_chart |
 | PDF | printing + pdf |

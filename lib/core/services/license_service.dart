@@ -11,8 +11,8 @@ class LicenseService {
   static const int _gracePeriodDays = 30;
 
   // Supabase
-  static const String _supabaseUrl = 'https://cdgnqhdmsnrlzygolecz.supabase.co';
-  static const String _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25xaGRtc25ybHp5bGdvZWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzUyNzgsImV4cCI6MjEwMjU1MTI3OH0.a3mH4gFGPV_aRvgFCJFHMjQQsc3AQc0YBvrLEeFM_HA';
+  static const String _supabaseUrl = 'https://cdgnqhdmsnrlzylgoecz.supabase.co';
+  static const String _supabaseKey = 'sb_publishable_HLnBeenbfNLvlF7sc6-lcg_fSIS87e3';
 
   static Future<String> getDeviceId() async {
     try {

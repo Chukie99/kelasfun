@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/services/license_service.dart';
+import 'package:kelasfun/core/services/auth_service.dart';
 import 'package:kelasfun/core/utils/responsive.dart';
+import 'package:kelasfun/features/auth/auth_screen.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
 import 'package:kelasfun/features/home/mobile_home.dart';
@@ -49,7 +51,7 @@ class KelasFunApp extends StatelessWidget {
               Locale('en', 'US'),
             ],
             locale: const Locale('id', 'ID'),
-            home: const LicenseCheckScreen(),
+            home: const AppGate(),
           );
         },
       ),
@@ -57,45 +59,49 @@ class KelasFunApp extends StatelessWidget {
   }
 }
 
-class LicenseCheckScreen extends StatefulWidget {
-  const LicenseCheckScreen({super.key});
+class AppGate extends StatefulWidget {
+  const AppGate({super.key});
 
   @override
-  State<LicenseCheckScreen> createState() => _LicenseCheckScreenState();
+  State<AppGate> createState() => _AppGateState();
 }
 
-class _LicenseCheckScreenState extends State<LicenseCheckScreen> {
+class _AppGateState extends State<AppGate> {
   bool _isLoading = true;
+  bool _isLoggedIn = false;
   bool _isActivated = false;
 
   @override
   void initState() {
     super.initState();
-    _checkLicense();
+    _checkState();
   }
 
-  Future<void> _checkLicense() async {
-    final isActivated = await LicenseService.isActivated();
-    
-    if (isActivated) {
-      final isInGracePeriod = await LicenseService.isInGracePeriod();
-      
-      if (!isInGracePeriod) {
-        final result = await LicenseService.revalidate();
-        if (!result.isValid) {
-          setState(() {
-            _isActivated = false;
-            _isLoading = false;
-          });
-          return;
+  Future<void> _checkState() async {
+    final loggedIn = AuthService.isLoggedIn;
+    bool activated = false;
+
+    if (loggedIn) {
+      activated = await LicenseService.isActivated();
+
+      if (activated) {
+        final inGracePeriod = await LicenseService.isInGracePeriod();
+        if (!inGracePeriod) {
+          final result = await LicenseService.revalidate();
+          if (!result.isValid) {
+            activated = false;
+          }
         }
       }
     }
-    
-    setState(() {
-      _isActivated = isActivated;
-      _isLoading = false;
-    });
+
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = loggedIn;
+        _isActivated = activated;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -108,13 +114,26 @@ class _LicenseCheckScreenState extends State<LicenseCheckScreen> {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 20),
-              Text('Memeriksa lisensi...'),
+              Text('Memeriksa sesi...'),
             ],
           ),
         ),
       );
     }
 
+    // Step 1: Belum login → Auth Screen
+    if (!_isLoggedIn) {
+      return AuthScreen(
+        onAuthenticated: () {
+          setState(() {
+            _isLoggedIn = true;
+          });
+          _checkState();
+        },
+      );
+    }
+
+    // Step 2: Login tapi belum aktivasi → Activation Screen
     if (!_isActivated) {
       return ActivationScreen(
         onActivated: () {
@@ -125,6 +144,7 @@ class _LicenseCheckScreenState extends State<LicenseCheckScreen> {
       );
     }
 
+    // Step 3: Sudah login + sudah aktivasi → Main App
     return Responsive.isMobilePlatform || Responsive.isMobile(context)
         ? const MobileHome()
         : const HomeScreen();
