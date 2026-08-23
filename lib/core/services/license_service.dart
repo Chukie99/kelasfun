@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 class LicenseService {
-  static const String _licenseKey = 'kelasfun_license_key';
+  static const String _serialNumberKey = 'kelasfun_serial_number';
   static const String _isActivated = 'kelasfun_is_activated';
   static const String _activatedAt = 'kelasfun_activated_at';
   static const int _gracePeriodDays = 30;
@@ -28,27 +28,65 @@ class LicenseService {
     return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  static bool _isValidFormat(String key) {
-    return RegExp(r'^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$').hasMatch(key.toUpperCase());
+  static bool _isValidSerialFormat(String serial) {
+    return RegExp(r'^KF-[A-Z0-9]{4}-[A-Z0-9]{4}$').hasMatch(serial.toUpperCase());
   }
 
-  static Future<LicenseResult> validateLicense(String licenseKey) async {
+  static Future<LicenseResult> requestSerialNumber(String email) async {
     final deviceId = await getDeviceId();
-    print('[LICENSE] Key: $licenseKey | Device: $deviceId');
-
-    if (!_isValidFormat(licenseKey)) {
-      return LicenseResult(isValid: false, message: 'Format key salah. Contoh: ABCD-EFGH-IJKL-MNOP');
-    }
+    print('[LICENSE] Request serial for: $email | Device: $deviceId');
 
     try {
-      // 1. Cari key di Supabase
-      print('[LICENSE] Cari key di Supabase...');
-      final response = await http.get(
-        Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}&select=*'),
+      final response = await http.post(
+        Uri.parse('$_supabaseUrl/functions/v1/generate-license'),
         headers: {
+          'Content-Type': 'application/json',
           'apikey': _supabaseKey,
           'Authorization': 'Bearer $_supabaseKey',
         },
+        body: jsonEncode({
+          'email': email,
+          'device_id': deviceId,
+        }),
+      );
+
+      print('[LICENSE] Response: ${response.statusCode} | ${response.body}');
+
+      if (response.statusCode != 200) {
+        return LicenseResult(isValid: false, message: 'Gagal request serial. Status: ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body);
+      final success = data['success'] == true;
+      final message = data['message'] ?? 'Unknown response';
+
+      return LicenseResult(isValid: success, message: message);
+    } catch (e) {
+      print('[LICENSE] Error: $e');
+      return LicenseResult(isValid: false, message: 'Tidak ada internet. Silakan online untuk request serial.');
+    }
+  }
+
+  static Future<LicenseResult> verifySerialNumber(String serialNumber) async {
+    final deviceId = await getDeviceId();
+    print('[LICENSE] Serial: $serialNumber | Device: $deviceId');
+
+    if (!_isValidSerialFormat(serialNumber)) {
+      return LicenseResult(isValid: false, message: 'Format serial salah. Contoh: KF-AB12-CD34');
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$_supabaseUrl/functions/v1/verify-license'),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': _supabaseKey,
+          'Authorization': 'Bearer $_supabaseKey',
+        },
+        body: jsonEncode({
+          'serial_number': serialNumber.toUpperCase(),
+          'device_id': deviceId,
+        }),
       );
 
       print('[LICENSE] Response: ${response.statusCode} | ${response.body}');
@@ -57,78 +95,24 @@ class LicenseService {
         return LicenseResult(isValid: false, message: 'Gagal connect ke server. Status: ${response.statusCode}');
       }
 
-      final List<dynamic> data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      final valid = data['valid'] == true;
+      final message = data['message'] ?? (valid ? 'Aktivasi berhasil!' : 'Serial tidak valid');
 
-      // 2. Key tidak ditemukan
-      if (data.isEmpty) {
-        return LicenseResult(isValid: false, message: 'License key tidak ditemukan');
+      if (valid) {
+        await _saveLocal(serialNumber);
       }
 
-      final license = data[0];
-      final status = license['status'];
-      final savedDeviceId = license['device_id'];
-
-      print('[LICENSE] Status: $status | SavedDevice: $savedDeviceId');
-
-      // 3. Key sudah expired
-      if (status == 'expired') {
-        return LicenseResult(isValid: false, message: 'License sudah expired');
-      }
-
-      // 4. Key belum dipakai → Aktivasi baru
-      if (status == 'unused') {
-        final updateResponse = await http.patch(
-          Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': _supabaseKey,
-            'Authorization': 'Bearer $_supabaseKey',
-          },
-          body: jsonEncode({
-            'device_id': deviceId,
-            'status': 'active',
-            'activated_at': DateTime.now().toIso8601String(),
-          }),
-        );
-
-        if (updateResponse.statusCode == 200 || updateResponse.statusCode == 204) {
-          await _saveLocal(licenseKey);
-          return LicenseResult(isValid: true, message: 'Aktivasi berhasil!');
-        } else {
-          return LicenseResult(isValid: false, message: 'Gagal aktivasi: ${updateResponse.body}');
-        }
-      }
-
-      // 5. Key sudah aktif → Cek device
-      if (status == 'active') {
-        if (savedDeviceId == deviceId) {
-          // Device sama → Update last_validated
-          await http.patch(
-            Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': _supabaseKey,
-              'Authorization': 'Bearer $_supabaseKey',
-            },
-            body: jsonEncode({'last_validated_at': DateTime.now().toIso8601String()}),
-          );
-          await _saveLocal(licenseKey);
-          return LicenseResult(isValid: true, message: 'Aktivasi berhasil!');
-        } else {
-          return LicenseResult(isValid: false, message: 'License sudah dipakai device lain. Hubungi admin untuk reset.');
-        }
-      }
-
-      return LicenseResult(isValid: false, message: 'License tidak valid');
+      return LicenseResult(isValid: valid, message: message);
     } catch (e) {
       print('[LICENSE] Error: $e');
-      return _validateOffline(licenseKey, deviceId);
+      return _validateOffline(serialNumber, deviceId);
     }
   }
 
-  static Future<void> _saveLocal(String licenseKey) async {
+  static Future<void> _saveLocal(String serialNumber) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_licenseKey, licenseKey.toUpperCase());
+    await prefs.setString(_serialNumberKey, serialNumber.toUpperCase());
     await prefs.setBool(_isActivated, true);
     await prefs.setString(_activatedAt, DateTime.now().toIso8601String());
   }
@@ -148,14 +132,14 @@ class LicenseService {
 
   static Future<LicenseResult> revalidate() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedKey = prefs.getString(_licenseKey);
-    if (savedKey == null || savedKey.isEmpty) {
-      return LicenseResult(isValid: false, message: 'Tidak ada license key tersimpan');
+    final savedSerial = prefs.getString(_serialNumberKey);
+    if (savedSerial == null || savedSerial.isEmpty) {
+      return LicenseResult(isValid: false, message: 'Tidak ada serial number tersimpan');
     }
-    return await validateLicense(savedKey);
+    return await verifySerialNumber(savedSerial);
   }
 
-  static LicenseResult _validateOffline(String licenseKey, String deviceId) {
+  static LicenseResult _validateOffline(String serialNumber, String deviceId) {
     return LicenseResult(isValid: false, message: 'Tidak ada internet. Silakan online untuk aktivasi.');
   }
 }
