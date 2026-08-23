@@ -81,13 +81,27 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const serialNumber = generateSerialNumber();
-
-    const { error: insertError } = await supabase.from("licenses").insert({
-      license_key: serialNumber,
-      user_email: email,
-      status: "unused",
-    });
+    let serialNumber: string;
+    let insertError: any;
+    const MAX_RETRIES = 3;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      serialNumber = generateSerialNumber();
+      const { error } = await supabase.from("licenses").insert({
+        license_key: serialNumber,
+        user_email: email,
+        device_id: device_id,
+        status: "unused",
+      });
+      if (!error) {
+        insertError = null;
+        break;
+      }
+      insertError = error;
+      if (error.code !== "23505") {
+        // Non-unique violation, break early
+        break;
+      }
+    }
 
     if (insertError) {
       console.error("Database insert error:", insertError);
