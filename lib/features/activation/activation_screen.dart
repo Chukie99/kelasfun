@@ -10,10 +10,20 @@ class ActivationScreen extends StatefulWidget {
 }
 
 class _ActivationScreenState extends State<ActivationScreen> {
-  final _licenseController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _serialController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _serialSent = false;
   String? _errorMessage;
+  String? _successMessage;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _serialController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,27 +49,55 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     const SizedBox(height: 20),
                     const Text('Aktivasi kelasFun', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                     const SizedBox(height: 8),
-                    const Text('Masukkan license key', style: TextStyle(color: AppTheme.textSecondary)),
+                    Text(
+                      _serialSent ? 'Masukkan serial number' : 'Masukkan email untuk mendapatkan serial',
+                      style: const TextStyle(color: AppTheme.textSecondary),
+                    ),
                     const SizedBox(height: 24),
 
                     Form(
                       key: _formKey,
                       child: Column(
                         children: [
-                          TextFormField(
-                            controller: _licenseController,
-                            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, letterSpacing: 2),
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText: 'XXXX-XXXX-XXXX-XXXX',
-                              hintStyle: const TextStyle(color: AppTheme.textTertiary),
-                              filled: true,
-                              fillColor: AppTheme.surfaceLight,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          if (!_serialSent) ...[
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+                              decoration: InputDecoration(
+                                hintText: 'Email',
+                                prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.textTertiary),
+                                hintStyle: const TextStyle(color: AppTheme.textTertiary),
+                                filled: true,
+                                fillColor: AppTheme.surfaceLight,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
                             ),
-                            textCapitalization: TextCapitalization.characters,
-                          ),
-                          const SizedBox(height: 16),
+                          ] else ...[
+                            TextFormField(
+                              controller: _serialController,
+                              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, letterSpacing: 2),
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: 'KF-XXXX-XXXX',
+                                hintStyle: const TextStyle(color: AppTheme.textTertiary),
+                                filled: true,
+                                fillColor: AppTheme.surfaceLight,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                              textCapitalization: TextCapitalization.characters,
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton(
+                                onPressed: _isLoading ? null : _goBackToEmail,
+                                child: const Text('Ganti email', style: TextStyle(color: AppTheme.accent)),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 8),
 
                           if (_errorMessage != null)
                             Container(
@@ -70,11 +108,20 @@ class _ActivationScreenState extends State<ActivationScreen> {
                               child: Text(_errorMessage!, style: const TextStyle(color: AppTheme.coral)),
                             ),
 
+                          if (_successMessage != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(8)),
+                              child: Text(_successMessage!, style: TextStyle(color: Colors.green.shade700)),
+                            ),
+
                           SizedBox(
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _activate,
+                              onPressed: _isLoading ? null : (_serialSent ? _activate : _requestSerial),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.accent,
                                 foregroundColor: Colors.white,
@@ -82,7 +129,10 @@ class _ActivationScreenState extends State<ActivationScreen> {
                               ),
                               child: _isLoading
                                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                  : const Text('Aktivasi', style: TextStyle(fontSize: 16)),
+                                  : Text(
+                                      _serialSent ? 'Aktivasi' : 'Kirim Serial Number',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                             ),
                           ),
                         ],
@@ -90,7 +140,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     ),
 
                     const SizedBox(height: 20),
-                    const Text('Belum punya license? Hubungi admin', style: TextStyle(color: AppTheme.textTertiary, fontSize: 12)),
+                    const Text('Beli di Lynk.id', style: TextStyle(color: AppTheme.textTertiary, fontSize: 12)),
                   ],
                 ),
               ),
@@ -101,16 +151,49 @@ class _ActivationScreenState extends State<ActivationScreen> {
     );
   }
 
-  Future<void> _activate() async {
-    final key = _licenseController.text.trim();
-    if (key.isEmpty) {
-      setState(() => _errorMessage = 'Masukkan license key');
+  void _goBackToEmail() {
+    setState(() {
+      _serialSent = false;
+      _errorMessage = null;
+      _successMessage = null;
+      _serialController.clear();
+    });
+  }
+
+  Future<void> _requestSerial() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _errorMessage = 'Masukkan email yang valid');
       return;
     }
 
-    setState(() { _isLoading = true; _errorMessage = null; });
+    setState(() { _isLoading = true; _errorMessage = null; _successMessage = null; });
 
-    final result = await LicenseService.validateLicense(key);
+    final result = await LicenseService.requestSerialNumber(email);
+
+    setState(() => _isLoading = false);
+
+    if (result.isValid) {
+      setState(() {
+        _serialSent = true;
+        _successMessage = result.message;
+        _errorMessage = null;
+      });
+    } else {
+      setState(() => _errorMessage = result.message);
+    }
+  }
+
+  Future<void> _activate() async {
+    final serial = _serialController.text.trim();
+    if (serial.isEmpty) {
+      setState(() => _errorMessage = 'Masukkan serial number');
+      return;
+    }
+
+    setState(() { _isLoading = true; _errorMessage = null; _successMessage = null; });
+
+    final result = await LicenseService.verifySerialNumber(serial);
 
     setState(() => _isLoading = false);
 
