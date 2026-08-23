@@ -36,6 +36,16 @@ serve(async (req: Request) => {
       );
     }
 
+    if (!/^KF-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(serial_number)) {
+      return new Response(
+        JSON.stringify({ valid: false, message: "Serial number tidak valid" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     if (!device_id || device_id.trim() === "") {
       return new Response(
         JSON.stringify({ valid: false, message: "Device ID tidak valid" }),
