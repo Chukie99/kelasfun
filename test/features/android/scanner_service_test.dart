@@ -190,7 +190,10 @@ void main() {
       expect(await service.loadQueue(), isEmpty);
     });
 
-    test('does NOT queue on malformed non-JSON HTTP response', () async {
+    test('queues the scan on malformed non-JSON HTTP response', () async {
+      // Perilaku baru: respons tak terduga (mis. captive portal HTML)
+      // TETAP masuk antrian supaya scan tidak hilang permanen.
+      // Dulu dibuang begitu saja -> data presensi lost.
       await _seedConfig();
       final client = MockClient((request) async {
         return http.Response('<html>captive portal</html>', 200,
@@ -201,8 +204,9 @@ void main() {
       final result = await service.sendScan('12345');
 
       expect(result.success, isFalse);
-      expect(result.error, isNot('Tersimpan offline'));
-      expect(await service.loadQueue(), isEmpty);
+      final queue = await service.loadQueue();
+      expect(queue.length, 1);
+      expect(queue.first.nis, '12345');
     });
 
     test('queues the scan when the POST times out', () async {

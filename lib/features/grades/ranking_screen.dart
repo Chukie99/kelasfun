@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/core/utils/semester_utils.dart';
 import 'package:kelasfun/features/grades/widgets/ranking_card.dart';
 
 class RankingScreen extends StatefulWidget {
@@ -23,8 +24,9 @@ class _RankingScreenState extends State<RankingScreen> {
 
   Future<List<RankingEntry>> _loadData() async {
     final db = context.read<AppDatabase>();
-    final now = DateTime.now();
-    final semester = '${now.month <= 6 ? "Ganjil" : "Genap"} ${now.year}/${now.year + 1}';
+    // Kunci semester WAJIB lewat util terpusat — dulu di sini bulannya
+    // terbalik (Jan-Jun dianggap Ganjil) sehingga ranking sering kosong.
+    final semester = SemesterUtils.currentSemester();
 
     final ranking = await db.gradeDao.getRanking(semester);
     final allStudents = await db.studentDao.getAllStudents();

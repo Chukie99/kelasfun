@@ -81,9 +81,14 @@ class PdfGenerator {
       final qrCodeBytes = QrImageHelper.generatePng(payload, size: 200);
 
       pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat(tagWidth, tagHeight),
-        margin: pw.EdgeInsets.zero,
-        build: (context) => _buildIdCard(student, schoolName, photoBytes, qrCodeBytes),
+        pageFormat: const PdfPageFormat(tagWidth, tagHeight),
+        // Margin kecil agar kartu tidak menempel tepi & border tidak terpotong,
+        // lalu pw.Center memastikan kartu persis di tengah halaman
+        // (horizontal maupun vertikal).
+        margin: const pw.EdgeInsets.all(8),
+        build: (context) => pw.Center(
+          child: _buildIdCard(student, schoolName, photoBytes, qrCodeBytes),
+        ),
       ));
     }
 
@@ -111,6 +116,7 @@ class PdfGenerator {
         border: pw.Border.all(color: borderColor, width: 1),
       ),
       child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
           // Header
           pw.Container(
@@ -124,6 +130,7 @@ class PdfGenerator {
               ),
             ),
             child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Text(
                   schoolName ?? 'SEKOLAH',
@@ -160,8 +167,9 @@ class PdfGenerator {
               padding: const pw.EdgeInsets.all(8),
               color: lightBg,
               child: pw.Column(
-                mainAxisAlignment: pw.MainAxisAlignment.center,
-                children: [
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
                   // Photo
                   if (photoBytes != null)
                     pw.Container(
@@ -198,7 +206,7 @@ class PdfGenerator {
                       child: pw.Center(
                         child: pw.Text(
                           'FOTO',
-                          style: pw.TextStyle(
+                          style: const pw.TextStyle(
                             fontSize: 8,
                             color: PdfColors.grey500,
                           ),
@@ -208,30 +216,14 @@ class PdfGenerator {
                   pw.SizedBox(height: 8),
 
                   // Student Info
-                  pw.Text(
-                    'NIS   : ${student['nis'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
+                  _buildCardInfoRow('NIS', '${student['nis'] ?? ''}',
+                      bold: false, color: PdfColors.grey700),
                   pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Nama  : ${student['name'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      fontWeight: pw.FontWeight.bold,
-                      color: headerColor,
-                    ),
-                  ),
+                  _buildCardInfoRow('Nama', '${student['name'] ?? ''}',
+                      bold: true, color: headerColor),
                   pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Kelas : ${student['class'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
+                  _buildCardInfoRow('Kelas', '${student['class'] ?? ''}',
+                      bold: false, color: PdfColors.grey700),
                 ],
               ),
             ),
@@ -248,6 +240,7 @@ class PdfGenerator {
               ),
             ),
             child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 if (qrCodeBytes != null)
                   pw.Image(
@@ -258,7 +251,7 @@ class PdfGenerator {
                 pw.SizedBox(height: 4),
                 pw.Text(
                   'SCAN UNTUK VERIFIKASI',
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 6,
                     color: PdfColors.grey500,
                   ),
@@ -283,7 +276,8 @@ class PdfGenerator {
     );
   }
 
-  static Future<Uint8List?> generateReportCard({
+  /// Membuat SATU HALAMAN rapor (untuk digabung ke dokumen multi-siswa).
+  static pw.Page buildReportCardPage({
     required String studentName,
     required String nis,
     required String className,
@@ -294,10 +288,8 @@ class PdfGenerator {
     required int rank,
     required int totalStudents,
     String? schoolName,
-  }) async {
-    final pdf = pw.Document();
-
-    pdf.addPage(pw.Page(
+  }) {
+    return pw.Page(
       pageFormat: PdfPageFormat.a4,
       build: (context) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -342,9 +334,67 @@ class PdfGenerator {
           _buildRow('Peringkat', '$rank dari $totalStudents'),
         ],
       ),
-    ));
+    );
+  }
 
+  static Future<Uint8List?> generateReportCard({
+    required String studentName,
+    required String nis,
+    required String className,
+    required String semester,
+    required List<Map<String, dynamic>> grades,
+    required int totalViolationPoints,
+    required int totalAchievementPoints,
+    required int rank,
+    required int totalStudents,
+    String? schoolName,
+  }) async {
+    final pdf = pw.Document();
+    pdf.addPage(buildReportCardPage(
+      studentName: studentName,
+      nis: nis,
+      className: className,
+      semester: semester,
+      grades: grades,
+      totalViolationPoints: totalViolationPoints,
+      totalAchievementPoints: totalAchievementPoints,
+      rank: rank,
+      totalStudents: totalStudents,
+      schoolName: schoolName,
+    ));
     return pdf.save();
+  }
+
+  /// Baris info kartu siswa: label rata-kanan pada kolom tetap,
+  /// diikuti ': nilai'. Seluruh baris dipusatkan secara horizontal.
+  static pw.Widget _buildCardInfoRow(
+    String label,
+    String value, {
+    required bool bold,
+    required PdfColor color,
+  }) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.center,
+      children: [
+        pw.SizedBox(
+          width: 30,
+          child: pw.Text(
+            label,
+            textAlign: pw.TextAlign.right,
+            style: pw.TextStyle(fontSize: 8, color: color),
+          ),
+        ),
+        pw.SizedBox(width: 4),
+        pw.Text(
+          ': $value',
+          style: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 
   static pw.Widget _buildRow(String label, String value) {

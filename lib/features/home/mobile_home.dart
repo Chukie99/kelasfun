@@ -22,31 +22,27 @@ class _MobileHomeState extends State<MobileHome> {
     _NavItem(icon: Icons.more_horiz, label: 'Lainnya'),
   ];
 
-  Widget _buildContent() {
-    switch (_selectedIndex) {
-      case 0:
-        return DashboardScreen(
-          onNavigate: () => setState(() => _selectedIndex = 1),
-        );
-      case 1:
-        return const AttendanceScreen();
-      case 2:
-        return const StudentListScreen();
-      case 3:
-        return const MoreScreen();
-      default:
-        return DashboardScreen(
-          onNavigate: () => setState(() => _selectedIndex = 1),
-        );
-    }
-  }
+  // IndexedStack: semua tab dibangun SEKALI dan state-nya BERTAHAN
+  // (posisi scroll, hasil search, input form) saat pindah-tab.
+  // Dulu pakai switch -> rebuild penuh tiap ganti tab, semuanya reset.
+  late final List<Widget> _screens = [
+    DashboardScreen(
+      onNavigate: () => setState(() => _selectedIndex = 1),
+    ),
+    const AttendanceScreen(),
+    const StudentListScreen(),
+    const MoreScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: _buildContent(),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {

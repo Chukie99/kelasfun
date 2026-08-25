@@ -34,7 +34,6 @@ class QrGenerator {
     );
 
     final image = await painter.toImage(size);
-    if (image == null) return null;
 
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData?.buffer.asUint8List();

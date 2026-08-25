@@ -1,31 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/pdf_generator.dart';
 import 'package:kelasfun/core/utils/excel_generator.dart';
+import 'package:kelasfun/core/utils/semester_utils.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
-
-String _currentSemester() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return 'Ganjil ${now.year}/${now.year + 1}';
-  } else {
-    return 'Genap ${now.year - 1}/${now.year}';
-  }
-}
-
-List<String> _semesterOptions() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return ['Ganjil ${now.year}/${now.year + 1}', 'Genap ${now.year}/${now.year + 1}'];
-  } else {
-    return ['Ganjil ${now.year - 1}/${now.year}', 'Genap ${now.year - 1}/${now.year}'];
-  }
-}
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
@@ -210,28 +194,30 @@ class ReportScreen extends StatelessWidget {
   }
 
   void _showBatchReportDialog(BuildContext context) {
-    String selectedClass = 'X RPL 1';
-    final currentSemester = _currentSemester();
-    final semOptions = _semesterOptions();
-    String selectedSemester = currentSemester;
+    final db = context.read<AppDatabase>();
+    String selectedClass = '';
+    final semOptions = SemesterUtils.options();
+    String selectedSemester = SemesterUtils.currentSemester();
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: const Text('Cetak Semua Rapor'),
-          content: Column(
+          content: FutureBuilder<List<String>>(
+            future: db.studentDao.getDistinctClassNames(),
+            builder: (context, classSnapshot) {
+            final classes = classSnapshot.data ?? const [];
+            if (selectedClass.isEmpty && classes.isNotEmpty) {
+              selectedClass = classes.first;
+            }
+            return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: selectedClass,
+                value: classes.contains(selectedClass) ? selectedClass : null,
                 decoration: const InputDecoration(labelText: 'Kelas'),
-                items: const [
-                  DropdownMenuItem(value: 'X RPL 1', child: Text('X RPL 1')),
-                  DropdownMenuItem(value: 'X RPL 2', child: Text('X RPL 2')),
-                  DropdownMenuItem(value: 'XI RPL 1', child: Text('XI RPL 1')),
-                  DropdownMenuItem(value: 'XI RPL 2', child: Text('XI RPL 2')),
-                ],
+                items: classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                 onChanged: (v) => setState(() => selectedClass = v ?? selectedClass),
               ),
               const SizedBox(height: AppTheme.spacingMd),
@@ -242,11 +228,19 @@ class ReportScreen extends StatelessWidget {
                 onChanged: (v) => setState(() => selectedSemester = v ?? selectedSemester),
               ),
             ],
+            );
+            },
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
             FilledButton(
               onPressed: () {
+                if (selectedClass.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Belum ada kelas/data siswa')),
+                  );
+                  return;
+                }
                 Navigator.pop(ctx);
                 _generateBatchReport(context, selectedClass, selectedSemester);
               },
@@ -268,46 +262,66 @@ class ReportScreen extends StatelessWidget {
     final ranking = await db.gradeDao.getRanking(semester);
     final subjects = await db.subjectDao.getAllSubjects();
 
+    // SEMUA rapor jadi SATU PDF multi-halaman — dulu loop per siswa buka
+    // dialog print sendiri-sendiri (N kali dialog untuk N siswa).
+    final merged = pw.Document();
+
     for (final student in classStudents) {
       try {
         final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
-        final totalPoints = await db.pointDao.getTotalPoints(student.id);
+        // Poin prestasi & pelanggaran DIHITUNG TERPISAH per tipe.
+        // Dulu dijumlah lalu dinetralkan (+10 & -5 jadi "5") sehingga
+        // pelanggaran tidak pernah muncul di rapor.
+        final allPoints = await db.pointDao.getPointsByStudent(student.id);
+        final achievement = allPoints
+            .where((p) => p.type == 'ACHIEVEMENT')
+            .fold<int>(0, (sum, p) => sum + p.pointValue);
+        final violation = allPoints
+            .where((p) => p.type == 'VIOLATION')
+            .fold<int>(0, (sum, p) => sum + p.pointValue);
         final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
 
         final gradeData = <Map<String, dynamic>>[];
         for (final subject in subjects) {
           final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
           if (subjectGrades.isNotEmpty) {
+            double avgOfType(String type) {
+              final list = subjectGrades.where((g) => g.examType == type).toList();
+              if (list.isEmpty) return 0;
+              return list.fold<double>(0, (sum, g) => sum + g.score) / list.length;
+            }
+
             final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
             gradeData.add({
               'subject': subject.name,
-              'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
-              'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
-              'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
+              'uts': avgOfType('UTS'),
+              'uas': avgOfType('UAS'),
+              'tugas': avgOfType('Tugas'),
               'average': avg,
             });
           }
         }
 
-        final pdf = await PdfGenerator.generateReportCard(
+        final pagePdf = await PdfGenerator.buildReportCardPage(
           studentName: student.fullName,
           nis: student.nis,
           className: student.className,
           semester: semester,
           grades: gradeData,
-          totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
-          totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
+          totalViolationPoints: violation.abs(),
+          totalAchievementPoints: achievement,
           rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
           totalStudents: ranking.length,
         );
-
-        if (pdf != null) {
-          await Printing.layoutPdf(onLayout: (format) => pdf);
-        }
+        merged.addPage(pagePdf);
       } catch (e) {
         debugPrint('Failed report for ${student.fullName}: $e');
       }
     }
+
+    final bytes = await merged.save();
+    if (!context.mounted) return;
+    await Printing.layoutPdf(onLayout: (format) => bytes);
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -317,17 +331,24 @@ class ReportScreen extends StatelessWidget {
   }
 
   void _showExcelExportDialog(BuildContext context) {
-    final currentSemester = _currentSemester();
-    final semOptions = _semesterOptions();
-    String selectedSemester = currentSemester;
-    String selectedClass = 'X RPL 1';
+    final semOptions = SemesterUtils.options();
+    String selectedSemester = SemesterUtils.currentSemester();
+    String selectedClass = '';
 
+    final db = context.read<AppDatabase>();
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: const Text('Export ke Excel'),
-          content: Column(
+          content: FutureBuilder<List<String>>(
+            future: db.studentDao.getDistinctClassNames(),
+            builder: (context, classSnapshot) {
+            final classes = classSnapshot.data ?? const [];
+            if (selectedClass.isEmpty && classes.isNotEmpty) {
+              selectedClass = classes.first;
+            }
+            return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
@@ -340,19 +361,16 @@ class ReportScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppTheme.spacingMd),
               DropdownButtonFormField<String>(
-                value: selectedClass,
+                value: classes.contains(selectedClass) ? selectedClass : null,
                 decoration: const InputDecoration(
                   labelText: 'Kelas',
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'X RPL 1', child: Text('X RPL 1')),
-                  DropdownMenuItem(value: 'X RPL 2', child: Text('X RPL 2')),
-                  DropdownMenuItem(value: 'XI RPL 1', child: Text('XI RPL 1')),
-                  DropdownMenuItem(value: 'XI RPL 2', child: Text('XI RPL 2')),
-                ],
+                items: classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                 onChanged: (v) => setState(() => selectedClass = v ?? selectedClass),
               ),
             ],
+            );
+            },
           ),
           actions: [
             TextButton(
@@ -381,12 +399,24 @@ class ReportScreen extends StatelessWidget {
       );
 
       final db = context.read<AppDatabase>();
+      // Dulu dropdown kelas cuma jadi nama file — SEMUA siswa ikut terekspor.
+      // Sekarang benar-benar difilter per kelas.
       final students = await db.studentDao.getAllStudents();
+      final classStudents =
+          students.where((s) => s.className == className).toList();
+      if (classStudents.isEmpty && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tidak ada siswa di kelas $className')),
+        );
+        return;
+      }
       final subjects = await db.subjectDao.getAllSubjects();
+      // Range presensi ikut semester terpilih (dulu selalu Jan-Des).
+      final dateRange = SemesterUtils.dateRange(semester);
 
       final studentsData = <Map<String, dynamic>>[];
 
-      for (final student in students) {
+      for (final student in classStudents) {
         final grades = await db.gradeDao.getGradesByStudentSemester(student.id, semester);
         final gradeMap = <String, double>{};
         for (final subject in subjects) {
@@ -397,11 +427,10 @@ class ReportScreen extends StatelessWidget {
           }
         }
 
-        final now = DateTime.now();
         final attendance = await db.attendanceDao.getAttendanceByStudent(
           studentId: student.id,
-          startDate: '${now.year}-01-01',
-          endDate: '${now.year}-12-31',
+          startDate: dateRange.start,
+          endDate: dateRange.end,
         );
 
         int hadir = 0, izin = 0, sakit = 0, alpa = 0;
@@ -470,8 +499,14 @@ class ReportScreen extends StatelessWidget {
     try {
       final db = context.read<AppDatabase>();
       final grades = await db.gradeDao.getGradesByStudent(student.id);
-      final totalPoints = await db.pointDao.getTotalPoints(student.id);
-      final semester = _currentSemester();
+      final allPoints = await db.pointDao.getPointsByStudent(student.id);
+      final achievementPoints = allPoints
+          .where((p) => p.type == 'ACHIEVEMENT')
+          .fold<int>(0, (sum, p) => sum + p.pointValue);
+      final violationPoints = allPoints
+          .where((p) => p.type == 'VIOLATION')
+          .fold<int>(0, (sum, p) => sum + p.pointValue);
+      final semester = SemesterUtils.currentSemester();
       final ranking = await db.gradeDao.getRanking(semester);
       final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
 
@@ -480,12 +515,18 @@ class ReportScreen extends StatelessWidget {
       for (final subject in subjects) {
         final subjectGrades = grades.where((g) => g.subjectId == subject.id).toList();
         if (subjectGrades.isNotEmpty) {
+          double avgOfType(String type) {
+            final list = subjectGrades.where((g) => g.examType == type).toList();
+            if (list.isEmpty) return 0;
+            return list.fold<double>(0, (sum, g) => sum + g.score) / list.length;
+          }
+
           final avg = subjectGrades.fold<double>(0, (sum, g) => sum + g.score) / subjectGrades.length;
           gradeData.add({
             'subject': subject.name,
-            'uts': subjectGrades.where((g) => g.examType == 'UTS').fold<double>(0, (sum, g) => sum + g.score),
-            'uas': subjectGrades.where((g) => g.examType == 'UAS').fold<double>(0, (sum, g) => sum + g.score),
-            'tugas': subjectGrades.where((g) => g.examType == 'Tugas').fold<double>(0, (sum, g) => sum + g.score),
+            'uts': avgOfType('UTS'),
+            'uas': avgOfType('UAS'),
+            'tugas': avgOfType('Tugas'),
             'average': avg,
           });
         }
@@ -497,8 +538,8 @@ class ReportScreen extends StatelessWidget {
         className: student.className,
         semester: semester,
         grades: gradeData,
-        totalViolationPoints: totalPoints < 0 ? totalPoints.abs() : 0,
-        totalAchievementPoints: totalPoints > 0 ? totalPoints : 0,
+        totalViolationPoints: violationPoints.abs(),
+        totalAchievementPoints: achievementPoints,
         rank: rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1,
         totalStudents: ranking.length,
       );

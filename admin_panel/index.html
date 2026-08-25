@@ -338,12 +338,21 @@
     </div>
     
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <div style="position:fixed;bottom:0;left:0;right:0;background:#b00020;color:#fff;padding:10px;z-index:9999;font-family:sans-serif;text-align:center;font-size:14px;">
+      &#9888;&#65039; Panel admin dinonaktifkan demi keamanan: kunci service-role telah dihapus dari file ini.
+      Gunakan <b>Supabase Dashboard &rarr; Table Editor</b> untuk mengelola lisensi.
+    </div>
     <script>
         // ============================================================
         // SUPABASE CONFIGURATION
+        // HANYA ANON KEY. Dulu file ini memuat service_role key =
+        // akses penuh database siapa pun yang membuka file. JANGAN
+        // letakkan service_role key di file client lagi.
+        // Catatan: operasi tulis panel akan diblokir RLS sampai panel
+        // dimigrasikan memakai Edge Function admin tersendiri.
         // ============================================================
-        const SUPABASE_URL = 'https://cdgnqhdmsnrlzygolecz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25xaGRtc25ybHp5bGdvZWN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Njk3NTI3OCwiZXhwIjoyMTAyNTUxMjc4fQ.cHi1EHQbWEOGO11mSAo9247YbUTjg4tjdll7E7yDS2s';
+        const SUPABASE_URL = 'https://cdgnqhdmsnrlzylgoecz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25xaGRtc25ybHp5bGdvZWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzUyNzgsImV4cCI6MjEwMjU1MTI3OH0.a3mH4gFGPV_aRvgFCJFHMjQQsc3AQc0YBvrLEeFM_HA';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         

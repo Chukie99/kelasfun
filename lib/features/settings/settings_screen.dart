@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kelasfun/core/database/app_database.dart';
@@ -26,11 +27,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _serverUrl = '';
   String _localIp = '';
   String _apiKey = '';
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
     _loadServerStatus();
+    _loadAppVersion();
+  }
+
+  // Versi asli dari pubspec — dulu hardcode "v1.0.0" padahal app sudah
+  // v1.3.4+5, menyulitkan dukungan teknis.
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() => _appVersion = 'kelasFun v${info.version}+${info.buildNumber}');
   }
 
   String _generateApiKey() {
@@ -162,8 +173,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Tentang', style: AppTheme.h2(context)),
-                const SizedBox(height: AppTheme.spacingSm),
-                Text('kelasFun v1.0.0', style: AppTheme.body(context)),
+                const SizedBox(height: AppTheme.spacingBase),
+                Text(_appVersion.isNotEmpty ? _appVersion : 'kelasFun',
+                    style: AppTheme.body(context)),
                 Text('Aplikasi Manajemen Kelas Offline-First',
                     style: AppTheme.bodySmall(context)),
               ],
@@ -176,18 +188,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _backupDatabase(BuildContext context) async {
     try {
+      final db = context.read<AppDatabase>();
       final directory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Pilih lokasi backup',
       );
       if (directory != null) {
-        final db = context.read<AppDatabase>();
-        final dbPath = await db.getDatabasePath();
-        final sourceFile = File(dbPath);
-        final targetFile = File('$directory/kelasfun_backup.db');
-        await sourceFile.copy(targetFile.path);
+        // VACUUM INTO menghasilkan snapshot bersih yang SELALU mencakup
+        // transaksi terakhir — dulu cuma copy file .db sehingga data yang
+        // masih di file -wal bisa lolos dari backup.
+        final stamp = DateTime.now().toIso8601String().substring(0, 10);
+        final targetPath = '$directory/kelasfun_backup_$stamp.db';
+        await db.customStatement('VACUUM INTO ?', [targetPath]);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Backup berhasil: ${targetFile.path}')),
+            SnackBar(content: Text('Backup berhasil: $targetPath')),
           );
         }
       }
@@ -202,20 +216,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _restoreDatabase(BuildContext context) async {
     try {
+      final db = context.read<AppDatabase>();
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Pilih file backup',
+        type: FileType.any,
       );
-      if (result != null && result.files.single.path != null) {
-        final db = context.read<AppDatabase>();
-        final dbPath = await db.getDatabasePath();
-        final sourceFile = File(result.files.single.path!);
-        final targetFile = File(dbPath);
-        await sourceFile.copy(targetFile.path);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Restore berhasil! Restart aplikasi.')),
-          );
-        }
+      if (result == null || result.files.single.path == null) return;
+
+      // Konfirmasi dulu — restore menimpa SEMUA data saat ini.
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Restore database?', style: AppTheme.h3(context)),
+          content: Text(
+            'Semua data saat ini akan DIGANTI dengan isi file backup. Aplikasi akan menutup database dan perlu direstart setelahnya. Lanjutkan?',
+            style: AppTheme.body(context),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Batal')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Ya, Restore')),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+
+      // TUTUP koneksi drift SEBELUM menimpa file. Dulu file ditimpa
+      // padahal DB sedang terbuka + WAL aktif -> korupsi / data campur.
+      final dbPath = await db.getDatabasePath();
+      await db.close();
+
+      final sourceFile = File(result.files.single.path!);
+      final targetFile = File(dbPath);
+      // Hapus sisa journal lama supaya tidak "menempel" ke backup baru.
+      for (final suffix in ['-wal', '-shm']) {
+        final j = File('$dbPath$suffix');
+        if (j.existsSync()) j.delete();
+      }
+      await sourceFile.copy(targetFile.path);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Restore berhasil! Tutup dan buka kembali aplikasi.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
       }
     } catch (e) {
       if (context.mounted) {

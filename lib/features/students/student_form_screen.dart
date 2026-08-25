@@ -822,6 +822,11 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                 photoPath: Value(_photoPath),
                 qrData: Value(qrData),
                 notes: Value.absentIfNull(notes),
+                // update() pakai .replace() yang menimpa SELURUH row.
+                // Tanpa ini, siswa yang diarsipkan otomatis "hidup" lagi
+                // dan tanggal daftar ikut ke-reset tiap kali edit disimpan.
+                isActive: Value(widget.student!.isActive),
+                createdAt: Value(widget.student!.createdAt),
               ));
             } else {
               await db.studentDao.insertStudent(

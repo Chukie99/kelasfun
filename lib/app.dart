@@ -75,27 +75,44 @@ class _LicenseCheckScreenState extends State<LicenseCheckScreen> {
   }
 
   Future<void> _checkLicense() async {
-    final isActivated = await LicenseService.isActivated();
-    
-    if (isActivated) {
-      final isInGracePeriod = await LicenseService.isInGracePeriod();
-      
-      if (!isInGracePeriod) {
-        final result = await LicenseService.revalidate();
-        if (!result.isValid) {
-          setState(() {
-            _isActivated = false;
-            _isLoading = false;
-          });
-          return;
+    // Dulu tidak ada try/catch: kalau service throw (DB error, dll),
+    // setState tak pernah terpanggil -> user TERKUNCI SELAMANYA di
+    // layar "Memeriksa lisenci...". Gagal apapun = perlakukan belum aktif,
+    // jangan pernah biarkan spinner hang.
+    try {
+      final isActivated = await LicenseService.isActivated();
+
+      if (isActivated) {
+        final isInGracePeriod = await LicenseService.isInGracePeriod();
+
+        if (!isInGracePeriod) {
+          final result = await LicenseService.revalidate();
+          // Hanya deaktivasi jika server MENOLAK lisensi.
+          // Jika hanya masalah jaringan, biarkan user tetap aktif (offline-tolerant).
+          if (!result.isValid && !result.networkError) {
+            if (!mounted) return;
+            setState(() {
+              _isActivated = false;
+              _isLoading = false;
+            });
+            return;
+          }
         }
       }
+
+      if (!mounted) return;
+      setState(() {
+        _isActivated = isActivated;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('License check error: $e');
+      if (!mounted) return;
+      setState(() {
+        _isActivated = false;
+        _isLoading = false;
+      });
     }
-    
-    setState(() {
-      _isActivated = isActivated;
-      _isLoading = false;
-    });
   }
 
   @override

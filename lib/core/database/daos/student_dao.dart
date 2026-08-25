@@ -44,6 +44,17 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
     return (select(students)..where((t) => t.isActive.equals(1))).watch();
   }
 
+  /// Daftar kelas unik dari siswa aktif, terurut alfabetis.
+  /// Dipakai dropdown laporan/export — dulu daftar kelas hardcode
+  /// "X RPL 1..XI RPL 2" sehingga sekolah lain tidak bisa memakai fiturnya.
+  Future<List<String>> getDistinctClassNames() async {
+    final rows = await (select(students)
+          ..where((t) => t.isActive.equals(1)))
+        .get();
+    final names = rows.map((s) => s.className).toSet().toList()..sort();
+    return names;
+  }
+
   Future<Student?> getStudentById(int id) {
     return (select(students)..where((t) => t.id.equals(id))).getSingleOrNull();
   }

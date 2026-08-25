@@ -209,6 +209,7 @@ class _PrintActionsCard extends StatelessWidget {
 
   Future<void> _printStudentCard(BuildContext context) async {
     try {
+      final db = context.read<AppDatabase>();
       Uint8List? photoBytes;
       if (student.photoPath != null && student.photoPath!.isNotEmpty) {
         final file = File(student.photoPath!);
@@ -224,7 +225,6 @@ class _PrintActionsCard extends StatelessWidget {
         'photoBytes': photoBytes,
       };
 
-      final db = context.read<AppDatabase>();
       final schoolName = await db.settingsDao.getSetting('school_name');
 
       final pdf = await PdfGenerator.generateStudentCards(

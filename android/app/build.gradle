@@ -5,6 +5,11 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// Setelah build release selesai, salin APK ke folder proyek dengan nama
+// memakai versi dari pubspec.yaml (mis. kelasfun-v1.3.0-release.apk)
+// supaya tidak tertukar dengan build lama.
+def apkTargetName = "kelasfun-v${flutter.versionName}-release.apk"
+
 android {
     namespace = "com.example.kelasfun"
     compileSdk = flutter.compileSdkVersion
@@ -41,4 +46,23 @@ android {
 
 flutter {
     source = "../.."
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == "assembleRelease") {
+        task.finalizedBy "copyReleaseApkToProjectRoot"
+    }
+}
+
+tasks.register("copyReleaseApkToProjectRoot") {
+    doLast {
+        def src = layout.buildDirectory.file("outputs/flutter-apk/app-release.apk").get().asFile
+        def dest = rootProject.file("../")
+        copy {
+            from src
+            into dest
+            rename { _ -> apkTargetName }
+        }
+        println "[OK] APK disalin ke: ${new File(dest, apkTargetName)}"
+    }
 }

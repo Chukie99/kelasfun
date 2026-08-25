@@ -232,11 +232,54 @@ class _StudentListScreenState extends State<StudentListScreen> {
                               ),
                             ),
                             onDelete: () async {
+                              // Konfirmasi dulu + arsip (soft delete), BUKAN
+                              // hard delete — salah tap gak boleh menghapus
+                              // permanen beserta riwayat presensi/nilainya.
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text('Arsipkan siswa?',
+                                      style: AppTheme.h3(context)),
+                                  content: Text(
+                                    '${student.fullName} akan disembunyikan dari daftar aktif. Riwayat presensi & nilai tetap tersimpan dan bisa dipulihkan lewat database.',
+                                    style: AppTheme.body(context),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: const Text('Batal'),
+                                    ),
+                                    FilledButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
+                                      style: FilledButton.styleFrom(
+                                          backgroundColor: AppTheme.coral),
+                                      child: const Text('Arsipkan'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed != true || !context.mounted) return;
                               try {
-                                await db.studentDao.deleteStudent(student.id);
+                                await db.studentDao
+                                    .softDeleteStudent(student.id);
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          '${student.fullName} diarsipkan')),
+                                );
                               } catch (e, stackTrace) {
                                 debugPrint('DELETE ERROR: $e');
                                 debugPrint('STACK TRACE: $stackTrace');
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Gagal mengarsipkan siswa: $e')),
+                                  );
+                                }
                               }
                             },
                           );

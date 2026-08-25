@@ -1,12 +1,9 @@
 -- Migration 001: License System Schema
--- Drops old licenses table (breaking change from old license_key format)
--- Creates new device-bound licensing schema
+-- Idempotent: aman dijalankan berulang tanpa menghapus data produksi.
+-- CATATAN: jangan pernah DROP TABLE di migrasi produksi!
 
--- 1. Drop old table if exists
-DROP TABLE IF EXISTS licenses;
-
--- 2. Create new licenses table
-CREATE TABLE licenses (
+-- 1. Create table (tanpa drop!)
+CREATE TABLE IF NOT EXISTS licenses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL,
   device_id TEXT,
@@ -15,21 +12,22 @@ CREATE TABLE licenses (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Create indexes for query performance
-CREATE INDEX idx_serial_number ON licenses(serial_number);
-CREATE INDEX idx_email ON licenses(email);
-CREATE INDEX idx_device_id ON licenses(device_id);
+-- 2. Indexes
+CREATE INDEX IF NOT EXISTS idx_serial_number ON licenses(serial_number);
+CREATE INDEX IF NOT EXISTS idx_email ON licenses(email);
+CREATE INDEX IF NOT EXISTS idx_device_id ON licenses(device_id);
 
--- 4. Enable Row Level Security (RLS)
+-- 3. RLS
 ALTER TABLE licenses ENABLE ROW LEVEL SECURITY;
 
--- 5. Create policies
--- Service role: full access
+-- 4. Policies
+-- Service role: full access (service role sebenarnya sudah bypass RLS,
+-- policy ini hanya dokumentasi eksplisit)
+DROP POLICY IF EXISTS "Allow all for service role" ON licenses;
 CREATE POLICY "Allow all for service role" ON licenses
   FOR ALL
   USING (auth.role() = 'service_role');
 
--- Anon: SELECT only (for verify function)
-CREATE POLICY "Allow select for anon" ON licenses
-  FOR SELECT
-  USING (true);
+-- TIDAK ADA policy untuk anon sama sekali.
+-- Kedua Edge Function membaca/menulis via service-role client,
+-- sedangkan anon tidak boleh bisa SELECT (melindungi email & serial pelanggan).

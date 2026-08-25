@@ -10,7 +10,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final db = AppDatabase();
   runApp(
-    ChangeNotifierProvider.value(
+    Provider.value(
       value: db,
       child: MaterialApp(
         title: 'kelasFun',
@@ -40,30 +40,43 @@ class _LicenseCheckScreenState extends State<LicenseCheckScreen> {
   }
 
   Future<void> _checkLicense() async {
-    final isActivated = await LicenseService.isActivated();
-    
-    // Jika sudah aktif, cek grace period
-    if (isActivated) {
-      final isInGracePeriod = await LicenseService.isInGracePeriod();
-      
-      if (!isInGracePeriod) {
-        // Grace period habis, coba re-validate online
-        final result = await LicenseService.revalidate();
-        if (!result.isValid) {
-          // Re-validate gagal, user harus online lagi
-          setState(() {
-            _isActivated = false;
-            _isLoading = false;
-          });
-          return;
+    // Guard try/catch: kegagalan apapun tidak boleh bikin app hang
+    // di layar "Memeriksa lisensi..." tanpa pesan.
+    try {
+      final isActivated = await LicenseService.isActivated();
+
+      // Jika sudah aktif, cek grace period
+      if (isActivated) {
+        final isInGracePeriod = await LicenseService.isInGracePeriod();
+
+        if (!isInGracePeriod) {
+          // Grace period habis, coba re-validate online
+          final result = await LicenseService.revalidate();
+          // Hanya deaktivasi jika server MENOLAK lisensi.
+          if (!result.isValid && !result.networkError) {
+            if (!mounted) return;
+            setState(() {
+              _isActivated = false;
+              _isLoading = false;
+            });
+            return;
+          }
         }
       }
+
+      if (!mounted) return;
+      setState(() {
+        _isActivated = isActivated;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('License check error: $e');
+      if (!mounted) return;
+      setState(() {
+        _isActivated = false;
+        _isLoading = false;
+      });
     }
-    
-    setState(() {
-      _isActivated = isActivated;
-      _isLoading = false;
-    });
   }
 
   @override

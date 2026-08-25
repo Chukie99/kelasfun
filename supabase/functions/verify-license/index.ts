@@ -87,10 +87,14 @@ serve(async (req: Request) => {
     }
 
     if (!license.is_active) {
-      const { error: updateError } = await supabase
+      // Update atomik dengan guard is_active=false agar dua device yang
+      // memverifikasi serial yang sama bersamaan tidak keduanya lolos.
+      const { data: updatedRows, error: updateError } = await supabase
         .from("licenses")
         .update({ device_id, is_active: true })
-        .eq("serial_number", serial_number);
+        .eq("serial_number", serial_number)
+        .eq("is_active", false)
+        .select();
 
       if (updateError) {
         console.error("Update error:", updateError);
@@ -98,6 +102,20 @@ serve(async (req: Request) => {
           JSON.stringify({ valid: false, message: "Gagal mengaktifkan lisensi" }),
           {
             status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (!updatedRows || updatedRows.length === 0) {
+        // Serial baru saja diaktifkan oleh device lain di antara baca & update
+        return new Response(
+          JSON.stringify({
+            valid: false,
+            message: "Serial sudah dipakai device lain. Silakan beli lisensi baru.",
+          }),
+          {
+            status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );

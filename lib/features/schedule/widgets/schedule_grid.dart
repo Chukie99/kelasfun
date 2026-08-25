@@ -69,7 +69,7 @@ class ScheduleGrid extends StatelessWidget {
                           ? AppTheme.accent 
                           : AppTheme.accent.withOpacity(0.2),
                       child: Text(
-                        subject.code ?? subject.name[0],
+                        subject.code.isNotEmpty ? subject.code : subject.name[0],
                         style: TextStyle(
                           color: isSelected ? Colors.white : AppTheme.accent,
                           fontWeight: FontWeight.bold,
@@ -77,7 +77,7 @@ class ScheduleGrid extends StatelessWidget {
                       ),
                     ),
                     title: Text(subject.name),
-                    subtitle: Text(subject.code ?? ''),
+                    subtitle: Text(subject.code),
                     trailing: isSelected ? const Icon(Icons.check, color: AppTheme.accent) : null,
                     onTap: () async {
                       await db.scheduleDao.upsertSchedule(
@@ -153,9 +153,9 @@ class ScheduleGrid extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (subject.code != null)
+                        if (subject.code.isNotEmpty)
                           Text(
-                            subject.code!,
+                            subject.code,
                             style: AppTheme.caption(context).copyWith(
                               color: AppTheme.accent,
                             ),

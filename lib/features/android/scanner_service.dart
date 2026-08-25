@@ -234,10 +234,13 @@ class ScannerService {
         error: 'Tersimpan offline',
       );
     } catch (_) {
+      // Error tak terduga (respons malformed, dsb): tetap QUEUE supaya
+      // scan tidak hilang permanen. Dulu di sini scan dibuang begitu saja.
+      await addToQueue(PendingScan(nis: nis, timestamp: now ?? DateTime.now()));
       return const ScanResult(
         success: false,
         statusCode: 0,
-        error: 'Gagal mengirim scan',
+        error: 'Tersimpan offline (error tak terduga)',
       );
     }
   }

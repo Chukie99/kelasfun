@@ -170,6 +170,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
     setState(() { _isLoading = true; _errorMessage = null; _successMessage = null; });
 
     final result = await LicenseService.requestSerialNumber(email);
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
 
@@ -194,6 +195,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
     setState(() { _isLoading = true; _errorMessage = null; _successMessage = null; });
 
     final result = await LicenseService.verifySerialNumber(serial);
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
 

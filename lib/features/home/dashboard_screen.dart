@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
+import 'package:kelasfun/core/utils/semester_utils.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
@@ -37,8 +38,9 @@ class DashboardScreen extends StatelessWidget {
     final now = DateTime.now();
     final today =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    final semester = now.month <= 6 ? 'Ganjil' : 'Genap';
-    final year = now.year.toString();
+    // Kunci semester WAJIB dari util terpusat. Dulu formatnya "Ganjil 2026"
+    // (tahun polos + bulan terbalik) sehingga ranking & chart nilai selalu kosong.
+    final semesterKey = SemesterUtils.currentSemester(now);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
@@ -49,9 +51,9 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _StatsTodayCard(db: db, today: today),
           const SizedBox(height: 16),
-          _ChartsCard(db: db, today: today, semester: semester, year: year),
+          _ChartsCard(db: db, today: today, semesterKey: semesterKey),
           const SizedBox(height: 16),
-          _QuickSummaryCard(db: db, semester: semester, year: year),
+          _QuickSummaryCard(db: db, semesterKey: semesterKey),
           const SizedBox(height: 16),
           _QuickActionsCard(onNavigate: onNavigate),
         ],
@@ -208,15 +210,11 @@ class _StatItem extends StatelessWidget {
 
 class _QuickSummaryCard extends StatelessWidget {
   final AppDatabase db;
-  final String semester;
-  final String year;
-  const _QuickSummaryCard(
-      {required this.db, required this.semester, required this.year});
+  final String semesterKey;
+  const _QuickSummaryCard({required this.db, required this.semesterKey});
 
   @override
   Widget build(BuildContext context) {
-    final semesterKey = '$semester $year';
-
     return FutureBuilder<List<Subject>>(
       future: db.subjectDao.getAllSubjects(),
       builder: (context, subjectSnapshot) {
@@ -529,18 +527,15 @@ class _GradeBarChart extends StatelessWidget {
 class _ChartsCard extends StatelessWidget {
   final AppDatabase db;
   final String today;
-  final String semester;
-  final String year;
-  const _ChartsCard(
-      {required this.db,
-      required this.today,
-      required this.semester,
-      required this.year});
+  final String semesterKey;
+  const _ChartsCard({
+    required this.db,
+    required this.today,
+    required this.semesterKey,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final semesterKey = '$semester $year';
-
     return StreamBuilder<List<AttendanceData>>(
       stream: db.attendanceDao.watchAttendanceByDate(today),
       builder: (context, attendanceSnapshot) {
