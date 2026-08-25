@@ -14,7 +14,8 @@ on:
   workflow_dispatch: {} # tombol manual di tab Actions
   push:
     branches:
-      - 'release*' # build otomatis saat branch release/* di-push
+      - 'release*' # cocokkan juga release/v1.x.x (tanda ** menembus slash)
+      - 'release/**'
 
 jobs:
   build:
