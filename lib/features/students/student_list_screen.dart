@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
@@ -40,31 +42,83 @@ class _StudentListScreenState extends State<StudentListScreen> {
     final bytes = file.bytes;
     if (bytes == null) return;
 
-    final content = String.fromCharCodes(bytes);
-    final lines = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    // Decode UTF-8 beneran + buang BOM. Dulu String.fromCharCodes =
+    // Latin-1, nama dengan karakter non-ASCII jadi kacau.
+    String content;
+    try {
+      content = utf8.decode(bytes);
+    } catch (_) {
+      content = String.fromCharCodes(bytes); // fallback file non-UTF8
+    }
+    if (content.startsWith('\uFEFF')) content = content.substring(1);
+
+    // Parser CSV sederhana yang sadar-kutip: field dalam "..." boleh
+    // mengandung koma & "" = karakter kutip literal.
+    List<String> parseCsvLine(String line) {
+      final out = <String>[];
+      var cur = StringBuffer();
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        final ch = line[i];
+        if (inQuotes) {
+          if (ch == '"') {
+            if (i + 1 < line.length && line[i + 1] == '"') {
+              cur.write('"');
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            cur.write(ch);
+          }
+        } else if (ch == '"') {
+          inQuotes = true;
+        } else if (ch == ',') {
+          out.add(cur.toString());
+          cur = StringBuffer();
+        } else {
+          cur.write(ch);
+        }
+      }
+      out.add(cur.toString());
+      return out;
+    }
+
+    final lines =
+        content.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty).toList();
 
     int success = 0, failed = 0;
+    final errors = <String>[];
+
     for (final line in lines.skip(1)) {
-      final parts = line.split(',');
-      if (parts.length < 4) { failed++; continue; }
+      final parts = parseCsvLine(line);
+      if (parts.length < 4) { failed++; errors.add('Kolom kurang: $line'); continue; }
 
       final nis = parts[0].trim();
       final name = parts[1].trim();
       final className = parts[2].trim();
-      final gender = parts[3].trim();
+      final rawGender = parts[3].trim().toLowerCase();
 
-      if (nis.isEmpty || name.isEmpty || className.isEmpty || gender.isEmpty) {
+      if (nis.isEmpty || name.isEmpty || className.isEmpty || rawGender.isEmpty) {
         failed++;
+        errors.add('Data kosong (NIS $nis)');
         continue;
       }
-      if (gender != 'Laki-laki' && gender != 'Perempuan') {
+      // Normalisasi gender longgar: L/P/laki-laki/perempuan/cowok/cewek.
+      final gender = _normalizeGender(rawGender);
+      if (gender == null) {
         failed++;
+        errors.add('Gender tak dikenal (NIS $nis): ${parts[3]}');
         continue;
       }
 
       try {
         final existing = await db.studentDao.getStudentByNis(nis);
-        if (existing != null) { failed++; continue; }
+        if (existing != null) {
+          failed++;
+          errors.add('NIS duplikat: $nis');
+          continue;
+        }
 
         await db.studentDao.insertStudent(
           nis: nis,
@@ -76,14 +130,31 @@ class _StudentListScreenState extends State<StudentListScreen> {
         success++;
       } catch (e) {
         failed++;
+        errors.add('NIS $nis: $e');
       }
     }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Import selesai: $success berhasil, $failed gagal')),
-      );
+    if (!context.mounted) return;
+    final detail = errors.take(3).join('\n');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errors.isEmpty
+            ? 'Import selesai: \$success berhasil'
+            : 'Import: \$success berhasil, \$failed gagal\n\$detail'),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  /// Terima berbagai penulisan gender dari file dunia nyata.
+  String? _normalizeGender(String raw) {
+    if (['laki-laki', 'laki', 'l', 'cowok', 'pria', 'm'].contains(raw)) {
+      return 'Laki-laki';
     }
+    if (['perempuan', 'p', 'cewek', 'wanita', 'f'].contains(raw)) {
+      return 'Perempuan';
+    }
+    return null;
   }
 
   @override

@@ -21,8 +21,14 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
+
+/// Server sinkronisasi LAN dibuat SINGLETON global: dulu disimpan di
+/// State layar Pengaturan -> keluar layar = referensi hilang, server
+/// HTTP tetap jalan di background tapi tak bisa dihentikan, dan start
+/// berikutnya gagal bind (port dipakai).
+SyncServer? _globalSyncServer;
+
 class _SettingsScreenState extends State<SettingsScreen> {
-  SyncServer? _server;
   bool _serverRunning = false;
   String _serverUrl = '';
   String _localIp = '';
@@ -70,7 +76,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final db = context.read<AppDatabase>();
 
       if (_serverRunning) {
-        await _server?.stop();
+        await _globalSyncServer?.stop();
+        _globalSyncServer = null;
         if (!mounted) return;
         setState(() {
           _serverRunning = false;
@@ -79,11 +86,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         final apiKey = await _getOrCreateApiKey();
         _apiKey = apiKey;
-        _server = SyncServer(
+        // Pakai instance global: layar ditutup pun server tetap hidup
+        // DAN tetap bisa di-stop kapan pun dari layar ini.
+        await _globalSyncServer?.stop();
+        _globalSyncServer = SyncServer(
           db: db,
           apiKey: apiKey,
         );
-        await _server!.start();
+        await _globalSyncServer!.start();
         if (!mounted) return;
         setState(() {
           _serverRunning = true;

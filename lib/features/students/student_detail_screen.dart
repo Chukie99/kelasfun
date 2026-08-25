@@ -18,35 +18,46 @@ class StudentDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(student.fullName),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => StudentFormScreen(student: student),
+    final db = context.read<AppDatabase>();
+    return StreamBuilder<Student>(
+      // Live-watch: setelah edit disimpan lalu kembali ke layar ini,
+      // seluruh tampilan otomatis memakai data TERBARU dari database.
+      // Dulu render dari objek statis -> detail selalu data lama.
+      stream: db.studentDao.watchStudentById(student.id),
+      initialData: student,
+      builder: (context, snapshot) {
+        final current = snapshot.data ?? student;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(current.fullName),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => StudentFormScreen(student: current),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppTheme.spacingBase),
-        children: [
-          _PhotoPreview(student: student),
-          const SizedBox(height: AppTheme.spacingBase),
-          _QRPreview(student: student),
-          const SizedBox(height: AppTheme.spacingBase),
-          _BiodataCard(student: student),
-          const SizedBox(height: AppTheme.spacingBase),
-          _PrintActionsCard(student: student),
-          const SizedBox(height: AppTheme.spacingBase),
-          _ArchiveCard(student: student),
-        ],
-      ),
+          body: ListView(
+            padding: const EdgeInsets.all(AppTheme.spacingBase),
+            children: [
+              _PhotoPreview(student: current),
+              const SizedBox(height: AppTheme.spacingBase),
+              _QRPreview(student: current),
+              const SizedBox(height: AppTheme.spacingBase),
+              _BiodataCard(student: current),
+              const SizedBox(height: AppTheme.spacingBase),
+              _PrintActionsCard(student: current),
+              const SizedBox(height: AppTheme.spacingBase),
+              _ArchiveCard(student: current),
+            ],
+          ),
+        );
+      },
     );
   }
 }

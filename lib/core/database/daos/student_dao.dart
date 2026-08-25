@@ -59,6 +59,12 @@ class StudentDao extends DatabaseAccessor<AppDatabase> with _$StudentDaoMixin {
     return (select(students)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
+  /// Live-watch satu siswa. Dipakai layar detail agar tampilan otomatis
+  /// memakai data terbaru setelah edit disimpan (dulu stale).
+  Stream<Student> watchStudentById(int id) {
+    return (select(students)..where((t) => t.id.equals(id))).watchSingle();
+  }
+
   Future<Student?> getStudentByNis(String nis) {
     return (select(students)..where((t) => t.nis.equals(nis))).getSingleOrNull();
   }
