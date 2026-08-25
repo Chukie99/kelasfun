@@ -72,7 +72,7 @@ serve(async (req: Request) => {
 
     const { data: license, error: queryError } = await supabase
       .from("licenses")
-      .select("serial_number, device_id, is_active")
+      .select("serial_number, email, device_id, device_id_2, is_active")
       .eq("serial_number", serial_number)
       .single();
 
@@ -86,6 +86,31 @@ serve(async (req: Request) => {
       );
     }
 
+    // ---- KILL SWITCH PEMBELIAN ----
+    // Email pembeli HARUS masih terdaftar di allowed_emails.
+    // Refund / pembelian dibatalkan -> admin hapus email di Table Editor
+    // -> semua device pemilik serial ini ditolak saat aktivasi/revalidasi.
+    const { data: allowed } = await supabase
+      .from("allowed_emails")
+      .select("email")
+      .eq("email", license.email)
+      .maybeSingle();
+
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({
+          valid: false,
+          message:
+            "Lisensi tidak lagi aktif. Hubungi admin/customer service.",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // ---- AKTIVASI PERTAMA (slot 1) ----
     if (!license.is_active) {
       // Update atomik dengan guard is_active=false agar dua device yang
       // memverifikasi serial yang sama bersamaan tidak keduanya lolos.
@@ -108,19 +133,21 @@ serve(async (req: Request) => {
       }
 
       if (!updatedRows || updatedRows.length === 0) {
-        // Serial baru saja diaktifkan oleh device lain di antara baca & update
+        // Serial baru saja diaktifkan device lain di antara baca & update;
+        // jatuh ke pengecekan slot di bawah.
+      } else {
         return new Response(
-          JSON.stringify({
-            valid: false,
-            message: "Serial sudah dipakai device lain. Silakan beli lisensi baru.",
-          }),
+          JSON.stringify({ valid: true }),
           {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
+    }
 
+    // ---- SUDAH AKTIF: cek apakah device ini salah satu slot yang sah ----
+    if (license.device_id === device_id || license.device_id_2 === device_id) {
       return new Response(
         JSON.stringify({ valid: true }),
         {
@@ -130,20 +157,56 @@ serve(async (req: Request) => {
       );
     }
 
-    if (license.device_id === device_id) {
-      return new Response(
-        JSON.stringify({ valid: true }),
-        {
+    // ---- SLOT 1 KOSONG (kasus langka) -> klaim atomik ----
+    if (!license.device_id) {
+      const { data: s1 } = await supabase
+        .from("licenses")
+        .update({ device_id })
+        .eq("serial_number", serial_number)
+        .is("device_id", null)
+        .select();
+      if (s1 && s1.length > 0) {
+        return new Response(JSON.stringify({ valid: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+        });
+      }
     }
 
+    // ---- SLOT 2 KOSONG -> klaim atomik (bundle: device kedua, mis. HP) ----
+    if (!license.device_id_2) {
+      const { data: s2, error: s2err } = await supabase
+        .from("licenses")
+        .update({ device_id_2: device_id })
+        .eq("serial_number", serial_number)
+        .is("device_id_2", null)
+        .neq("device_id", device_id)
+        .select();
+
+      if (s2err) {
+        console.error("Claim slot2 error:", s2err);
+        return new Response(
+          JSON.stringify({ valid: false, message: "Gagal mengaktifkan lisensi" }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      if (s2 && s2.length > 0) {
+        return new Response(JSON.stringify({ valid: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Kedua slot terisi oleh device lain.
     return new Response(
       JSON.stringify({
         valid: false,
-        message: "Serial sudah dipakai device lain. Silakan beli lisensi baru.",
+        message:
+          "Serial sudah dipakai di 2 perangkat (Android + Windows). Hubungi admin jika ingin reset device.",
       }),
       {
         status: 200,
