@@ -1,0 +1,47 @@
+# Build kelasFun untuk WINDOWS di cloud GitHub Actions.
+# Tujuan: tidak memakan SSD lokal (Visual Studio C++ ~7GB).
+#
+# Cara pakai:
+#   1. Push commit ini ke GitHub
+#   2. Buka github.com/Chukie99/kelasfun -> tab Actions
+#   3. Pilih "Build Windows Release" -> Run workflow
+#   4. Tunggu ~10-15 menit -> download artifact "kelasfun-windows-release"
+#   5. Isi zip = folder Release siap dibagikan (berisi kelasfun.exe)
+#
+name: Build Windows Release
+
+on:
+  workflow_dispatch: {} # tombol manual di tab Actions
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Flutter versi stabil; samakan dengan yang dipakai lokal bila perlu
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build Windows (release, obfuscated)
+        run: >
+          flutter build windows --release
+          --obfuscate --split-debug-info=build/symbols-windows
+
+      - name: Package folder Release menjadi zip
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches.Groups[1].Value.Trim()
+          Compress-Archive -Path "build/windows/x64/runner/Release/*" -DestinationPath "kelasfun-v$version-windows.zip"
+          Get-Item "kelasfun-v$version-windows.zip" | Select-Object Name, Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kelasfun-windows-release
+          path: kelasfun-*-windows.zip
+          retention-days: 30
