@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kelasfun/core/services/auth_service.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 
@@ -13,11 +15,33 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLoading = false;
   String? _errorMessage;
+  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
     _checkExistingSession();
+    // Listen for the OAuth deep-link callback: when Google sign-in completes
+    // and Supabase receives the session, continue into the app.
+    _authSub = AuthService.onAuthStateChange.listen((state) {
+      if (!mounted) return;
+      if (state.event == AuthChangeEvent.signedIn) {
+        AuthService.saveUserLocally().then((_) {
+          if (mounted) widget.onAuthenticated();
+        });
+      } else if (state.event == AuthChangeEvent.signInError ||
+                 state.event == AuthChangeEvent.passwordRecovery) {
+        if (mounted) {
+          setState(() => _errorMessage = 'Login gagal. Silakan coba lagi.');
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkExistingSession() async {
@@ -35,12 +59,15 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       await AuthService.signInWithGoogle();
-
+      // Note: success is handled by the auth state listener above —
+      // after the webview closes, Supabase processes the deep link
+      // and emits AuthChangeEvent.signedIn.
       if (AuthService.isLoggedIn) {
         await AuthService.saveUserLocally();
         widget.onAuthenticated();
       } else {
-        setState(() => _errorMessage = 'Login gagal. Silakan coba lagi.');
+        setState(() => _errorMessage =
+            'Menunggu login selesai... Jika browser tertutup tanpa masuk, coba lagi.');
       }
     } catch (e) {
       setState(() => _errorMessage = 'Terjadi kesalahan: ${e.toString()}');

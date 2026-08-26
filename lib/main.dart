@@ -20,6 +20,10 @@ void main() async {
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      // Must match the redirectTo scheme/host registered in AndroidManifest.
+      authScreenLaunchMode: LaunchMode.inAppWebView,
+    ),
   );
 
   final db = AppDatabase();
