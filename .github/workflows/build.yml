@@ -2,9 +2,8 @@ name: Build KelasFun
 
 on:
   push:
-    branches: [main]
-    tags: ['v*']
-  workflow_dispatch:  # Manual trigger
+    branches: [main, master]
+  workflow_dispatch:
 
 jobs:
   build-android:
@@ -24,17 +23,27 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
       
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | sed 's/+.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📱 Version: $VERSION"
+      
       - name: Get dependencies
         run: flutter pub get
       
       - name: Build APK
         run: flutter build apk --release
       
+      - name: Rename APK with version
+        run: mv build/app/outputs/flutter-apk/app-release.apk KelasFun-v${{ steps.version.outputs.version }}.apk
+      
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: kelasfun-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: kelasfun-apk-v${{ steps.version.outputs.version }}
+          path: KelasFun-v${{ steps.version.outputs.version }}.apk
           if-no-files-found: error
 
   build-windows:
@@ -51,49 +60,28 @@ jobs:
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
       
+      - name: Get version from pubspec.yaml
+        shell: bash
+        run: |
+          VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | sed 's/+.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Desktop Version: $VERSION"
+        id: version
+      
       - name: Get dependencies
         run: flutter pub get
       
       - name: Build Windows EXE
         run: flutter build windows --release
       
-      - name: Create ZIP
+      - name: Create ZIP with version
         run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
+          $VERSION = "${{ steps.version.outputs.version }}"
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath "KelasFun-Desktop-v${VERSION}.zip"
       
       - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
-          name: kelasfun-windows
-          path: KelasFun-Windows.zip
+          name: kelasfun-desktop-v${{ steps.version.outputs.version }}
+          path: KelasFun-Desktop-v${{ steps.version.outputs.version }}.zip
           if-no-files-found: error
-
-  release:
-    needs: [build-android, build-windows]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    steps:
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: kelasfun-apk
-      
-      - name: Download Windows
-        uses: actions/download-artifact@v4
-        with:
-          name: kelasfun-windows
-      
-      - name: Rename files
-        run: |
-          mv app-release.apk KelasFun-${{ github.ref_name }}.apk
-          mv KelasFun-Windows.zip KelasFun-${{ github.ref_name }}-Windows.zip
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            KelasFun-${{ github.ref_name }}.apk
-            KelasFun-${{ github.ref_name }}-Windows.zip
-          generate_release_notes: true
