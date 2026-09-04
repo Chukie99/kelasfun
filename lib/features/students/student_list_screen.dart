@@ -40,7 +40,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
     final bytes = file.bytes;
     if (bytes == null) return;
 
-    final content = String.fromCharCodes(bytes);
+    final content = String.fromCharCodes(bytes).replaceFirst('\uFEFF', '');
     final lines = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
     int success = 0, failed = 0;

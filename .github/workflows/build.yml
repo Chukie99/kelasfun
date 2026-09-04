@@ -1,0 +1,99 @@
+name: Build KelasFun
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kelasfun-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build Windows EXE
+        run: flutter build windows --release
+      
+      - name: Create ZIP
+        run: |
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
+      
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: kelasfun-windows
+          path: KelasFun-Windows.zip
+          if-no-files-found: error
+
+  release:
+    needs: [build-android, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: kelasfun-apk
+      
+      - name: Download Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: kelasfun-windows
+      
+      - name: Rename files
+        run: |
+          mv app-release.apk KelasFun-${{ github.ref_name }}.apk
+          mv KelasFun-Windows.zip KelasFun-${{ github.ref_name }}-Windows.zip
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            KelasFun-${{ github.ref_name }}.apk
+            KelasFun-${{ github.ref_name }}-Windows.zip
+          generate_release_notes: true

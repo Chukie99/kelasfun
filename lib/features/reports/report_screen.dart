@@ -4,28 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/utils/pdf_generator.dart';
 import 'package:kelasfun/core/utils/excel_generator.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
-
-String _currentSemester() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return 'Ganjil ${now.year}/${now.year + 1}';
-  } else {
-    return 'Genap ${now.year - 1}/${now.year}';
-  }
-}
-
-List<String> _semesterOptions() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return ['Ganjil ${now.year}/${now.year + 1}', 'Genap ${now.year}/${now.year + 1}'];
-  } else {
-    return ['Ganjil ${now.year - 1}/${now.year}', 'Genap ${now.year - 1}/${now.year}'];
-  }
-}
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
@@ -211,8 +194,8 @@ class ReportScreen extends StatelessWidget {
 
   void _showBatchReportDialog(BuildContext context) {
     String selectedClass = 'X RPL 1';
-    final currentSemester = _currentSemester();
-    final semOptions = _semesterOptions();
+    final currentSemester = SemesterHelper.currentSemester();
+    final semOptions = SemesterHelper.semesterOptions();
     String selectedSemester = currentSemester;
 
     showDialog(
@@ -317,8 +300,8 @@ class ReportScreen extends StatelessWidget {
   }
 
   void _showExcelExportDialog(BuildContext context) {
-    final currentSemester = _currentSemester();
-    final semOptions = _semesterOptions();
+    final currentSemester = SemesterHelper.currentSemester();
+    final semOptions = SemesterHelper.semesterOptions();
     String selectedSemester = currentSemester;
     String selectedClass = 'X RPL 1';
 
@@ -471,7 +454,7 @@ class ReportScreen extends StatelessWidget {
       final db = context.read<AppDatabase>();
       final grades = await db.gradeDao.getGradesByStudent(student.id);
       final totalPoints = await db.pointDao.getTotalPoints(student.id);
-      final semester = _currentSemester();
+      final semester = SemesterHelper.currentSemester();
       final ranking = await db.gradeDao.getRanking(semester);
       final rankIndex = ranking.indexWhere((r) => r.studentId == student.id);
 

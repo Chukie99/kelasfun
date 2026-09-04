@@ -130,8 +130,12 @@ class _PointScreenState extends State<PointScreen> {
                 items: const [
                   DropdownMenuItem(value: 'Terlambat', child: Text('Terlambat')),
                   DropdownMenuItem(value: 'Tidak Mengerjakan PR', child: Text('Tidak Mengerjakan PR')),
+                  DropdownMenuItem(value: 'Merokok', child: Text('Merokok')),
+                  DropdownMenuItem(value: 'Bolos', child: Text('Bolos')),
                   DropdownMenuItem(value: 'Juara Olimpiade', child: Text('Juara Olimpiade')),
                   DropdownMenuItem(value: 'Juara Lomba', child: Text('Juara Lomba')),
+                  DropdownMenuItem(value: 'Pidato', child: Text('Pidato')),
+                  DropdownMenuItem(value: 'Organisasi', child: Text('Organisasi')),
                 ],
                 onChanged: (v) => setDialogState(() => category = v ?? category),
               ),

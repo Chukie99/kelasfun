@@ -3,16 +3,13 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:kelasfun/core/config/app_config.dart';
 
 class LicenseService {
   static const String _licenseKey = 'kelasfun_license_key';
   static const String _isActivated = 'kelasfun_is_activated';
   static const String _activatedAt = 'kelasfun_activated_at';
   static const int _gracePeriodDays = 30;
-
-  // Supabase
-  static const String _supabaseUrl = 'https://cdgnqhdmsnrlzylgoecz.supabase.co';
-  static const String _supabaseKey = 'sb_publishable_HLnBeenbfNLvlF7sc6-lcg_fSIS87e3';
 
   static Future<String> getDeviceId() async {
     try {
@@ -44,10 +41,10 @@ class LicenseService {
       // 1. Cari key di Supabase
       print('[LICENSE] Cari key di Supabase...');
       final response = await http.get(
-        Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}&select=*'),
+        Uri.parse('${AppConfig.supabaseUrl}/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}&select=*'),
         headers: {
-          'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'apikey': AppConfig.supabaseAnonKey,
+          'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
         },
       );
 
@@ -78,11 +75,11 @@ class LicenseService {
       // 4. Key belum dipakai → Aktivasi baru
       if (status == 'unused') {
         final updateResponse = await http.patch(
-          Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
+          Uri.parse('${AppConfig.supabaseUrl}/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
           headers: {
             'Content-Type': 'application/json',
-            'apikey': _supabaseKey,
-            'Authorization': 'Bearer $_supabaseKey',
+            'apikey': AppConfig.supabaseAnonKey,
+            'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
           },
           body: jsonEncode({
             'device_id': deviceId,
@@ -104,11 +101,11 @@ class LicenseService {
         if (savedDeviceId == deviceId) {
           // Device sama → Update last_validated
           await http.patch(
-            Uri.parse('$_supabaseUrl/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
+            Uri.parse('${AppConfig.supabaseUrl}/rest/v1/licenses?license_key=eq.${licenseKey.toUpperCase()}'),
             headers: {
               'Content-Type': 'application/json',
-              'apikey': _supabaseKey,
-              'Authorization': 'Bearer $_supabaseKey',
+              'apikey': AppConfig.supabaseAnonKey,
+              'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
             },
             body: jsonEncode({'last_validated_at': DateTime.now().toIso8601String()}),
           );

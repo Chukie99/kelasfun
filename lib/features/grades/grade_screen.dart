@@ -1,27 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
+import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/shared/widgets/app_button.dart';
-
-String _currentSemester() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return 'Ganjil ${now.year}/${now.year + 1}';
-  } else {
-    return 'Genap ${now.year - 1}/${now.year}';
-  }
-}
-
-List<String> _semesterOptions() {
-  final now = DateTime.now();
-  if (now.month >= 7) {
-    return ['Ganjil ${now.year}/${now.year + 1}', 'Genap ${now.year}/${now.year + 1}'];
-  } else {
-    return ['Ganjil ${now.year - 1}/${now.year}', 'Genap ${now.year - 1}/${now.year}'];
-  }
-}
 
 class GradeScreen extends StatefulWidget {
   const GradeScreen({super.key});
@@ -32,7 +15,7 @@ class GradeScreen extends StatefulWidget {
 
 class _GradeScreenState extends State<GradeScreen> {
   int? _selectedStudentId;
-  String _semester = _currentSemester();
+  String _semester = SemesterHelper.currentSemester();
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +32,7 @@ class _GradeScreenState extends State<GradeScreen> {
                 const Text('Semester: '),
                 DropdownButton<String>(
                   value: _semester,
-                  items: _semesterOptions().map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  items: SemesterHelper.semesterOptions().map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                   onChanged: (v) => setState(() => _semester = v ?? _semester),
                 ),
               ],
@@ -140,10 +123,31 @@ class _GradeScreenState extends State<GradeScreen> {
               label: 'Simpan',
               onPressed: () async {
                 try {
-                  if (selectedSubject == null || scoreController.text.isEmpty) return;
+                  if (selectedSubject == null || scoreController.text.isEmpty) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text('Pilih mata pelajaran dan isi nilai')),
+                      );
+                    }
+                    return;
+                  }
                   final score = double.tryParse(scoreController.text);
-                  if (score == null) return;
-                  if (score < 0 || score > 100) return;
+                  if (score == null) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text('Nilai harus berupa angka')),
+                      );
+                    }
+                    return;
+                  }
+                  if (score < 0 || score > 100) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text('Nilai harus antara 0 dan 100')),
+                      );
+                    }
+                    return;
+                  }
                   final subject = await db.subjectDao.getSubjectByCode(selectedSubject!);
                   if (subject == null) return;
                   await db.gradeDao.insertGrade(
@@ -156,6 +160,12 @@ class _GradeScreenState extends State<GradeScreen> {
                   if (ctx.mounted) Navigator.pop(ctx);
                 } catch (e) {
                   debugPrint('Error inserting grade: $e');
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text('Gagal menyimpan nilai: $e')),
+                    );
+                    Navigator.pop(ctx);
+                  }
                 }
               },
             ),

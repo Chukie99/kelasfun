@@ -53,14 +53,20 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (m, from, to) async {
-        if (from < 2) {
-          await _ensureColumn(m, students, students.isActive);
-          await _ensureColumn(m, students, students.notes);
-        }
-        if (from < 3) {
-          await _ensureColumn(m, students, students.photoPath);
-          await _ensureColumn(m, attendance, attendance.description);
-          await m.createTable(schedules);
+        try {
+          if (from < 2) {
+            await _ensureColumn(m, students, students.isActive);
+            await _ensureColumn(m, students, students.notes);
+          }
+          if (from < 3) {
+            await _ensureColumn(m, students, students.photoPath);
+            await _ensureColumn(m, attendance, attendance.description);
+            await m.createTable(schedules);
+          }
+        } catch (e) {
+          // Log error but don't corrupt the database — partial migration
+          // is better than no app at all.
+          print('[DB] Migration error from v$from to v$to: $e');
         }
       },
     );

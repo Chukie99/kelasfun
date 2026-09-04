@@ -290,7 +290,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     final sakitCount = attendances.where((a) => a.status == 'Sakit').length;
                     final izinCount = attendances.where((a) => a.status == 'Izin').length;
                     final alpaCount = attendances.where((a) => a.status == 'Alpa').length;
-                    final belumAbsenCount = allStudents.length - attendances.length;
+                    final belumAbsenCount = (allStudents.length - attendances.length).clamp(0, allStudents.length);
 
                     return Expanded(
                       child: Column(

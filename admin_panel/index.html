@@ -342,10 +342,11 @@
         // ============================================================
         // SUPABASE CONFIGURATION
         // Ganti nilai di bawah ini dengan key dari Supabase Dashboard
-        // Settings → API
+        // Settings → API → service_role key (bukan anon key!)
+        // Contoh: const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
         // ============================================================
         const SUPABASE_URL = 'https://cdgnqhdmsnrlzylgoecz.supabase.co';
-        const SUPABASE_KEY = 'GANTI_DENGAN_SECRET_KEY_ANDA';
+        const SUPABASE_KEY = 'GANTI_DENGAN_SERVICE_ROLE_KEY_DARI_SUPABASE_DASHBOARD';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         

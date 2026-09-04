@@ -89,12 +89,19 @@ class SubjectScreen extends StatelessWidget {
           AppButton(
             label: 'Simpan',
             onPressed: () async {
-              if (nameController.text.isEmpty || codeController.text.isEmpty) return;
+              if (nameController.text.trim().isEmpty || codeController.text.trim().isEmpty) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(content: Text('Nama dan kode mapel wajib diisi')),
+                  );
+                }
+                return;
+              }
               final db = context.read<AppDatabase>();
               try {
                 await db.subjectDao.insertSubject(
-                  name: nameController.text,
-                  code: codeController.text,
+                  name: nameController.text.trim(),
+                  code: codeController.text.trim().toUpperCase(),
                 );
                 if (ctx.mounted) Navigator.pop(ctx);
               } catch (e) {
