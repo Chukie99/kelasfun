@@ -4,119 +4,81 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
-import 'package:kelasfun/core/utils/responsive.dart';
+import 'package:kelasfun/core/services/serial_generator.dart';
+import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
-import 'package:kelasfun/features/home/home_screen.dart';
-import 'package:kelasfun/features/home/mobile_home.dart';
+import 'package:kelasfun/features/dashboard/dashboard_screen.dart';
 
 class KelasFunApp extends StatelessWidget {
-  final AppDatabase? database;
-  const KelasFunApp({super.key, required this.database});
+  const KelasFunApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final db = database!;
-    return Provider<AppDatabase>.value(
-      value: db,
-      child: StreamBuilder<String?>(
-        stream: db.settingsDao.watchSetting('theme_mode'),
-        builder: (context, snapshot) {
-          final mode = snapshot.data ?? 'dark';
-          ThemeMode themeMode;
-          switch (mode) {
-            case 'light':
-              themeMode = ThemeMode.light;
-              break;
-            case 'system':
-              themeMode = ThemeMode.system;
-              break;
-            default:
-              themeMode = ThemeMode.dark;
-          }
-          return MaterialApp(
-            title: 'kelasFun',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
-            debugShowCheckedModeBanner: false,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('id', 'ID'),
-              Locale('en', 'US'),
-            ],
-            locale: const Locale('id', 'ID'),
-            home: const AppGate(),
-          );
-        },
-      ),
+    return MaterialApp(
+      title: 'KelasFun',
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
+      locale: const Locale('id', 'ID'),
+      home: const AuthGate(),
     );
   }
 }
 
-class AppGate extends StatefulWidget {
-  const AppGate({super.key});
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
 
   @override
-  State<AppGate> createState() => _AppGateState();
+  State<AuthGate> createState() => _AuthGateState();
 }
 
-class _AppGateState extends State<AppGate> {
-  bool _isLoading = true;
-  bool _isActivated = false;
+class _AuthGateState extends State<AuthGate> {
+  bool _loading = true;
+  bool _authenticated = false;
 
   @override
   void initState() {
     super.initState();
-    _checkState();
+    _checkAuth();
   }
 
-  Future<void> _checkState() async {
+  Future<void> _checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
-    final activated = prefs.getBool('kelasfun_activated') ?? false;
-
-    if (mounted) {
-      setState(() {
-        _isActivated = activated;
-        _isLoading = false;
-      });
-    }
+    final valid = prefs.getBool('license_valid') ?? false;
+    setState(() { _authenticated = valid; _loading = false; });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_loading) {
       return const Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text('🎓', style: TextStyle(fontSize: 64)),
+              SizedBox(height: 16),
               CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('Memeriksa aktivasi...'),
             ],
           ),
         ),
       );
     }
 
-    // Belum aktivasi → Serial Activation Screen
-    if (!_isActivated) {
-      return ActivationScreen(
-        onActivated: () {
-          setState(() {
-            _isActivated = true;
-          });
-        },
-      );
+    if (!_authenticated) {
+      return ActivationScreen(onActivated: () {
+        setState(() => _authenticated = true);
+      });
     }
 
-    // Sudah aktivasi → Main App
-    return Responsive.isMobilePlatform || Responsive.isMobile(context)
-        ? const MobileHome()
-        : const HomeScreen();
+    return ChangeNotifierProvider(
+      create: (_) => AppConfig(),
+      child: const DashboardScreen(),
+    );
   }
 }

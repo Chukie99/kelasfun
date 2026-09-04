@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 KelasFun — Serial Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 8px; font-size: 24px; }
+        .subtitle { text-align: center; color: #999; margin-bottom: 30px; font-size: 13px; }
+        .logo { text-align: center; margin-bottom: 20px; }
+        .logo span { font-size: 48px; }
+        label { display: block; font-weight: 600; color: #555; margin-bottom: 6px; font-size: 14px; }
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-align: center;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus { border-color: #667eea; outline: none; }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-generate:hover { box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+        .btn-copy {
+            background: #28a745;
+            color: white;
+            margin-top: 10px;
+            display: none;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            text-align: center;
+        }
+        .result-box.success { background: #d4edda; border: 2px solid #28a745; }
+        .result-box.error { background: #f8d7da; border: 2px solid #dc3545; }
+        .result-code {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 3px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .result-label { color: #666; font-size: 12px; margin-top: 4px; }
+        .history { margin-top: 20px; }
+        .history h3 { color: #555; font-size: 14px; margin-bottom: 10px; }
+        .history-list { max-height: 200px; overflow-y: auto; }
+        .history-item {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item .device { font-family: monospace; color: #667eea; }
+        .history-item .code { font-family: monospace; color: #28a745; font-weight: bold; }
+        .divider { height: 1px; background: #eee; margin: 20px 0; }
+        .info { background: #f0f4ff; border-radius: 10px; padding: 14px; margin-top: 20px; }
+        .info p { font-size: 12px; color: #555; line-height: 1.6; }
+        .info strong { color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"><span>🎓</span></div>
+        <h1>KelasFun Serial Generator</h1>
+        <p class="subtitle">Generator kode aktivasi — Offline Only</p>
+
+        <label for="deviceId">📱 Device ID (dari user)</label>
+        <textarea id="deviceId" placeholder="Paste Device ID di sini...&#10;Contoh: samsung-A54-XYZ123" rows="3"></textarea>
+
+        <button class="btn btn-generate" onclick="generate()">🔑 Generate Kode Aktivasi</button>
+
+        <div class="result-box" id="result">
+            <div class="result-label">KODE AKTIVASI:</div>
+            <div class="result-code" id="resultCode"></div>
+            <div class="result-label" id="resultDevice"></div>
+        </div>
+
+        <button class="btn btn-copy" id="copyBtn" onclick="copyCode()">📋 Copy Kode</button>
+
+        <div class="divider"></div>
+
+        <div class="history">
+            <h3>📋 History Generate</h3>
+            <div class="history-list" id="historyList">
+                <p style="color:#999; font-size:12px; text-align:center; padding:10px;">Belum ada history</p>
+            </div>
+        </div>
+
+        <div class="info">
+            <p>
+                <strong>Cara pakai:</strong><br>
+                1. Minta Device ID dari user (muncul di app saat pertama buka)<br>
+                2. Paste Device ID di atas<br>
+                3. Klik Generate<br>
+                4. Kirim kode aktivasi ke user via WhatsApp
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // SECRET SALT — UBAH INI UNTUK SETIAP APP YANG BERBEDA!
+        // HARUS SAMA dengan salt di serial_generator.dart
+        // ============================================================
+        const SALT = 'KELASFUN_2024_SCHOOL_MGMT';
+        const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I,O,0,1
+
+        // History (saved in localStorage)
+        let history = JSON.parse(localStorage.getItem('kelasfun_history') || '[]');
+        renderHistory();
+
+        function computeChecksum(deviceId) {
+            // SHA-256 via Web Crypto API (sync-ish via trick, or use simple hash)
+            // Using a pure JS hash for simplicity (same as Dart/Python)
+            const data = deviceId + SALT;
+            let h = 0;
+            for (let i = 0; i < data.length; i++) {
+                h = (h ^ (data.charCodeAt(i) << ((i % 4) * 8))) >>> 0;
+            }
+            // Knuth multiplicative
+            h = Math.imul(h, 2654435761) >>> 0;
+
+            const c1 = CHARS[h % CHARS.length];
+            const c2 = CHARS[Math.floor(h / CHARS.length) % CHARS.length];
+            return c1 + c2;
+        }
+
+        function generate() {
+            const deviceId = document.getElementById('deviceId').value.trim();
+            if (!deviceId) {
+                alert('Masukkan Device ID dari user!');
+                return;
+            }
+
+            // Normalize device ID
+            const normalizedId = deviceId.replace(/\s+/g, '-').toUpperCase();
+
+            // Compute checksum from device ID
+            const checksum = computeChecksum(normalizedId);
+
+            // Format: KFUN-XXXX (first 4 of device hash) + checksum
+            // Take first 4 chars from a simple hash of device ID for the code part
+            let h2 = 0;
+            for (let i = 0; i < normalizedId.length; i++) {
+                h2 = (h2 + normalizedId.charCodeAt(i) * (i + 1) * 31) & 0xFFFF;
+            }
+            const part1 = CHARS[h2 % CHARS.length] + CHARS[(h2 >> 4) % CHARS.length] + 
+                         CHARS[(h2 >> 8) % CHARS.length] + CHARS[(h2 >> 12) % CHARS.length];
+
+            const activationCode = `KFUN-${part1}-${checksum}`;
+
+            // Show result
+            const resultBox = document.getElementById('result');
+            resultBox.className = 'result-box success';
+            document.getElementById('resultCode').textContent = activationCode;
+            document.getElementById('resultDevice').textContent = `Untuk: ${normalizedId}`;
+            resultBox.style.display = 'block';
+            document.getElementById('copyBtn').style.display = 'block';
+
+            // Save to history
+            history.unshift({
+                device: normalizedId,
+                code: activationCode,
+                date: new Date().toLocaleString('id-ID')
+            });
+            if (history.length > 50) history = history.slice(0, 50);
+            localStorage.setItem('kelasfun_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function copyCode() {
+            const code = document.getElementById('resultCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '✅ Tersalin!';
+                setTimeout(() => { btn.textContent = '📋 Copy Kode'; }, 2000);
+            });
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<p style="color:#999; font-size:12px; text-align:center; padding:10px;">Belum ada history</p>';
+                return;
+            }
+            list.innerHTML = history.map((item, i) => `
+                <div class="history-item">
+                    <div>
+                        <div class="device">${item.device}</div>
+                        <div style="color:#999; font-size:11px;">${item.date}</div>
+                    </div>
+                    <div class="code">${item.code}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
