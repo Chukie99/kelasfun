@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
-import 'package:kelasfun/core/services/license_service.dart';
-import 'package:kelasfun/core/services/auth_service.dart';
 import 'package:kelasfun/core/utils/responsive.dart';
-import 'package:kelasfun/features/auth/auth_screen.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
 import 'package:kelasfun/features/home/mobile_home.dart';
@@ -68,7 +66,6 @@ class AppGate extends StatefulWidget {
 
 class _AppGateState extends State<AppGate> {
   bool _isLoading = true;
-  bool _isLoggedIn = false;
   bool _isActivated = false;
 
   @override
@@ -78,26 +75,11 @@ class _AppGateState extends State<AppGate> {
   }
 
   Future<void> _checkState() async {
-    final loggedIn = AuthService.isLoggedIn;
-    bool activated = false;
-
-    if (loggedIn) {
-      activated = await LicenseService.isActivated();
-
-      if (activated) {
-        final inGracePeriod = await LicenseService.isInGracePeriod();
-        if (!inGracePeriod) {
-          final result = await LicenseService.revalidate();
-          if (!result.isValid) {
-            activated = false;
-          }
-        }
-      }
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final activated = prefs.getBool('kelasfun_activated') ?? false;
 
     if (mounted) {
       setState(() {
-        _isLoggedIn = loggedIn;
         _isActivated = activated;
         _isLoading = false;
       });
@@ -114,26 +96,14 @@ class _AppGateState extends State<AppGate> {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 20),
-              Text('Memeriksa sesi...'),
+              Text('Memeriksa aktivasi...'),
             ],
           ),
         ),
       );
     }
 
-    // Step 1: Belum login → Auth Screen
-    if (!_isLoggedIn) {
-      return AuthScreen(
-        onAuthenticated: () {
-          setState(() {
-            _isLoggedIn = true;
-          });
-          _checkState();
-        },
-      );
-    }
-
-    // Step 2: Login tapi belum aktivasi → Activation Screen
+    // Belum aktivasi → Serial Activation Screen
     if (!_isActivated) {
       return ActivationScreen(
         onActivated: () {
@@ -144,7 +114,7 @@ class _AppGateState extends State<AppGate> {
       );
     }
 
-    // Step 3: Sudah login + sudah aktivasi → Main App
+    // Sudah aktivasi → Main App
     return Responsive.isMobilePlatform || Responsive.isMobile(context)
         ? const MobileHome()
         : const HomeScreen();
