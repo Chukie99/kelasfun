@@ -9,8 +9,7 @@ void main() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    log('Flutter Error: ${details.exceptionAsString()}',
-        stackTrace: details.stack);
+    log('Flutter Error: ${details.exceptionAsString()}', stackTrace: details.stack);
   };
 
   final db = AppDatabase();

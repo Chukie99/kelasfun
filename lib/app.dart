@@ -10,22 +10,27 @@ import 'package:kelasfun/features/activation/activation_screen.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
 
 class KelasFunApp extends StatelessWidget {
-  const KelasFunApp({super.key});
+  final AppDatabase database;
+  
+  const KelasFunApp({super.key, required this.database});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'KelasFun',
-      theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
-      locale: const Locale('id', 'ID'),
-      home: const AuthGate(),
+    return ChangeNotifierProvider.value(
+      value: database,
+      child: MaterialApp(
+        title: 'KelasFun',
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
+        locale: const Locale('id', 'ID'),
+        home: const AuthGate(),
+      ),
     );
   }
 }
