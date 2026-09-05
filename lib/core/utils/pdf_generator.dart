@@ -96,57 +96,55 @@ class PdfGenerator {
     Uint8List? photoBytes,
     Uint8List? qrCodeBytes,
   ) {
-    // Colors
-    final headerColor = PdfColor.fromHex('#2D3748');
-    final accentColor = PdfColor.fromHex('#4FD1C5');
-    final lightBg = PdfColor.fromHex('#F7FAFC');
-    final borderColor = PdfColor.fromHex('#CBD5E0');
+    // Professional color scheme
+    final primaryColor = PdfColor.fromHex('#1E3A5F');    // Deep navy blue
+    final secondaryColor = PdfColor.fromHex('#C9A227');   // Gold accent
+    final lightBg = PdfColor.fromHex('#F8F9FA');          // Light gray background
+    final darkText = PdfColor.fromHex('#2C3E50');         // Dark text
+    final mediumText = PdfColor.fromHex('#5D6D7E');       // Medium gray text
+    final borderColor = PdfColor.fromHex('#DEE2E6');      // Light border
+    final white = PdfColors.white;
 
     return pw.Container(
       width: tagWidth,
       height: tagHeight,
       decoration: pw.BoxDecoration(
-        color: PdfColors.white,
-        borderRadius: pw.BorderRadius.circular(8),
-        border: pw.Border.all(color: borderColor, width: 1),
+        color: white,
+        border: pw.Border.all(color: borderColor, width: 0.5),
       ),
       child: pw.Column(
         children: [
-          // Header
+          // Header with school name
           pw.Container(
             width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: pw.BoxDecoration(
-              color: headerColor,
-              borderRadius: const pw.BorderRadius.only(
-                topLeft: pw.Radius.circular(8),
-                topRight: pw.Radius.circular(8),
-              ),
+              color: primaryColor,
             ),
             child: pw.Column(
               children: [
                 pw.Text(
                   schoolName ?? 'SEKOLAH',
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
+                    color: white,
                   ),
                   textAlign: pw.TextAlign.center,
                 ),
-                pw.SizedBox(height: 4),
+                pw.SizedBox(height: 3),
                 pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 15, vertical: 2),
                   decoration: pw.BoxDecoration(
-                    color: accentColor,
-                    borderRadius: pw.BorderRadius.circular(4),
+                    color: secondaryColor,
+                    borderRadius: pw.BorderRadius.circular(2),
                   ),
                   child: pw.Text(
                     'KARTU SISWA',
                     style: pw.TextStyle(
-                      fontSize: 8,
+                      fontSize: 7,
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.white,
+                      color: white,
                     ),
                   ),
                 ),
@@ -154,29 +152,39 @@ class PdfGenerator {
             ),
           ),
 
-          // Content
+          // Gold accent line
+          pw.Container(
+            height: 2,
+            color: secondaryColor,
+          ),
+
+          // Content area
           pw.Expanded(
             child: pw.Container(
               padding: const pw.EdgeInsets.all(8),
               color: lightBg,
               child: pw.Column(
-                mainAxisAlignment: pw.MainAxisAlignment.center,
+                mainAxisAlignment: pw.MainAxisAlignment.start,
                 children: [
-                  // Photo
+                  // Photo with professional frame
                   if (photoBytes != null)
                     pw.Container(
-                      width: 50,
-                      height: 60,
+                      width: 45,
+                      height: 55,
                       decoration: pw.BoxDecoration(
                         border: pw.Border.all(
-                          color: accentColor,
+                          color: secondaryColor,
                           width: 2,
                         ),
-                        borderRadius: pw.BorderRadius.circular(4),
+                        boxShadow: [
+                          pw.BoxShadow(
+                            color: PdfColors.grey300,
+                            blurRadius: 3,
+                            offset: const PdfPoint(1, 1),
+                          ),
+                        ],
                       ),
                       child: pw.ClipRRect(
-                        horizontalRadius: 4,
-                        verticalRadius: 4,
                         child: pw.Image(
                           pw.MemoryImage(photoBytes),
                           fit: pw.BoxFit.cover,
@@ -185,51 +193,44 @@ class PdfGenerator {
                     )
                   else
                     pw.Container(
-                      width: 50,
-                      height: 60,
+                      width: 45,
+                      height: 55,
                       decoration: pw.BoxDecoration(
                         color: PdfColors.grey200,
                         border: pw.Border.all(
-                          color: accentColor,
+                          color: secondaryColor,
                           width: 2,
                         ),
-                        borderRadius: pw.BorderRadius.circular(4),
                       ),
                       child: pw.Center(
                         child: pw.Text(
                           'FOTO',
                           style: pw.TextStyle(
-                            fontSize: 8,
-                            color: PdfColors.grey500,
+                            fontSize: 7,
+                            color: mediumText,
                           ),
                         ),
                       ),
                     ),
-                  pw.SizedBox(height: 8),
+                  pw.SizedBox(height: 6),
 
-                  // Student Info
-                  pw.Text(
-                    'NIS   : ${student['nis'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      color: PdfColors.grey700,
+                  // Student Info - compact and clean
+                  pw.Container(
+                    width: double.infinity,
+                    padding: const pw.EdgeInsets.all(6),
+                    decoration: pw.BoxDecoration(
+                      color: white,
+                      border: pw.Border.all(color: borderColor, width: 0.5),
+                      borderRadius: pw.BorderRadius.circular(3),
                     ),
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Nama  : ${student['name'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      fontWeight: pw.FontWeight.bold,
-                      color: headerColor,
-                    ),
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Kelas : ${student['class'] ?? ''}',
-                    style: pw.TextStyle(
-                      fontSize: 8,
-                      color: PdfColors.grey700,
+                    child: pw.Column(
+                      children: [
+                        _buildInfoRow('NIS', student['nis'] ?? '', darkText, mediumText),
+                        pw.SizedBox(height: 2),
+                        _buildInfoRow('NAMA', student['name'] ?? '', darkText, mediumText),
+                        pw.SizedBox(height: 2),
+                        _buildInfoRow('KELAS', student['class'] ?? '', darkText, mediumText),
+                      ],
                     ),
                   ),
                 ],
@@ -240,9 +241,9 @@ class PdfGenerator {
           // QR Code footer
           pw.Container(
             width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(vertical: 6),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5),
             decoration: pw.BoxDecoration(
-              color: PdfColors.white,
+              color: white,
               border: pw.Border(
                 top: pw.BorderSide(color: borderColor, width: 0.5),
               ),
@@ -252,15 +253,16 @@ class PdfGenerator {
                 if (qrCodeBytes != null)
                   pw.Image(
                     pw.MemoryImage(qrCodeBytes),
-                    width: 40,
-                    height: 40,
+                    width: 35,
+                    height: 35,
                   ),
-                pw.SizedBox(height: 4),
+                pw.SizedBox(height: 3),
                 pw.Text(
                   'SCAN UNTUK VERIFIKASI',
                   style: pw.TextStyle(
-                    fontSize: 6,
-                    color: PdfColors.grey500,
+                    fontSize: 5,
+                    color: mediumText,
+                    fontWeight: pw.FontWeight.bold,
                   ),
                 ),
               ],
@@ -269,17 +271,39 @@ class PdfGenerator {
 
           // Bottom accent line
           pw.Container(
-            height: 4,
-            decoration: pw.BoxDecoration(
-              color: accentColor,
-              borderRadius: const pw.BorderRadius.only(
-                bottomLeft: pw.Radius.circular(8),
-                bottomRight: pw.Radius.circular(8),
-              ),
-            ),
+            height: 3,
+            color: primaryColor,
           ),
         ],
       ),
+    );
+  }
+
+  static pw.Widget _buildInfoRow(String label, String value, PdfColor labelColor, PdfColor valueColor) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(
+          width: 35,
+          child: pw.Text(
+            label,
+            style: pw.TextStyle(
+              fontSize: 6,
+              fontWeight: pw.FontWeight.bold,
+              color: labelColor,
+            ),
+          ),
+        ),
+        pw.Expanded(
+          child: pw.Text(
+            ': $value',
+            style: pw.TextStyle(
+              fontSize: 6,
+              color: valueColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
