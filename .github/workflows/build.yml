@@ -1,14 +1,10 @@
-name: Build & Release KelasFun
+name: Build KelasFun
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main, master]
+    tags: ['v*']
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Release tag (e.g. v1.4.0)'
-        required: false
 
 permissions:
   contents: write
@@ -31,26 +27,18 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
       
-      - name: Get version from pubspec.yaml
-        id: version
-        run: |
-          VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | sed 's/+.*//')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
       - name: Get dependencies
         run: flutter pub get
       
       - name: Build APK
         run: flutter build apk --release
       
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk KelasFun-v${{ steps.version.outputs.version }}.apk
-      
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: kelasfun-apk
-          path: KelasFun-v${{ steps.version.outputs.version }}.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
   build-windows:
     runs-on: windows-latest
@@ -66,13 +54,6 @@ jobs:
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
       
-      - name: Get version from pubspec.yaml
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | sed 's/+.*//')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
       - name: Get dependencies
         run: flutter pub get
       
@@ -80,34 +61,27 @@ jobs:
         run: flutter build windows --release
       
       - name: Create ZIP
-        shell: pwsh
         run: |
-          $VERSION = "${{ steps.version.outputs.version }}"
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath "KelasFun-Desktop-v${VERSION}.zip"
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
       
-      - name: Upload EXE artifact
+      - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
-          name: kelasfun-desktop
-          path: KelasFun-Desktop-v${{ steps.version.outputs.version }}.zip
+          name: kelasfun-windows
+          path: KelasFun-Windows.zip
+          if-no-files-found: error
 
   release:
     needs: [build-android, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.tag != ''
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v4
       
       - name: Get version
         id: version
         run: |
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            TAG="${{ github.event.inputs.tag }}"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-          fi
-          VERSION="${TAG#v}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | sed 's/+.*//')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       
       - name: Download APK
@@ -115,43 +89,42 @@ jobs:
         with:
           name: kelasfun-apk
       
-      - name: Download Desktop
+      - name: Download Windows
         uses: actions/download-artifact@v4
         with:
-          name: kelasfun-desktop
+          name: kelasfun-windows
+      
+      - name: Rename files
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          mv app-release.apk KelasFun-v${VERSION}.apk
+          mv KelasFun-Windows.zip KelasFun-Desktop-v${VERSION}.zip
       
       - name: Download HTML Generator
         run: cp tools/serial_generator.html .
       
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: KelasFun ${{ steps.version.outputs.tag }}
+          tag_name: ${{ github.ref_name }}
+          name: KelasFun ${{ github.ref_name }}
           body: |
             ## KelasFun v${{ steps.version.outputs.version }}
             
-            **Aplikasi Manajemen Kelas Offline-First untuk Sekolah Indonesia*
-            
-            ### What's Changed
-            - ✅ Removed Google login dependency — fully offline
-            - ✅ Serial activation system (device-bound)
-            - ✅ Fixed serial algorithm (Dart ↔ HTML generator match)
+            Aplikasi Manajemen Kelas Offline-First untuk Sekolah Indonesia
             
             ### Downloads
-            - 📱 **APK** — `KelasFun-v${{ steps.version.outputs.version }}.apk` (Android)
-            - 🖥️ **Desktop** — `KelasFun-Desktop-v${{ steps.version.outputs.version }}.zip` (Windows)
-            - 🔑 **Serial Generator** — `serial_generator.html` (buka di browser, generate kode aktivasi)
+            - 📱 APK (Android)
+            - 🖥️ Desktop (Windows)
+            - 🔑 Serial Generator (buka di browser)
             
-            ### Cara Pakai
-            1. Install APK atau extract ZIP
-            2. Buka app → muncul Device ID
-            3. Kirim Device ID ke seller via WhatsApp (082261407123)
-            4. Seller buka `serial_generator.html` → paste Device ID → generate kode
-            5. Masukkan kode aktivasi di app → selesai!
+            ### Cara Aktivasi
+            1. Buka app → copy Device ID
+            2. Kirim ke seller via WhatsApp
+            3. Seller generate kode di serial_generator.html
+            4. Masukkan kode → selesai
           files: |
             KelasFun-v${{ steps.version.outputs.version }}.apk
             KelasFun-Desktop-v${{ steps.version.outputs.version }}.zip
             serial_generator.html
-          draft: false
-          prerelease: false
+          generate_release_notes: true
