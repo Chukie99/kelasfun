@@ -1,38 +1,23 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:kelasfun/app.dart';
+import 'package:kelasfun/core/database/app_database.dart';
 
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => CounterModel(),
-      child: const MyApp(),
-    ),
-  );
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class CounterModel extends ChangeNotifier {
-  int _count = 0;
-  int get count => _count;
-  void increment() { _count++; notifyListeners(); }
-}
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    log('Flutter Error: ${details.exceptionAsString()}',
+        stackTrace: details.stack);
+  };
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('KelasFun Test')),
-        body: Center(
-          child: Consumer<CounterModel>(
-            builder: (_, model, __) => Text('Count: ${model.count}', style: const TextStyle(fontSize: 24)),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.read<CounterModel>().increment(),
-          child: const Icon(Icons.add),
-        ),
-      ),
-    );
-  }
+  final db = AppDatabase();
+
+  runZonedGuarded<Future<void>>(() async {
+    runApp(KelasFunApp(database: db));
+  }, (error, stack) {
+    log('Uncaught Error: $error', stackTrace: stack);
+  });
 }
