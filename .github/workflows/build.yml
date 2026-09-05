@@ -28,7 +28,7 @@ jobs:
           channel: 'stable'
       
       - name: Get dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
       
       - name: Build APK
         run: flutter build apk --release
@@ -55,7 +55,7 @@ jobs:
         run: flutter config --enable-windows-desktop
       
       - name: Get dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
       
       - name: Build Windows EXE
         run: flutter build windows --release
