@@ -26,7 +26,6 @@ dependencies:
   mobile_scanner: ^5.2.3
   http: ^1.1.0
   shared_preferences: ^2.2.0
-  device_info_plus: ^10.1.0
   shelf: ^1.4.0
   shelf_router: ^1.1.0
   excel: ^4.0.6
