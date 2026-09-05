@@ -2,7 +2,7 @@ name: Build KelasFun
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, test-minimal]
     tags: ['v*']
   workflow_dispatch:
 
@@ -31,9 +31,20 @@ jobs:
         run: flutter pub get
       
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release 2>&1 || echo "::error::APK build failed"
+      
+      - name: Debug - Dump build errors
+        if: failure()
+        run: |
+          echo "## Build Error Debug Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          flutter analyze --no-pub 2>&1 | head -100 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### File listing" >> $GITHUB_STEP_SUMMARY
+          find lib/ -name "*.dart" | head -50 >> $GITHUB_STEP_SUMMARY
       
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: kelasfun-apk
@@ -60,11 +71,19 @@ jobs:
       - name: Build Windows EXE
         run: flutter build windows --release
       
-      - name: Create ZIP
+      - name: Debug - Dump build errors
+        if: failure()
         run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
+          echo "## Build Error Debug Info" >> $env:GITHUB_STEP_SUMMARY
+          echo "Running flutter analyze..." >> $env:GITHUB_STEP_SUMMARY
+          flutter analyze --no-pub 2>&1 | Out-String | Select-Object -First 100 >> $env:GITHUB_STEP_SUMMARY
+      
+      - name: Create ZIP
+        if: success()
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
       
       - name: Upload Windows
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: kelasfun-windows
