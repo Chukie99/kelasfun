@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kelasfun/core/database/app_database.dart';
-import 'package:kelasfun/core/services/license_service.dart';
-import 'package:kelasfun/core/services/auth_service.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
-import 'package:kelasfun/main.dart' show supabaseUrl, supabaseAnonKey;
+import 'package:kelasfun/core/services/serial_generator.dart';
+import 'package:kelasfun/features/activation/activation_screen.dart';
+import 'package:kelasfun/features/android/android_main_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'features/auth/auth_screen.dart';
-import 'features/activation/activation_screen.dart';
-import 'features/android/android_main_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
-  );
 
   final db = AppDatabase();
   runApp(
@@ -41,7 +33,6 @@ class AppGate extends StatefulWidget {
 
 class _AppGateState extends State<AppGate> {
   bool _isLoading = true;
-  bool _isLoggedIn = false;
   bool _isActivated = false;
 
   @override
@@ -51,27 +42,11 @@ class _AppGateState extends State<AppGate> {
   }
 
   Future<void> _checkState() async {
-    final loggedIn = AuthService.isLoggedIn;
-    bool activated = false;
-
-    if (loggedIn) {
-      activated = await LicenseService.isActivated();
-
-      if (activated) {
-        final inGracePeriod = await LicenseService.isInGracePeriod();
-        if (!inGracePeriod) {
-          final result = await LicenseService.revalidate();
-          if (!result.isValid) {
-            activated = false;
-          }
-        }
-      }
-    }
-
+    final prefs = await SharedPreferences.getInstance();
+    final valid = prefs.getBool('license_valid') ?? false;
     if (mounted) {
       setState(() {
-        _isLoggedIn = loggedIn;
-        _isActivated = activated;
+        _isActivated = valid;
         _isLoading = false;
       });
     }
@@ -87,19 +62,10 @@ class _AppGateState extends State<AppGate> {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 20),
-              Text('Memeriksa sesi...'),
+              Text('Memeriksa lisensi...'),
             ],
           ),
         ),
-      );
-    }
-
-    if (!_isLoggedIn) {
-      return AuthScreen(
-        onAuthenticated: () {
-          setState(() => _isLoggedIn = true);
-          _checkState();
-        },
       );
     }
 

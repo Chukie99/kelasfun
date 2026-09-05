@@ -7,7 +7,7 @@ import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/services/serial_generator.dart';
 import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
-import 'package:kelasfun/features/dashboard/dashboard_screen.dart';
+import 'package:kelasfun/features/home/home_screen.dart';
 
 class KelasFunApp extends StatelessWidget {
   const KelasFunApp({super.key});
@@ -76,9 +76,6 @@ class _AuthGateState extends State<AuthGate> {
       });
     }
 
-    return ChangeNotifierProvider(
-      create: (_) => AppConfig(),
-      child: const DashboardScreen(),
-    );
+    return const HomeScreen();
   }
 }
