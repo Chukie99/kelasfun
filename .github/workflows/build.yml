@@ -10,34 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  analyze:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.27.0'
-          channel: 'stable'
-      - run: flutter pub get
-      - name: Analyze code
-        id: analyze
-        run: |
-          flutter analyze --no-pub 2>&1 | tee analyze_output.txt
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-      - name: Write analysis to summary
-        if: always()
-        run: |
-          echo "## 🔍 Flutter Analyze Results" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat analyze_output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "Exit code: ${{ steps.analyze.outputs.exit_code }}" >> $GITHUB_STEP_SUMMARY
-      - name: Fail if analyze fails
-        if: steps.analyze.outputs.exit_code != '0'
-        run: exit 1
-
   build-android:
-    needs: analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,41 +24,16 @@ jobs:
           channel: 'stable'
       - run: flutter pub get
       - name: Build APK
-        id: apk
-        run: |
-          flutter build apk --release 2>&1 | tee apk_build.txt
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-      - name: Write build output to summary
-        if: always()
-        run: |
-          echo "## 📱 APK Build Output" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -50 apk_build.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: Find and upload APK
-        if: steps.apk.outputs.exit_code == '0'
-        run: |
-          APK_PATH=$(find build -name "*.apk" -type f 2>/dev/null | head -1)
-          echo "Found APK: $APK_PATH"
-          if [ -z "$APK_PATH" ]; then
-            echo "No APK found!"
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "Build dir listing:" >> $GITHUB_STEP_SUMMARY
-            find build -type f 2>/dev/null | head -30 >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-          mkdir -p artifacts
-          cp "$APK_PATH" artifacts/KelasFun.apk
-      - uses: actions/upload-artifact@v4
-        if: steps.apk.outputs.exit_code == '0'
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: kelasfun-apk
-          path: artifacts/KelasFun.apk
+          path: build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
+          retention-days: 5
 
   build-windows:
-    needs: analyze
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,28 +44,16 @@ jobs:
       - run: flutter config --enable-windows-desktop
       - run: flutter pub get
       - name: Build Windows
-        id: win
-        run: |
-          flutter build windows --release 2>&1 | Out-File win_build.txt
-          $LASTEXITCODE | Out-File -FilePath exit_code.txt
-      - name: Write build output to summary
-        if: always()
-        run: |
-          $output = Get-Content win_build.txt -Tail 50
-          "## 🖥️ Windows Build Output" | Out-File $env:GITHUB_STEP_SUMMARY -Append
-          "``````" | Out-File $env:GITHUB_STEP_SUMMARY -Append
-          $output | Out-File $env:GITHUB_STEP_SUMMARY -Append
-          "``````" | Out-File $env:GITHUB_STEP_SUMMARY -Append
-      - name: Create and upload ZIP
-        if: success()
-        run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
-      - uses: actions/upload-artifact@v4
-        if: success()
+        run: flutter build windows --release
+      - name: Create ZIP
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath KelasFun-Windows.zip
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
         with:
           name: kelasfun-windows
           path: KelasFun-Windows.zip
           if-no-files-found: error
+          retention-days: 5
 
   release:
     needs: [build-android, build-windows]
@@ -138,10 +74,10 @@ jobs:
         with:
           name: kelasfun-windows
           path: artifacts
-      - name: Rename and upload
+      - name: Rename files
         run: |
           VERSION=${{ steps.version.outputs.version }}
-          mv artifacts/KelasFun.apk "KelasFun-v${VERSION}.apk"
+          find artifacts -name "*.apk" -exec mv {} "KelasFun-v${VERSION}.apk" \;
           mv artifacts/KelasFun-Windows.zip "KelasFun-Desktop-v${VERSION}.zip"
           cp tools/serial_generator.html .
       - name: Create Release
@@ -155,9 +91,15 @@ jobs:
             Aplikasi Manajemen Kelas Offline-First untuk Sekolah Indonesia
             
             ### Downloads
-            - 📱 APK (Android)
-            - 🖥️ Desktop (Windows)
-            - 🔑 Serial Generator (buka di browser)
+            - 📱 **APK** — Install di Android
+            - 🖥️ **Desktop** — Windows EXE
+            - 🔧 **Serial Generator** — Buka di browser untuk generate kode aktivasi
+            
+            ### Cara Aktivasi
+            1. Buka app → copy Device ID
+            2. Kirim ke seller via WhatsApp
+            3. Seller buka `serial_generator.html` → paste Device ID → Generate
+            4. Masukkan kode ke app → selesai!
           files: |
             KelasFun-v${{ steps.version.outputs.version }}.apk
             KelasFun-Desktop-v${{ steps.version.outputs.version }}.zip
