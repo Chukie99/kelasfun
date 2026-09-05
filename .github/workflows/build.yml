@@ -2,7 +2,7 @@ name: Build KelasFun
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, test-minimal]
     tags: ['v*']
   workflow_dispatch:
 
