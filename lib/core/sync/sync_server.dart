@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
-import 'package:shelf_router/shelf_router.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'sync_handler.dart';
 
@@ -24,17 +23,33 @@ class SyncServer {
     if (_server != null) return;
 
     final handler = SyncHandler(db: db, apiKey: apiKey);
-    
-    final router = Router()
-      ..get('/api/health', handler.healthCheck)
-      ..get('/api/students', handler.getStudents)
-      ..post('/api/students', handler.createStudent)
-      ..post('/api/attendance', handler.syncAttendance)
-      ..post('/api/scan', handler.scanAttendance);
+
+    // Simple manual router — no shelf_router needed
+    Future<Response> router(Request request) async {
+      final path = request.url.path;
+      final method = request.method.toUpperCase();
+
+      if (method == 'GET' && path == 'api/health') {
+        return handler.healthCheck(request);
+      }
+      if (method == 'GET' && path == 'api/students') {
+        return handler.getStudents(request);
+      }
+      if (method == 'POST' && path == 'api/students') {
+        return handler.createStudent(request);
+      }
+      if (method == 'POST' && path == 'api/attendance') {
+        return handler.syncAttendance(request);
+      }
+      if (method == 'POST' && path == 'api/scan') {
+        return handler.scanAttendance(request);
+      }
+      return Response.notFound('Not Found');
+    }
 
     final pipeline = const Pipeline()
         .addMiddleware(logRequests())
-        .addHandler(router.call);
+        .addHandler(router);
 
     try {
       _server = await io.serve(pipeline, InternetAddress.anyIPv4, port);
