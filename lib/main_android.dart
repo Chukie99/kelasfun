@@ -12,7 +12,7 @@ void main() async {
 
   final db = AppDatabase();
   runApp(
-    ChangeNotifierProvider.value(
+    Provider.value(
       value: db,
       child: MaterialApp(
         title: 'kelasFun',

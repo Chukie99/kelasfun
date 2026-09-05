@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
-import 'package:kelasfun/core/services/serial_generator.dart';
-import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
 
@@ -16,7 +14,7 @@ class KelasFunApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
+    return Provider.value(
       value: database,
       child: MaterialApp(
         title: 'KelasFun',
