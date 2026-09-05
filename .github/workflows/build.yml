@@ -24,11 +24,11 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
       
       - name: Get dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get
       
       - name: Build APK
         run: flutter build apk --release
@@ -48,14 +48,14 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
       
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
       
       - name: Get dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get
       
       - name: Build Windows EXE
         run: flutter build windows --release
