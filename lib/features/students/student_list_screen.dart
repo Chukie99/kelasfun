@@ -57,7 +57,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         failed++;
         continue;
       }
-      if (gender != 'Laki-laki' && gender != 'Perempuan') {
+      if (gender.toLowerCase() != 'laki-laki' && gender.toLowerCase() != 'perempuan' && gender.toLowerCase() != 'l' && gender.toLowerCase() != 'p') {
         failed++;
         continue;
       }

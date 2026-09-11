@@ -23,6 +23,7 @@ class SyncHandler {
   }
 
   Future<Response> healthCheck(Request request) async {
+    if (!_validateAuth(request)) return _jsonResponse({'error': 'Unauthorized'}, status: 401);
     return _jsonResponse({'status': 'ok', 'version': '1.0.0'});
   }
 

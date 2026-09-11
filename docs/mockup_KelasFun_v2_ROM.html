@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KelasFun — Mockup v2.2 ROM Total — Ikon Siluet FLAT Putih-Maroon</title>
+<style>
+:root{--navy:#7A1C1C;--gold:#FFF0F0;--gold2:#FDECEC;--bg:#FFFFFF;--ink:#2B1A1A;--muted:#8A6B6B;--line:#E8D0D0;--line2:#F3E6E6;--page:#FFFCFC;--ok:#2E7D6B;--red:#9B1B30;--warn:#8C5A18}
+*{box-sizing:border-box}body{margin:0;font:13px/1.5 Inter,system-ui,sans-serif;background:var(--page);color:var(--ink)}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 14px 36px}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:#FFFFFF;font-weight:900;font-size:20px;border:2px solid var(--navy)}
+.top h1{margin:0;font-size:18px;letter-spacing:-.02em}.muted{color:var(--muted);font-size:11px}
+.pill{font:11px/1 Inter;background:var(--navy);color:#FFFFFF;border-radius:999px;padding:5px 10px;font-weight:800;border:1px solid var(--navy)}
+.pill.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.nav button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font:12px Inter;font-weight:700;cursor:pointer}
+.nav button.active{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.swatchRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sw{width:82px;text-align:center}.sw i{display:block;height:28px;border-radius:8px;border:1px solid var(--line)}.sw span{font:10px Inter;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.phone{background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 6px 24px rgba(30,58,95,.09);display:flex;flex-direction:column;position:relative}
+.ph-head{height:22px;background:var(--navy);display:flex;align-items:center;justify-content:center;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:#FFFFFF;opacity:.9}
+.ph-title{padding:10px 14px 8px;font-weight:900;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center}
+.tag{font:10px/1 Inter;background:var(--bg);color:var(--navy);border:1px solid var(--line);border-radius:999px;padding:4px 7px;font-weight:800}
+.tag.navy{background:var(--navy);color:#FFFFFF;border-color:var(--navy)}.tag.gold{background:var(--gold);color:var(--navy);border-color:var(--line)}.tag.ok{background:#E1F0EC;color:var(--ok);border-color:#C6E2DA}
+.ph-body{padding:12px 12px 62px;flex:1;position:relative}
+.card2{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+.card-soft{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.input{border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%;background:#fff;font:12px Inter}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--navy);color:var(--gold);border:1px solid var(--navy);border-radius:10px;padding:9px 12px;font-weight:800;font-size:12px;cursor:pointer;width:100%}
+.btn.gold{background:var(--navy);color:#FFFFFF;border-color:var(--navy)}.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.badge{font:10px/1 Inter;padding:4px 7px;border-radius:999px;font-weight:800;border:1px solid transparent}
+.badge.navy{background:var(--navy);color:#FFFFFF}.badge.gold{background:var(--gold);color:var(--navy);border-color:var(--line)}.badge.ok{background:#E1F0EC;color:var(--ok);border-color:#C6E2DA}.badge.warn{background:#FFF4E6;color:var(--warn);border-color:#F5D6A8}
+.kpi{flex:1;min-width:70px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:15px;color:var(--navy)}.kpi span{font-size:11px;color:var(--muted)}
+.divider{height:1px;background:var(--line2);margin:8px 0}
+.avatar{width:42px;height:42px;border-radius:10px;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0;overflow:hidden}
+.thumb{width:52px;height:52px;border-radius:10px;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
+.note{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;margin-top:10px}
+.step{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--gold);display:grid;place-items:center;font:11px Inter;font-weight:900;flex-shrink:0}
+.step.done{background:var(--ok);color:#fff}
+.sched{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:11px}
+.sched .head{background:var(--navy);color:var(--gold);padding:6px 8px;font-weight:800;display:flex;justify-content:space-between}
+.sched table{width:100%;border-collapse:collapse}.sched td,.sched th{border:1px solid var(--line2);padding:6px 6px;text-align:center}
+.sched th{background:var(--bg);font-size:10px;color:var(--muted)}
+.idcard{width:100%;max-width:220px;margin:0 auto;border:1px solid #DEE2E6;border-radius:10px;overflow:hidden;background:#fff}
+.idcard .hd{background:var(--navy);color:var(--gold);padding:8px 10px;text-align:center;font-weight:900;font-size:10px}
+.idcard .bd{padding:10px;display:flex;gap:10px}
+.qr{width:56px;height:56px;background: repeating-linear-gradient(45deg,#222 0 4px,#fff 4px 8px);border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;font-size:10px;color:#fff}
+.bar{height:8px;background:var(--line2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--navy)}
+.bar.gold i{background:var(--gold)}
+/* Kasir Kita style siluet bottom bar */
+.ico{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:block}
+.fbar{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;pointer-events:none}
+.fbar-bar{display:flex;gap:1px;background:#fff;border:1px solid var(--line);border-radius:28px;padding:6px 6px;box-shadow:0 8px 20px rgba(30,58,95,.13);pointer-events:auto}
+.fbar-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:46px;padding:6px 5px;border-radius:20px;border:0;background:transparent;cursor:pointer;color:var(--muted);font:9px/1 Inter;font-weight:700}
+.fbar-item.active{background:var(--navy);color:#fff}
+.fbar-item.active .ico{color:#fff}
+.fbar-item .ico{color:var(--muted)}
+.fbar-item.active .ico{color:#FFFFFF}
+.fbar-item span{font-size:9px;letter-spacing:.01em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">K</div>
+    <div>
+      <h1>KelasFun — Mockup v2.2 — Putih + Maroon</h1>
+      <div class="muted">Putih #FFFFFF + Maroon #7A1C1C FLAT solid • Flutter Windows + Android • 13 layar • Ikon outline 1.75px — siluet kayak Kasir Kita</div>
+    </div>
+    <span class="pill">SILUET OUTLINE</span><span class="pill ghost">FLAT — no gradient</span>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="active" data-filter="all">Semua 13</button>
+    <button data-filter="onboard">Onboard</button>
+    <button data-filter="siswa">Siswa</button>
+    <button data-filter="absen">Absen</button>
+    <button data-filter="laporan">Laporan</button>
+    <button data-filter="sync">Sync</button>
+  </div>
+
+  <div class="swatchRow">
+    <div class="sw"><i style="background:#7A1C1C"></i><span>#7A1C1C maroon</span></div>
+    <div class="sw"><i style="background:#FFF7F7;border:1px solid #E8D0D0"></i><span>#FFF7F7 warm</span></div>
+    <div class="sw"><i style="background:#FFF0F0;border:1px solid #E8D0D0"></i><span>#FFF0F0 tint</span></div>
+    <div class="sw"><i style="background:#2E7D6B"></i><span>#2E7D6B ok</span></div>
+    <div class="sw"><i style="background:#25324A"></i><span>#25324A ink</span></div>
+    <div class="sw"><i style="background:#D6E2E0"></i><span>#D6E2E0 line</span></div>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <!-- 1 Splash -->
+    <div class="phone" data-cat="onboard">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">1. Splash <span class="tag navy">FLAT</span></div>
+      <div class="ph-body" style="display:grid;place-items:center;text-align:center;min-height:360px;background:var(--bg)">
+        <div>
+          <div style="width:64px;height:64px;border-radius:16px;background:var(--navy);display:grid;place-items:center;margin:0 auto;border:2px solid var(--gold);color:#FFFFFF">
+            <svg class="ico" style="width:32px;height:32px;color:var(--gold)" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17"/><path d="M5 13.5v3.37a6 6 0 0 0 7 0v-3.37"/><path d="M12 22V15"/></svg>
+          </div>
+          <b style="display:block;margin-top:12px;font-size:18px;color:var(--navy)">KelasFun</b>
+          <div class="muted">Manajemen Kelas Offline-First</div>
+          <div class="muted" style="margin-top:8px;font-size:10px">Windows • Android • 100% Offline • Sync QR</div>
+          <div style="margin-top:14px" class="muted"><span class="badge navy">v2.1 SILUET</span> <span class="badge gold">149k lifetime</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 Aktivasi -->
+    <div class="phone" data-cat="onboard">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">2. Aktivasi <span class="tag gold">Device Lock</span></div>
+      <div class="ph-body">
+        <div class="card-soft"><b style="font-size:11px;color:var(--navy)">DEVICE ID (kirim ke seller)</b>
+          <div style="margin-top:6px;background:#fff;border:1px dashed var(--line);border-radius:10px;padding:10px;text-align:center;font-family:monospace;font-weight:900;letter-spacing:2px;color:var(--navy)">KF-A3F9C1E7B204</div>
+          <div class="row" style="margin-top:8px"><button class="btn ghost" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v3"/></svg> Copy ID</button><button class="btn gold" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-1.9.5 4.48 4.48 0 0 0 1.95-2.45 8.94 8.94 0 0 1-2.85 1.1A4.52 4.52 0 0 0 12 13.5a12.94 12.94 0 0 1-9.4-4.8 4.5 4.5 0 0 0 1.4 6 4.23 4.23 0 0 1-2-.55v.06a4.52 4.52 0 0 0 3.6 4.43 4.6 4.6 0 0 1-2 .07 4.52 4.52 0 0 0 4.2 3.14A9.06 9.06 0 0 1 2 21.5a12.8 12.8 0 0 0 6.9 2"/></svg> Kirim WA</button></div>
+          <div class="muted" style="font-size:10px;margin-top:6px">Seller balas <code>KFUN-XXXX-XX</code> — 1 device 1 kode. Grace 30 hari offline.</div>
+        </div>
+        <div style="margin-top:10px"><b style="font-size:11px">KODE AKTIVASI</b>
+          <input class="input" placeholder="KFUN-RX7P-Q2" value="KFUN-RX7P-Q2" style="margin-top:6px;text-align:center;letter-spacing:2px;font-family:monospace;font-weight:800">
+          <button class="btn" style="margin-top:8px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg> Aktivasi</button>
+          <div class="muted" style="font-size:10px;text-align:center;margin-top:4px">Validasi lokal + Supabase jika online</div>
+        </div>
+        <div class="card2" style="margin-top:10px;background:#E1F0EC;border-color:#C6E2DA"><b style="font-size:11px;color:var(--ok)">✓ Aktivasi Berhasil!</b><div class="muted" style="font-size:11px">Memuat dashboard... grace sampai 11 Okt 2026</div></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 3 Onboarding 3-step -->
+    <div class="phone" data-cat="onboard">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">3. Onboarding <span class="tag navy">3 Step — Guru Awam</span></div>
+      <div class="ph-body">
+        <div class="row" style="justify-content:space-between"><span class="muted">Langkah <b style="color:var(--navy)">1 dari 3</b></span><span class="badge navy">Tanpa manual</span></div>
+        <div class="row" style="margin-top:8px"><span class="step">1</span><b style="font-size:12px">Profil Sekolah</b><span class="muted" style="margin-left:auto">2 • 3</span></div>
+        <div class="card2" style="margin-top:8px">
+          <input class="input" placeholder="Nama sekolah" value="SDN 1 Sukamaju">
+          <div class="row" style="margin-top:8px"><input class="input" placeholder="Kota" value="Bandung" style="flex:1"><input class="input" placeholder="Provinsi" value="Jabar" style="flex:1"></div>
+          <input class="input" placeholder="Alamat (opsional)" value="Jl. Melati No. 12" style="margin-top:8px">
+        </div>
+        <div class="row" style="margin-top:8px"><span class="step done"><svg class="ico" style="width:14px;height:14px;color:#fff" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="muted">Step 2: Tambah Siswa</span><span class="step" style="opacity:.4">3</span><span class="muted">Pair HP</span></div>
+        <button class="btn" style="margin-top:12px;display:flex;gap:6px;align-items:center;justify-content:center">Lanjut → Tambah Siswa <svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button>
+        <div class="note">Next → Next → Done. Bisa skip, nanti isi di Pengaturan.</div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 4 Dashboard -->
+    <div class="phone" data-cat="siswa">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">4. Dashboard <span class="tag">Home</span></div>
+      <div class="ph-body">
+        <div style="display:flex;justify-content:space-between"><b style="font-size:13px;color:var(--navy)">SDN 1 Sukamaju</b><span class="badge gold">Kelas 3A</span></div>
+        <div class="muted">Ganjil 2025/2026 • 28 siswa • Sync: <span style="color:var(--ok);font-weight:800">● 192.168.1.12:8080</span></div>
+        <div class="row" style="margin-top:10px">
+          <div class="kpi"><b>28</b><span>Siswa</span></div>
+          <div class="kpi"><b style="color:var(--ok)">26</b><span>Hadir</span></div>
+          <div class="kpi"><b>4</b><span>Izin/Sakit</span></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div class="card2" style="flex:1;text-align:center"><b style="font-size:11px">RATA NILAI</b><div style="font-size:18px;font-weight:900;color:var(--navy)">82.4</div><div class="bar"><i style="width:82%"></i></div></div>
+          <div class="card2" style="flex:1;text-align:center"><b style="font-size:11px">POIN TOP</b><div style="font-size:18px;font-weight:900;color:#FFFFFF">+120</div><div class="muted" style="font-size:10px">Budi — Olimpiade</div></div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="btn" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/><circle cx="12" cy="13" r="3"/><path d="M16.5 13.5L21 18"/></svg> Scan Absen</button><button class="btn gold" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Tambah Siswa</button></div>
+        <div class="card2" style="margin-top:8px"><b style="font-size:11px">JADWAL HARI INI — Rabu</b><div class="muted" style="font-size:11px;margin-top:4px">07:30 Matematika • 09:00 IPA • 10:30 Bahasa • 13:00 Pramuka</div></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 5 Siswa List -->
+    <div class="phone" data-cat="siswa">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">5. Daftar Siswa <span class="tag">F2</span></div>
+      <div class="ph-body">
+        <div class="row"><input class="input" placeholder="Cari: nama / NIS" value="budi" style="flex:1"><span class="badge navy">Kelas 3A ▾</span></div>
+        <div class="row" style="margin-top:8px"><span class="badge navy">Semua 28</span><span class="badge gold">L 14</span><span class="badge" style="background:#fff;color:var(--muted);border-color:var(--line)">P 14</span><span class="muted" style="margin-left:auto;font-size:10px">NIS unik ✓</span></div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <div class="card2" style="border-left:4px solid var(--navy);display:flex;gap:10px;align-items:center">
+            <div class="avatar"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/></svg></div><div style="flex:1"><b style="font-size:12px">Budi Santoso</b><div class="muted">NIS 2025001 • L • 3A</div><div class="muted" style="font-size:10px">Avg 88.2 • Poin +120 <span class="badge ok">Juara</span></div></div><span class="badge gold" style="display:flex;gap:4px;align-items:center"><svg class="ico" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h3v3h-3z"/></svg> QR</span>
+          </div>
+          <div class="card2" style="display:flex;gap:10px;align-items:center">
+            <div class="avatar"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/></svg></div><div style="flex:1"><b style="font-size:12px">Siti Aminah</b><div class="muted">NIS 2025002 • P • 3A</div><div class="muted" style="font-size:10px">Avg 84.1 • Poin -5</div></div><span class="badge warn">-5</span>
+          </div>
+          <div class="card2" style="opacity:.7;display:flex;gap:8px;align-items:center"><svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><div><b style="font-size:12px">Import CSV</b><div class="muted" style="font-size:11px">Upload 20 siswa sekaligus + foto bulk</div></div></div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="btn" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Kartu PDF</button><button class="btn ghost" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg> Excel</button></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 6 Detail + Kartu 54×86 -->
+    <div class="phone" data-cat="siswa">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">6. Detail + Kartu <span class="tag gold">54×86mm</span></div>
+      <div class="ph-body">
+        <div class="card2"><div style="display:flex;gap:10px"><div class="avatar" style="width:52px;height:52px"><svg class="ico" style="width:28px;height:28px" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/></svg></div><div style="flex:1"><b>Budi Santoso</b><div class="muted">NIS 2025001 • L • 12 Jan 2015</div><div class="muted" style="font-size:10px">Ortu: Pak Santoso • 0812-3456-7890</div></div></div>
+          <div class="divider"></div><div class="row"><span class="kpi" style="padding:6px"><b>88.2</b><span>Rata</span></span><span class="kpi" style="padding:6px"><b>26/30</b><span>Hadir</span></span><span class="kpi" style="padding:6px;border-color:#FFFFFF"><b style="color:#FFFFFF">+120</b><span>Poin</span></span></div>
+        </div>
+        <div style="margin-top:10px"><b style="font-size:11px">PREVIEW KARTU 54×86mm</b>
+          <div class="idcard" style="margin-top:6px">
+            <div class="hd">SDN 1 SUKAMAJU — KELAS 3A</div>
+            <div class="bd"><div class="avatar" style="width:44px;height:44px"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/></svg></div><div style="flex:1"><b style="font-size:11px">Budi Santoso</b><div class="muted" style="font-size:10px">NIS 2025001<br>L • 3A</div></div><div class="qr"></div></div>
+            <div style="background:var(--gold);color:var(--navy);text-align:center;font-size:8px;font-weight:800;padding:4px">KARTU PELAJAR • BERLAKU 2025/2026</div>
+          </div>
+          <div class="muted" style="font-size:10px;text-align:center;margin-top:4px">Navy #1E3A5F + Gold #C9A227 • QR payload NIS+Nama+Kelas</div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="btn gold" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Cetak Kartu</button><button class="btn ghost" style="flex:1">Biodata A4</button></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 7 Absensi Scan -->
+    <div class="phone" data-cat="absen">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">7. Presensi QR <span class="tag ok">Offline Queue</span></div>
+      <div class="ph-body">
+        <div style="height:140px;background:#111;border-radius:12px;display:grid;place-items:center;color:#fff;position:relative;overflow:hidden;border:1px solid var(--line)">
+          <div style="width:90px;height:90px;border:2px dashed var(--gold);border-radius:10px;display:grid;place-items:center">
+            <svg class="ico" style="width:36px;height:36px;color:var(--gold)" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 20h1M19 14h1M20 19h1"/></svg>
+          </div>
+          <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;white-space:nowrap">● Scan: Budi ✓ Hadir 07:42</div>
+        </div>
+        <div class="row" style="margin-top:8px"><span class="badge ok">Hadir 26</span><span class="badge gold">Izin 1</span><span class="badge warn">Sakit 1</span><span class="badge" style="background:var(--red);color:#fff">Alpa 0</span></div>
+        <div class="card2" style="margin-top:8px"><b style="font-size:11px">MANUAL (HP lowbat)</b>
+          <div class="row" style="margin-top:6px"><button class="btn ok" style="flex:1;padding:7px">H</button><button class="btn gold" style="flex:1;padding:7px">I</button><button class="btn ghost" style="flex:1;padding:7px">S</button><button class="btn" style="flex:1;background:var(--red);border-color:var(--red);color:#fff;padding:7px">A</button></div>
+          <div class="muted" style="font-size:10px;margin-top:4px">Offline queue: 3 scan antre → WiFi on auto sync 8080</div>
+        </div>
+        <div class="card-soft" style="margin-top:8px;display:flex;justify-content:space-between"><span class="muted">Tgl: <b style="color:var(--navy)">11 Sep 2025</b></span><span class="badge navy">Realtime</span></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 8 Nilai & Ranking -->
+    <div class="phone" data-cat="laporan">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">8. Nilai & Ranking <span class="tag">F4</span></div>
+      <div class="ph-body">
+        <div style="display:flex;justify-content:space-between"><b style="font-size:12px;color:var(--navy)">Ganjil 2025/2026 • 3A</b><span class="badge gold">Semester ▾</span></div>
+        <div class="card2" style="margin-top:8px;padding:0;overflow:hidden">
+          <div style="padding:8px 10px;background:var(--bg);display:flex;justify-content:space-between"><b style="font-size:11px">RANKING</b><span class="muted" style="font-size:10px">avg UTS+UAS+Tugas</span></div>
+          <div style="padding:8px 10px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line2)"><span class="badge gold">1</span><b style="font-size:12px;flex:1">Budi Santoso</b><b style="color:var(--navy)">88.2</b></div>
+          <div style="padding:8px 10px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line2)"><span class="badge" style="background:var(--line);color:var(--ink)">2</span><b style="font-size:12px;flex:1">Siti Aminah</b><b>84.1</b></div>
+          <div style="padding:8px 10px;display:flex;gap:8px;align-items:center"><span class="badge" style="background:#F5D6A8;color:var(--warn)">3</span><b style="font-size:12px;flex:1">Riko</b><b>79.5</b></div>
+        </div>
+        <div class="card2" style="margin-top:8px"><b style="font-size:11px">GRAFIK RATA PER MAPEL</b>
+          <div style="display:flex;align-items:end;gap:6px;height:60px;margin-top:8px"><div style="flex:1;background:var(--line2);border-radius:6px 6px 0 0;height:40px"></div><div style="flex:1;background:var(--navy);border-radius:6px 6px 0 0;height:58px"></div><div style="flex:1;background:var(--gold);border-radius:6px 6px 0 0;height:46px"></div><div style="flex:1;background:var(--ok);border-radius:6px 6px 0 0;height:52px"></div></div>
+          <div class="row" style="justify-content:space-between;margin-top:4px"><span class="muted" style="font-size:10px">MTK</span><span class="muted" style="font-size:10px">IPA</span><span class="muted" style="font-size:10px">BI</span><span class="muted" style="font-size:10px">IPS</span></div>
+        </div>
+        <button class="btn" style="margin-top:8px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Export Rapor Excel</button>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 9 Poin -->
+    <div class="phone" data-cat="laporan">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">9. Poin Disiplin <span class="tag">F5</span></div>
+      <div class="ph-body">
+        <div class="row"><div class="kpi" style="border-color:var(--red)"><b style="color:var(--red)">-15</b><span>Pelanggaran</span></div><div class="kpi" style="border-color:var(--ok)"><b style="color:var(--ok)">+120</b><span>Prestasi</span></div><div class="kpi" style="border-color:var(--navy)"><b>105</b><span>Total</span></div></div>
+        <div class="card2" style="margin-top:8px;background:#FFF4E6;border-color:#F5D6A8"><b style="font-size:11px;color:var(--warn)">Terlambat — Budi (-5)</b><div class="muted" style="font-size:11px">11 Sep 07:55 • Wali: Bu Siti</div></div>
+        <div class="card2" style="margin-top:8px;background:#E1F0EC;border-color:#C6E2DA"><b style="font-size:11px;color:var(--ok)">Juara Olimpiade — Budi (+50)</b><div class="muted" style="font-size:11px">05 Sep • Matematika Kab.</div></div>
+        <div class="row" style="margin-top:10px"><button class="btn" style="flex:1;background:var(--red);border-color:var(--red);color:#fff;display:flex;gap:4px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg> Pelanggaran</button><button class="btn ok" style="flex:1;display:flex;gap:4px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Prestasi</button></div>
+        <div class="muted" style="font-size:10px;margin-top:6px">Kategori: Terlambat, PR, Juara, Ekstra • Reset tiap Ganjil/Genap</div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 10 Jadwal -->
+    <div class="phone" data-cat="laporan">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">10. Jadwal <span class="tag">Grid</span></div>
+      <div class="ph-body">
+        <div class="sched">
+          <div class="head"><span style="display:flex;gap:6px;align-items:center"><svg class="ico" style="width:16px;height:16px;color:var(--gold)" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Jadwal 3A</span><span class="badge gold" style="font-size:9px">Senin-Jumat • 8 jam</span></div>
+          <table><tr><th>Jam</th><th>Sen</th><th>Sel</th><th>Rab</th></tr>
+          <tr><td class="muted">07:30</td><td style="background:#EEF2F7">MTK</td><td>IPA</td><td>BI</td></tr>
+          <tr><td class="muted">09:00</td><td>IPA</td><td style="background:var(--gold);color:var(--navy);font-weight:800">MTK</td><td>IPS</td></tr>
+          <tr><td class="muted">10:30</td><td>BI</td><td>BI</td><td style="background:#E1F0EC">Pramuka</td></tr>
+          </table>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="btn ghost" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Grid</button><button class="btn gold" style="flex:1;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Export PDF</button></div>
+        <div class="card-soft" style="margin-top:8px"><b style="font-size:11px">PILIH MAPEL</b><div class="row" style="margin-top:6px"><span class="badge navy">MTK</span><span class="badge gold">IPA</span><span class="badge ok">BI</span><span class="badge" style="background:#fff;color:var(--muted);border-color:var(--line)">IPS</span><span class="badge" style="background:#fff;color:var(--muted);border-color:var(--line)">PJOK</span></div></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 11 Laporan Cetak -->
+    <div class="phone" data-cat="laporan">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">11. Cetak Laporan <span class="tag gold">1 Tap</span></div>
+      <div class="ph-body">
+        <div class="row">
+          <div class="kpi"><b>28</b><span>Siswa</span></div>
+          <div class="kpi"><b>54×86</b><span>Kartu</span></div>
+          <div class="kpi"><b>A4</b><span>Biodata</span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <div class="card2" style="border-left:4px solid var(--navy)"><b style="font-size:12px;display:flex;gap:6px;align-items:center"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg> Kartu Pelajar PDF</b><div class="muted" style="font-size:11px">54×86mm • foto bulat + QR • header navy+gold • 3 per halaman</div><button class="btn gold" style="margin-top:6px;padding:7px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Cetak Kartu (28)</button></div>
+          <div class="card2"><b style="font-size:12px;display:flex;gap:6px;align-items:center"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Biodata A4</b><div class="muted" style="font-size:11px">NIS, nama, ortu, alamat, foto</div></div>
+          <div class="card2"><b style="font-size:12px;display:flex;gap:6px;align-items:center"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Rapor + Rekap Excel</b><div class="muted" style="font-size:11px">Nilai avg + ranking + H/I/S/A • header biru #1565C0</div><button class="btn" style="margin-top:6px;padding:7px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" style="color:var(--gold)" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Rapor.xlsx + Rekap.xlsx</button></div>
+        </div>
+        <div class="note">Preview dulu sebelum print — thermal 80mm juga pas, laser A4 juga pas. QR payload sama.</div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 12 Sync Pairing -->
+    <div class="phone" data-cat="sync">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">12. Pairing QR <span class="tag ok">1 Scan</span></div>
+      <div class="ph-body">
+        <div class="card-soft" style="text-align:center"><b style="font-size:11px;color:var(--navy)">SYNC SERVER LAPTOP</b>
+          <div style="width:120px;height:120px;margin:8px auto;background: repeating-linear-gradient(45deg,#1E3A5F 0 6px,#fff 6px 12px);border:2px solid var(--navy);border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:900">
+            <svg class="ico" style="width:48px;height:48px;color:var(--navy)" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 20h1M19 14h1M20 19h1"/></svg>
+          </div>
+          <div class="muted" style="font-size:10px">Scan dari HP scanner → auto isi IP + key</div>
+          <div style="margin-top:6px;font-family:monospace;font-size:11px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px">192.168.1.12:8080 • key 8f3a...</div>
+          <div class="muted" style="font-size:10px;margin-top:4px">Ganti WiFi? QR auto update IP.</div>
+        </div>
+        <div class="card2" style="margin-top:10px"><b style="font-size:11px">HP SCANNER</b>
+          <input class="input" placeholder="http://192.168.1.12:8080" value="http://192.168.1.12:8080" style="margin-top:6px">
+          <input class="input" placeholder="API Key" value="8f3a9c... (auto dari QR)" style="margin-top:6px">
+          <button class="btn ok" style="margin-top:8px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Test Koneksi — 200 OK</button>
+          <div class="muted" style="font-size:10px;margin-top:4px">Offline queue 3 antre → WiFi on sync 30s</div>
+        </div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Laporan</span></button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 13 Pengaturan -->
+    <div class="phone" data-cat="sync">
+      <div class="ph-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="ph-title">13. Pengaturan <span class="tag">Backup & Lisensi</span></div>
+      <div class="ph-body">
+        <div class="card2"><b style="font-size:11px">PROFIL SEKOLAH</b>
+          <div class="row" style="margin-top:6px"><input class="input" value="SDN 1 Sukamaju" style="flex:1"><span class="badge navy">Ganjil 25/26</span></div>
+          <div class="muted" style="font-size:10px;margin-top:4px">Muncul di header kartu & biodata</div>
+        </div>
+        <div class="card2" style="margin-top:8px"><b style="font-size:11px">SERVER SYNC</b>
+          <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">Status</span><span class="badge ok">● Running 192.168.1.12:8080</span></div>
+          <div style="display:flex;justify-content:space-between"><span class="muted">Key</span><span class="muted" style="font-family:monospace">8f3a... (secure)</span></div>
+          <button class="btn ghost" style="margin-top:6px;padding:7px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 20h1M19 14h1M20 19h1"/></svg> Tampilkan QR Pairing</button>
+        </div>
+        <div class="card2" style="margin-top:8px"><b style="font-size:11px">BACKUP & TEMA</b>
+          <div class="row" style="margin-top:6px"><button class="btn gold" style="flex:1;padding:7px;display:flex;gap:6px;align-items:center;justify-content:center"><svg class="ico" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Backup SQLite</button><button class="btn ghost" style="flex:1;padding:7px">♻️ Restore</button></div>
+          <div class="row" style="margin-top:6px"><span class="badge navy">☀ Light</span><span class="badge" style="background:#fff;color:var(--muted);border-color:var(--line)">🌙 Dark</span><span class="badge" style="background:#fff;color:var(--muted);border-color:var(--line)">⚙ System</span><span class="muted" style="margin-left:auto;font-size:10px">Grace: 28 hari lagi</span></div>
+        </div>
+        <div class="note">Lisensi: KFUN-RX7P-Q2 • Device KF-A3F9... • <a href="#" style="color:var(--navy);font-weight:800">Ganti HP → Reset di admin</a></div>
+        <div class="fbar"><div class="fbar-bar">
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Dash</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Siswa</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M8 14a4 4 0 0 1 8 0v2H8z"/><path d="M9 12l2 2 4-4"/></svg><span>Absen</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17l-5 3 1.9-6.1L4 9h6l2-6 2 6h6l-4.9 4.9L17 20z"/></svg><span>Nilai</span></button>
+          <button class="fbar-item"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Jadwal</span></button>
+          <button class="fbar-item active"><svg class="ico" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>Lainnya</span></button>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note" style="margin-top:16px;background:#fff">
+    <b>Siluet spec kayak Kasir Kita:</b> stroke 1.75px • fill none • linecap round • gap 1px • padding 6/6 • radius 28/20 • inactive #6B7D94 • active bg #1E3A5F + icon #C9A227 • FLAT solid no gradient. Filter Onboard/Siswa/Absen/Laporan/Sync jalan.
+    &nbsp;|&nbsp; <b>Approve →</b> balas <code>approve mockup gas ROM</code>
+  </div>
+  <div style="text-align:center;margin-top:12px" class="muted">mockup: <code>tmp_kelasfun/docs/mockup_KelasFun_v2_ROM.html</code> • PRD: <code>tmp_kelasfun/docs/PRD_KelasFun_v2_ROM.html</code> • v2.1 siluet — ganti warna tinggal edit :root --navy/--gold</div>
+</div>
+<script>
+const nav=document.getElementById('nav'),grid=document.getElementById('grid');
+nav.addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  [...nav.children].forEach(b=>b.classList.remove('active')); e.target.classList.add('active');
+  const f=e.target.dataset.filter;
+  [...grid.children].forEach(ph=>{
+    const c=ph.dataset.cat;
+    ph.style.display=(f==='all'||c===f)?'':'none';
+  });
+});
+</script>
+</body>
+</html>

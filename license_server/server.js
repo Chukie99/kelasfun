@@ -54,7 +54,7 @@ app.post('/api/generate', (req, res) => {
     const { count = 1, adminKey } = req.body;
     
     // Validasi admin key (dalam produksi, gunakan environment variable)
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
         return res.status(401).json({ error: 'Invalid admin key' });
     }
     
@@ -136,7 +136,7 @@ app.post('/api/validate', (req, res) => {
 app.post('/api/reset', (req, res) => {
     const { licenseKey, adminKey } = req.body;
     
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
         return res.status(401).json({ error: 'Invalid admin key' });
     }
     
@@ -164,7 +164,7 @@ app.post('/api/reset', (req, res) => {
 app.get('/api/licenses', (req, res) => {
     const { adminKey } = req.query;
     
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
         return res.status(401).json({ error: 'Invalid admin key' });
     }
     

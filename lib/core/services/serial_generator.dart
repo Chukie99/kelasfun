@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Offline serial code generator & validator for KelasFun.
 /// 
@@ -21,16 +22,35 @@ class SerialService {
 
   static String? _cachedDeviceId;
 
+  /// Device ID real: persisted per-install UUID (stable survives reinstall? no — bind per install).
+  /// Future: ganti ke device_info_plus androidId when plugin added.
+  /// Untuk ROM ini: generate once simpan di prefs via ensureDeviceId(), fallback sync di getter.
   static String _computeDeviceId() {
     try {
-      // Use platform-specific device info when available
-      // Falls back to a stable hash of platform info
-      final bytes = List<int>.generate(32, (i) => i * 7 + 13);
-      final hash = bytes.map((b) => b.toRadixString(16)).join();
-      return 'KF-${hash.substring(0, 12).toUpperCase()}';
+      // Deterministic per-process fallback before prefs loaded — will be replaced by persisted ID
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final rnd = (now ^ 0x5A17) & 0xFFFFFF;
+      final hash = (rnd.toRadixString(16).padLeft(6,'0') + now.toRadixString(16).padLeft(6,'0')).toUpperCase();
+      return 'KF-${hash.substring(0, 12)}';
     } catch (e) {
       return 'KF-${DateTime.now().millisecondsSinceEpoch.toRadixString(16).toUpperCase().substring(0, 12)}';
     }
+  }
+
+  /// Call at startup to load/persist real device ID (call from ActivationScreen / AuthGate)
+  static Future<String> ensureDeviceId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('device_id_persist');
+      if (saved != null && saved.startsWith('KF-')) {
+        _cachedDeviceId = saved;
+        return saved;
+      }
+      final id = _computeDeviceId();
+      await prefs.setString('device_id_persist', id);
+      _cachedDeviceId = id;
+      return id;
+    } catch (_) { return deviceId; }
   }
 
   /// XOR-fold + Knuth multiplicative hash.

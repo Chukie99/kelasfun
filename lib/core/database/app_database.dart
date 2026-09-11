@@ -49,24 +49,22 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onCreate: (m) async {
-        await m.createAll();
+      onCreate: (m) async { await m.createAll(); },
+      beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = ON');
+        await customStatement('PRAGMA journal_mode = WAL');
       },
       onUpgrade: (m, from, to) async {
-        try {
-          if (from < 2) {
-            await _ensureColumn(m, students, students.isActive);
-            await _ensureColumn(m, students, students.notes);
+        // Each step isolated — fail one does not block others, but logged
+        if (from < 2) {
+          try { await _ensureColumn(m, students, students.isActive); await _ensureColumn(m, students, students.notes); } catch(e){
+            print('[DB] v2 migration failed: $e');
           }
-          if (from < 3) {
-            await _ensureColumn(m, students, students.photoPath);
-            await _ensureColumn(m, attendance, attendance.description);
-            await m.createTable(schedules);
-          }
-        } catch (e) {
-          // Log error but don't corrupt the database — partial migration
-          // is better than no app at all.
-          print('[DB] Migration error from v$from to v$to: $e');
+        }
+        if (from < 3) {
+          try { await _ensureColumn(m, students, students.photoPath); } catch(e){ print('[DB] v3 photoPath failed: $e'); }
+          try { await _ensureColumn(m, attendance, attendance.description); } catch(e){ print('[DB] v3 description failed: $e'); }
+          try { await m.createTable(schedules); } catch(e){ print('[DB] v3 schedules failed: $e'); }
         }
       },
     );

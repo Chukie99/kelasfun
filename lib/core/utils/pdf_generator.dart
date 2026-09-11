@@ -97,8 +97,8 @@ class PdfGenerator {
     Uint8List? qrCodeBytes,
   ) {
     // Professional color scheme
-    final primaryColor = PdfColor.fromHex('#1E3A5F');    // Deep navy blue
-    final secondaryColor = PdfColor.fromHex('#C9A227');   // Gold accent
+    final primaryColor = PdfColor.fromHex('#7A1C1C');    // Deep navy blue
+    final secondaryColor = PdfColor.fromHex('#7A1C1C');   // Gold accent
     final lightBg = PdfColor.fromHex('#F8F9FA');          // Light gray background
     final darkText = PdfColor.fromHex('#2C3E50');         // Dark text
     final mediumText = PdfColor.fromHex('#5D6D7E');       // Medium gray text

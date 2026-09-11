@@ -7,25 +7,10 @@ import 'package:kelasfun/shared/widgets/app_card.dart';
 import 'package:kelasfun/features/students/student_list_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 
-Color _accentFor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? AppTheme.accent
-        : AppTheme.lightAccent;
-
-Color _mintFor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? AppTheme.mint
-        : AppTheme.lightMint;
-
-Color _amberFor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? AppTheme.amber
-        : AppTheme.lightAmber;
-
-Color _coralFor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? AppTheme.coral
-        : AppTheme.lightCoral;
+Color _accentFor(BuildContext context) => AppTheme.primary;
+Color _mintFor(BuildContext context) => AppTheme.accentMint;
+Color _amberFor(BuildContext context) => AppTheme.accentAmber;
+Color _coralFor(BuildContext context) => AppTheme.accentCoral;
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback? onNavigate;
@@ -37,7 +22,7 @@ class DashboardScreen extends StatelessWidget {
     final now = DateTime.now();
     final today =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    final semester = now.month <= 6 ? 'Ganjil' : 'Genap';
+    final semester = now.month >= 7 ? 'Ganjil' : 'Genap';
     final year = now.year.toString();
 
     return Scaffold(

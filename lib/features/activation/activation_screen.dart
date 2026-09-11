@@ -20,7 +20,10 @@ class _ActivationScreenState extends State<ActivationScreen> {
   String? _error;
   bool _activated = false;
 
-  String get _deviceId => SerialService.deviceId;
+  String _deviceId = SerialService.deviceId;
+  @override
+  void initState() { super.initState(); _loadDeviceId(); }
+  Future<void> _loadDeviceId() async { final id = await SerialService.ensureDeviceId(); if (mounted) setState(()=>_deviceId=id); }
 
   Future<void> _activate() async {
     final code = _codeController.text.trim().toUpperCase();
@@ -37,6 +40,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
       await prefs.setBool('license_valid', true);
       await prefs.setString('license_key', code);
       await prefs.setString('device_id', _deviceId);
+      await prefs.setInt('license_activated_at', DateTime.now().millisecondsSinceEpoch);
       setState(() => _activated = true);
       
       // Auto-navigate after 2 seconds
@@ -67,7 +71,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
   Widget build(BuildContext context) {
     if (_activated) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: const Color(0xFFFFFCFC),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +91,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFFFFCFC),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -145,7 +149,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0F4FF),
+                          color: const Color(0xFFFFF0F0),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -158,7 +162,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                                   fontFamily: 'Courier',
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF667EEA),
+                                  color: Color(0xFF7A1C1C),
                                   letterSpacing: 1.5,
                                 ),
                               ),
@@ -239,7 +243,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF7A1C1C), width: 2),
                     ),
                   ),
                 ),
@@ -256,7 +260,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
                   child: ElevatedButton(
                     onPressed: _loading ? null : _activate,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF667EEA),
+                      backgroundColor: const Color(0xFF7A1C1C),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),

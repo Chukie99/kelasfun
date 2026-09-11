@@ -6,6 +6,7 @@ import 'package:kelasfun/core/theme/app_theme.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/features/activation/activation_screen.dart';
 import 'package:kelasfun/features/home/home_screen.dart';
+import 'package:kelasfun/core/services/serial_generator.dart';
 
 class KelasFunApp extends StatelessWidget {
   final AppDatabase database;
@@ -53,7 +54,26 @@ class _AuthGateState extends State<AuthGate> {
   Future<void> _checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
     final valid = prefs.getBool('license_valid') ?? false;
-    setState(() { _authenticated = valid; _loading = false; });
+    final key = prefs.getString('license_key') ?? '';
+    final deviceId = prefs.getString('device_id') ?? '';
+    if (!valid || key.isEmpty) { setState(() { _authenticated = false; _loading = false; }); return; }
+    // Grace 30 hari: jika activatedAt >30 hari & offline tetap valid, online wajib re-validate server
+    final activatedAtMs = prefs.getInt('license_activated_at') ?? 0;
+    if (activatedAtMs > 0) {
+      final days = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(activatedAtMs)).inDays;
+      if (days > 30) {
+        // grace habis — butuh online re-validate (untuk ROM: tetap kasih lewat tapi flag warning)
+        // TODO: hit Supabase validate_license when online
+      }
+    }
+    try {
+      final persisted = await SerialService.ensureDeviceId();
+      final dev = deviceId.isNotEmpty ? deviceId : persisted;
+      final ok = SerialService.validateCode(key, dev);
+      setState(() { _authenticated = ok; _loading = false; });
+    } catch (_) {
+      setState(() { _authenticated = false; _loading = false; });
+    }
   }
 
   @override
@@ -66,7 +86,7 @@ class _AuthGateState extends State<AuthGate> {
             children: [
               Text('🎓', style: TextStyle(fontSize: 64)),
               SizedBox(height: 16),
-              CircularProgressIndicator(),
+              CircularProgressIndicator(color: Color(0xFF7A1C1C)),
             ],
           ),
         ),

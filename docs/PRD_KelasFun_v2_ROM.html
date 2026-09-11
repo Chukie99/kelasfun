@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KelasFun — PRD v2.0 ROM Total (Flutter Offline-First)</title>
+<style>
+:root{--navy:#7A1C1C;--gold:#7A1C1C;--gold2:#E8C547;--bg:#F8F9FA;--bg2:#F2EFE7;--ink:#25324A;--muted:#6B7D94;--line:#D6E2E0;--line2:#EAF0ED;--page:#F9F8F6;--ok:#2E7D6B;--red:#C25A4A;--warn:#8C5A18}
+*{box-sizing:border-box}body{margin:0;font:14px/1.65 Inter,system-ui,sans-serif;background:var(--page);color:var(--ink)}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+.hero{background:var(--navy);color:#fff;border-radius:20px;padding:26px 22px}
+.hero h1{margin:0;font-size:24px;letter-spacing:-.02em}.hero p{margin:8px 0 0;opacity:.92;max-width:800px}
+.badge{display:inline-block;background:var(--gold);color:var(--navy);border-radius:999px;padding:4px 10px;font:11px/1 Inter;font-weight:900;margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+.card h2{margin:0 0 8px;font-size:16px}.card h3{margin:14px 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}th,td{padding:8px 10px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--bg);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid var(--line);background:var(--bg)}
+.pill.navy{background:var(--navy);color:#fff;border-color:var(--navy)}.pill.gold{background:var(--gold);color:var(--navy);border-color:var(--gold)}.pill.ok{background:#E1F0EC;color:var(--ok);border-color:#C6E2DA}.pill.warn{background:#FFF4E6;color:var(--warn);border-color:#F5D6A8}
+.swatch{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sw{width:96px;border-radius:10px;border:1px solid var(--line);overflow:hidden;background:#fff}.sw i{display:block;height:36px}.sw span{display:block;padding:6px 8px;font:11px Inter;color:var(--muted)} .sw b{display:block;font-size:11px;color:var(--ink)}
+.callout{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;margin-top:10px}
+.callout.warn{background:#FFF4E6;border-color:#F5D6A8}.callout.ok{background:#E1F0EC;border-color:#C6E2DA}.callout.navy{background:#EEF2F7;border-color:#C5D2E4}
+.steps{counter-reset:s}.steps li{counter-increment:s;list-style:none;position:relative;padding-left:28px;margin:7px 0}.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:var(--navy);color:var(--gold);display:grid;place-items:center;font:11px/1 Inter;font-weight:900}
+code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:12px;border:1px solid var(--line)}
+a{color:var(--navy)}.foot{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+ul{margin:6px 0 0 18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+<div class="badge">v2.0 ROM TOTAL • FLUTTER • WINDOWS + ANDROID • OFFLINE-FIRST • DRIFT v3</div>
+<h1>KelasFun — PRD v2.0 ROM Total Offline-First</h1>
+<p>Aplikasi <b>manajemen kelas untuk guru SD/SMP Indonesia yang gaptek</b>. <b>100% offline</b> (Drift SQLite), sync via <b>WiFi Direct + QR pairing</b>. Target <b>guru awam tinggal klik</b>: 1-klik EXE/APK, 3-step onboarding, lisensi device-lock, cetak kartu & raport 1 tap. <b>Tanpa internet wajib</b> — internet cuma untuk aktivasi + bayar di <code>lynk.id</code>.</p>
+</div>
+
+<div class="card">
+<h2>🎨 0 — Identitas FLAT Maroon + Gold</h2>
+<div class="swatch">
+<div class="sw"><i style="background:#7A1C1C"></i><span><b>#7A1C1C</b>navy</span></div>
+<div class="sw"><i style="background:#7A1C1C"></i><span><b>#7A1C1C</b>gold</span></div>
+<div class="sw"><i style="background:#2E7D6B"></i><span><b>#2E7D6B</b>ok</span></div>
+<div class="sw"><i style="background:#F8F9FA"></i><span><b>#F8F9FA</b>bg</span></div>
+<div class="sw"><i style="background:#25324A"></i><span><b>#25324A</b>ink</span></div>
+<div class="sw"><i style="background:#D6E2E0"></i><span><b>#D6E2E0</b>line</span></div>
+</div>
+<p class="callout navy">Alasan: kartu siswa v1.4 <code>#7A1C1C / #7A1C1C</code> udah profesional — lanjutkan ke seluruh app. Solid, tanpa gradient. Beda total dari KasirKita teal & Affiliate Hunter #3368A0 — biar buyer ngerti ini produk sekolah, bukan toko.</p>
+</div>
+
+<div class="card">
+<h2>🎯 1 — Problem & Tujuan</h2>
+<div class="grid2">
+<div>
+<h3>Problem guru sekarang</h3>
+<ul>
+<li>Absen masih kertas → hilang, gak bisa rekap</li>
+<li>Nilai di Excel berantakan → ranking manual salah</li>
+<li>Kartu siswa bikin di Word → jelek, QR gak ada</li>
+<li>Sinkron HP ↔ Laptop ribet pakai kabel / WA</li>
+<li>Aplikasi sejenis minta online terus → sekolah pelosok gak bisa</li>
+</ul>
+</div>
+<div>
+<h3>Tujuan v2 ROM</h3>
+<ul>
+<li>Input: <code>siswa + absen QR + nilai + poin + jadwal</code> semua offline</li>
+<li>Proses: Drift 7 tabel + sync <code>http://192.168.x.x:8080</code> + QR pairing 1 scan</li>
+<li>Output: <code>Kartu 54×86mm PDF + Raport A4 + Excel ranking + rekap presensi</code> 1 tap cetak</li>
+<li>Jualan: <code>lynk.id → webhook Supabase → email lisensi → device-lock</code> 149k lifetime</li>
+</ul>
+</div>
+</div>
+<div class="callout warn"><b>Batasi scope v2:</b> Offline-first tetap #1. Tidak ada cloud realtime, tidak ada multi-sekolah. 1 device = 1 sekolah. Sync cuma 1 laptop + max 5 HP scanner. Itu udah cukup untuk 90% SD.</div>
+</div>
+
+<div class="card">
+<h2>👤 2 — User & Skenario Guru Awam</h2>
+<table>
+<tr><th>User</th><th>Flow 5 menit (tanpa baca manual)</th></tr>
+<tr><td><b>Bu Siti, 38th<br>Guru SD kelas 3</b><br>Gaptek, HP Samsung A14, Laptop Windows 11</td><td><span class="pill navy">1. Install</span> Download EXE → Next Next Finish → Buka → <span class="pill gold">2. Aktivasi</span> Copy Device ID → WA ke seller → tempel KFUN-... → <span class="pill ok">3. Onboarding 3-step</span> Isi nama sekolah → Tambah siswa (import CSV / foto) → Pair HP scanner via QR → <span class="pill">4. Pakai</span> Scan QR absen → Input nilai → Cetak kartu 1 tap</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>🗺️ 3 — Fitur Lengkap v2 (ROM Total)</h2>
+<table>
+<tr><th>#</th><th>Fitur</th><th>v1.4 (sekarang)</th><th>v2 ROM (gap)</th><th>Status</th></tr>
+<tr><td>F0</td><td><b>Splash + Aktivasi</b></td><td>deviceId fake, AuthGate bypass</td><td><span class="pill gold">FIX P0</span> deviceId real + validate + grace 30d</td><td>🔴</td></tr>
+<tr><td>F1</td><td><b>Onboarding Guru Awam</b></td><td>Tidak ada</td><td><span class="pill navy">NEW</span> 3-step: Sekolah → Siswa → Pair HP</td><td>🟡</td></tr>
+<tr><td>F2</td><td><b>Manajemen Siswa</b></td><td>CRUD + foto + QR + import CSV</td><td>Polish: validasi NIS unik, bulk foto, search kelas</td><td>🟢</td></tr>
+<tr><td>F3</td><td><b>Presensi QR</b></td><td>scanner kamera/USB + manual H/I/S/A</td><td>Offline queue + auto-sync + filter tgl fix</td><td>🟡</td></tr>
+<tr><td>F4</td><td><b>Nilai & Ranking</b></td><td>UTS/UAS/Tugas + ranking avg + chart</td><td>Semester helper Ganjil/Genap + wali kelas view</td><td>🟢</td></tr>
+<tr><td>F5</td><td><b>Poin Disiplin</b></td><td>+- poin pelanggaran/prestasi</td><td>Kategori + total + reset semester</td><td>🟢</td></tr>
+<tr><td>F6</td><td><b>Jadwal Pelajaran</b></td><td>grid Senin-Jumat 8 jam + mapel</td><td>Per kelas, drag jam, export PDF jadwal</td><td>🟢</td></tr>
+<tr><td>F7</td><td><b>Laporan Cetak</b></td><td>Biodata A4 + Kartu 54×86mm + Raport + Excel</td><td>Plus rekap presensi + preview sebelum print</td><td>🟢</td></tr>
+<tr><td>F8</td><td><b>Sync Desktop↔Android</b></td><td>shelf 8080 + QR pairing, health no-auth</td><td><span class="pill gold">FIX P0</span> x-api-key all routes + encrypt + auto-IP detect</td><td>🔴</td></tr>
+<tr><td>F9</td><td><b>Lisensi & Bayar</b></td><td>lynk webhook no-sig + admin123 + anon key leak</td><td><span class="pill gold">FIX P0</span> sig verify + RLS ketat + dart-define</td><td>🔴</td></tr>
+<tr><td>F10</td><td><b>Pengaturan</b></td><td>profil sekolah + tema + backup sqlite</td><td>Backup auto + restore validasi + server IP display</td><td>🟡</td></tr>
+<tr><td>F11</td><td><b>Build & Rilis</b></td><td>APK debug sign + Win continue-on-error + no gate</td><td><span class="pill navy">FIX</span> release keystore + flutter analyze + Inno Setup EXE</td><td>🔴</td></tr>
+</table>
+<div class="callout ok"><b>v2 tetap Flutter 3.27 + Drift 2.28 + shelf 1.4.2.</b> Tidak ganti stack. Semua fix adalah hardening + UX, bukan rewrite.</div>
+</div>
+
+<div class="card">
+<h2>🔒 4 — Security & Lisensi (P0)</h2>
+<div class="grid2">
+<div>
+<h3>Device Binding Real</h3>
+<ul>
+<li><code>device_info_plus 11.1.0</code> → <code>androidId</code> / <code>iosIpad</code> / <code>windows DeviceId</code> + hash <code>SHA256(salt+id)</code></li>
+<li>Format tetap <code>KFUN-XXXX-XX</code> kompatibel <code>serial_generator.html</code> — cuma deviceId inputnya yang real</li>
+<li>AuthGate: <code>validateCode(deviceId) + Supabase validate_license()</code> jika online, else cek local + <code>graceUntil = activatedAt+30d</code></li>
+</ul>
+<h3>Supabase</h3>
+<ul>
+<li>Hapus hardcode di <code>app_config.dart</code> → <code>--dart-define=SUPABASE_URL/ANON_KEY</code> + <code>obfuscate --split-debug-info</code></li>
+<li>RLS: <code>licenses INSERT hanya service_role</code>, anon cuma <code>rpc validate_license</code></li>
+<li>Admin panel: hapus service_role dari JS, pakai Edge Function proxy</li>
+</ul>
+</div>
+<div>
+<h3>Lynk Webhook</h3>
+<ul>
+<li>Verify <code>x-lynk-signature == sha256(amount+refId+msgId+secret)</code> — reject 401 jika mismatch</li>
+<li>Generate key <code>XXXX-XXXX-XXXX-XXXX</code> + insert <code>buyer_email, purchase_ref_id</code></li>
+<li>Email via Resend: template navy+gold konsisten</li>
+</ul>
+<h3>Sync 8080</h3>
+<ul>
+<li><code>x-api-key</code> wajib di <b>semua</b> route termasuk <code>/api/health</code></li>
+<li>Key = <code>crypto.random 32 hex</code> generate di laptop, QR pairing bawa key + IP + port</li>
+<li>Simpan encrypt via <code>flutter_secure_storage</code> bukan plain SharedPreferences</li>
+</ul>
+</div>
+</div>
+<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--navy);font-weight:800">Lihat flow lisensi end-to-end (klik)</summary><div class="callout navy" style="margin-top:8px">
+<code>Guru buka app → Device ID KF-ABCD1234 → WA seller</code> → Seller buka <code>serial_generator.html</code> → paste → <code>KFUN-RX7P-Q2</code> → Guru tempel → <code>SerialService.validateCode(local OK)</code> → jika online <code>supabase.rpc(validate_license)</code> → <code>license_valid=true + graceUntil</code> → masuk Dashboard. Offline tetap bisa 30 hari.
+</div></details>
+</div>
+
+<div class="card">
+<h2>🗄️ 5 — Database & Sync</h2>
+<div class="grid2">
+<div>
+<h3>Drift Schema v3 → v4</h3>
+<ul>
+<li>Tabel: <code>Students, Attendance, Subjects, Grades, Points, Settings, Schedules</code></li>
+<li>v4 tambah: <code>settings.graceUntil, settings.licenseKey, settings.deviceId</code> + index <code>attendance(date, studentId)</code></li>
+<li>Migration: <code>onUpgrade</code> tanpa try/catch swallow — jika fail, rollback & toast "Backup dulu"</li>
+<li>Backup: <code>getDatabasePath() → copy sqlite + wal</code> tiap minggu auto + manual di Pengaturan</li>
+</ul>
+</div>
+<div>
+<h3>Sync HTTP</h3>
+<ul>
+<li>Server: <code>shelf 1.4.2</code> di laptop <code>0.0.0.0:8080</code> — 5 endpoint: <code>health, students GET/POST, attendance POST, scan POST</code></li>
+<li>Client HP: <code>SyncService.syncAttendance()</code> antre <code>isSynced=false</code> → retry 3x per 30s</li>
+<li>Pairing QR: <code>JSON{serverUrl, apiKey, schoolName}</code> → HP scan → <code>SyncConfig.fromJson</code> validate → testConnection → simpan</li>
+<li>Auto-IP: laptop tampilkan <code>NetworkInterface.list → 192.168.x.x</code> realtime di <code>server_section.dart</code></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>🏗️ 6 — Build Plan ROM Total</h2>
+<ol class="steps">
+<li><b>Security P0</b> — device_info_plus + AuthGate + webhook sig + RLS (60 menit)</li>
+<li><b>Sync P0 + UX F1</b> — x-api-key all routes + secure_storage + onboarding 3-step (40 menit)</li>
+<li><b>Build P0</b> — ganti <code>com.example.kelasfun → com.kelasfun.app</code>, keystore release, <code>flutter analyze + build_runner</code> gate, Inno Setup (30 menit)</li>
+<li><b>Polish P1</b> — auto-IP display, NIS unique toast, jadwal export PDF, chart ranking (30 menit)</li>
+<li><b>QC + Rilis</b> — <code>gh release v2.0.0</code> APK 80MB + Desktop ZIP (Inno EXE) + serial_generator.zip (15 menit)</li>
+</ol>
+<p style="color:var(--muted);font-size:12px">Estimasi 3 jam. Tiap step <code>flutter analyze --no-pub == 0</code> baru lanjut. E2E tetap via GH Actions (flutter 3.27 zulu 17).</p>
+</div>
+
+<div class="card">
+<h2>✅ 7 — Acceptance (Guru Awam 5 Menit)</h2>
+<table>
+<tr><th>Test</th><th>Lolos jika</th></tr>
+<tr><td>Install EXE Next-Next-Finish</td><td>Desktop shortcut KelasFun muncul, double-click langsung Splash tanpa error dll missing</td></tr>
+<tr><td>Aktivasi Device ID</td><td>Copy KF-... → WA → tempel KFUN-... → masuk Dashboard (online validate + offline grace 30d)</td></tr>
+<tr><td>Onboarding 3-step</td><td>Step 1 Sekolah → Step 2 Tambah 3 siswa → Step 3 Pair HP QR → Dashboard, tanpa baca manual</td></tr>
+<tr><td>Scan QR absen offline</td><td>HP mode pesawat scan 3 siswa → antre → WiFi on → auto sync → laptop muncul H/I/S/A realtime</td></tr>
+<tr><td>Cetak kartu 54×86mm</td><td>PDF 3 kartu per halaman, foto bulat + QR + navy header, bisa print thermal/laser pas</td></tr>
+<tr><td>Export Excel ranking</td><td><code>Rapor.xlsx + Rekap.xlsx</code> kolom NIS/Nama/Mapel/Rata/Ranking + Presensi H/I/S/A, warna biru header</td></tr>
+<tr><td>Device lock</td><td>Kode sama di HP lain → ditolak "sudah dipakai di device lain"</td></tr>
+<tr><td>Supply chain</td><td><code>lynk.id bayar 149k → email Resend → kode aktif → tidak bisa di-curl fake tanpa sig</code></td></tr>
+</table>
+</div>
+
+<div class="foot">KelasFun PRD v2.0 ROM Total — FLAT Maroon #7A1C1C + Gold #7A1C1C • Offline-first Drift v3→v4 • Shelf 8080 QR pairing • Approve mockup → gas ROM</div>
+</div>
+</body>
+</html>

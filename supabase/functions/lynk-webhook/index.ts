@@ -33,9 +33,12 @@ serve(async (req: Request) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const calculatedSignature = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
-    // Note: lynk.id may send signature in a header or body field
-    // For now, we trust the webhook if it reaches our endpoint
-    // You should verify the signature against lynk.id's actual signature format
+    const gotSig = req.headers.get('x-lynk-signature') || (body as any).signature || '';
+    if (gotSig && gotSig.toLowerCase() !== calculatedSignature.toLowerCase()) {
+      console.log('[WEBHOOK] SIG MISMATCH got', gotSig, 'calc', calculatedSignature);
+      // lenient: masih 200 biar Lynk gak retry storm, tapi jangan create license
+      return new Response(JSON.stringify({ ok:false, error:'invalid signature' }), { status: 200, headers: { ...corsHeaders, 'Content-Type':'application/json' } });
+    }
 
     // Generate license key (XXXX-XXXX-XXXX-XXXX)
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

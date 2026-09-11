@@ -17,7 +17,7 @@ class ExcelGenerator {
       bold: true,
       fontSize: 12,
       fontColorHex: ExcelColor.fromHexString('#FFFFFFFF'),
-      backgroundColorHex: ExcelColor.fromHexString('#FF1565C0'),
+      backgroundColorHex: ExcelColor.fromHexString('#FF7A1C1C'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
     );
