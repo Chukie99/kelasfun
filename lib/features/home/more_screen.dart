@@ -5,6 +5,7 @@ import 'package:kelasfun/features/grades/ranking_screen.dart';
 import 'package:kelasfun/features/discipline/point_screen.dart';
 import 'package:kelasfun/features/reports/report_screen.dart';
 import 'package:kelasfun/features/schedule/schedule_screen.dart';
+import 'package:kelasfun/features/jurnal/jurnal_screen.dart';
 import 'package:kelasfun/features/settings/settings_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -41,6 +42,14 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const PointScreen()),
+            ),
+          ),
+          _MoreItem(
+            icon: Icons.book,
+            label: 'Jurnal Mengajar',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const JurnalScreen()),
             ),
           ),
           _MoreItem(

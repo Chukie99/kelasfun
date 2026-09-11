@@ -11,6 +11,7 @@ import 'tables/grades.dart';
 import 'tables/points.dart';
 import 'tables/settings.dart';
 import 'tables/schedule.dart';
+import 'tables/jurnal.dart';
 import 'daos/student_dao.dart';
 import 'daos/attendance_dao.dart';
 import 'daos/subject_dao.dart';
@@ -18,6 +19,7 @@ import 'daos/grade_dao.dart';
 import 'daos/point_dao.dart';
 import 'daos/settings_dao.dart';
 import 'daos/schedule_dao.dart';
+import 'daos/jurnal_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -29,6 +31,7 @@ part 'app_database.g.dart';
   Points,
   Settings,
   Schedules,
+  Jurnals,
 ], daos: [
   StudentDao,
   AttendanceDao,
@@ -37,6 +40,7 @@ part 'app_database.g.dart';
   PointDao,
   SettingsDao,
   ScheduleDao,
+  JurnalDao,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([DatabaseConnection? connection]) : super(connection ?? _openConnection());
@@ -44,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -66,6 +70,10 @@ class AppDatabase extends _$AppDatabase {
           try { await _ensureColumn(m, attendance, attendance.description); } catch(e){ print('[DB] v3 description failed: $e'); }
           try { await m.createTable(schedules); } catch(e){ print('[DB] v3 schedules failed: $e'); }
         }
+        if (from < 4) {
+          try { await m.createTable(jurnals); } catch(e){ print('[DB] v4 jurnals failed: $e'); }
+        }
+
       },
     );
   }
