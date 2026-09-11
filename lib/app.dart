@@ -67,11 +67,13 @@ class _AuthGateState extends State<AuthGate> {
       }
     }
     try {
-      final persisted = await SerialService.ensureDeviceId();
-      final dev = deviceId.isNotEmpty ? deviceId : persisted;
+      String dev = deviceId;
+      if (dev.isEmpty) { try { dev = await SerialService.ensureDeviceId(); } catch(_){ dev = SerialService.deviceId; } }
       final ok = SerialService.validateCode(key, dev);
+      if (!mounted) return;
       setState(() { _authenticated = ok; _loading = false; });
-    } catch (_) {
+    } catch (e) {
+      if (!mounted) return;
       setState(() { _authenticated = false; _loading = false; });
     }
   }

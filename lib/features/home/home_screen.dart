@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
               labelType: NavigationRailLabelType.all,
               backgroundColor: isDark ? AppTheme.surface : AppTheme.lightSurface,
               indicatorColor: AppTheme.primarySoft,
-              selectedIconTheme: const IconData(0).hashCode == 0 ? null : null,
+              selectedIconTheme: const IconThemeData(color: AppTheme.primary),
               destinations: _menuItems.map((m) => NavigationRailDestination(
                 icon: Icon(m.icon, color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary),
                 selectedIcon: Icon(m.icon, color: AppTheme.primary),

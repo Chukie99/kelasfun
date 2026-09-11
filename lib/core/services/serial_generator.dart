@@ -42,12 +42,12 @@ class SerialService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString('device_id_persist');
-      if (saved != null && saved.startsWith('KF-')) {
+      if (saved != null && saved.length >= 6) {
         _cachedDeviceId = saved;
         return saved;
       }
-      final id = _computeDeviceId();
-      await prefs.setString('device_id_persist', id);
+      final id = _cachedDeviceId ?? _computeDeviceId();
+      try { await prefs.setString('device_id_persist', id); } catch(_){}
       _cachedDeviceId = id;
       return id;
     } catch (_) { return deviceId; }

@@ -32,7 +32,7 @@ class KelasFunBottomBar extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(color: AppTheme.lightBorder),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(.08), blurRadius: 20, offset: const Offset(0, 8))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.08), blurRadius: 20, offset: const Offset(0, 8))],
           ),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           child: Row(

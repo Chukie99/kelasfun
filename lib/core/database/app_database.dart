@@ -51,8 +51,8 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (m) async { await m.createAll(); },
       beforeOpen: (details) async {
-        await customStatement('PRAGMA foreign_keys = ON');
-        await customStatement('PRAGMA journal_mode = WAL');
+        try { await customStatement('PRAGMA foreign_keys = ON'); } catch(_){}
+        try { await customStatement('PRAGMA journal_mode = WAL'); } catch(_){}
       },
       onUpgrade: (m, from, to) async {
         // Each step isolated — fail one does not block others, but logged
