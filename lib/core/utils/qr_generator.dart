@@ -17,7 +17,7 @@ class QrGenerator {
     required String nis,
     required String name,
     required String className,
-    double size = 200,
+    double size = 300,
   }) async {
     final payload = encodePayload(nis: nis, name: name, className: className);
     final painter = QrPainter(

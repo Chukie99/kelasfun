@@ -78,7 +78,7 @@ class PdfGenerator {
         name: (student['name'] as String?) ?? '',
         className: (student['class'] as String?) ?? '',
       );
-      final qrCodeBytes = QrImageHelper.generatePng(payload, size: 200);
+      final qrCodeBytes = QrImageHelper.generatePng(payload, size: 360);
 
       pdf.addPage(pw.Page(
         pageFormat: PdfPageFormat(tagWidth, tagHeight),
@@ -241,7 +241,7 @@ class PdfGenerator {
           // QR Code footer
           pw.Container(
             width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(vertical: 5),
+            padding: const pw.EdgeInsets.symmetric(vertical: 6),
             decoration: pw.BoxDecoration(
               color: white,
               border: pw.Border(
@@ -253,8 +253,8 @@ class PdfGenerator {
                 if (qrCodeBytes != null)
                   pw.Image(
                     pw.MemoryImage(qrCodeBytes),
-                    width: 35,
-                    height: 35,
+                    width: 52,
+                    height: 52,
                   ),
                 pw.SizedBox(height: 3),
                 pw.Text(

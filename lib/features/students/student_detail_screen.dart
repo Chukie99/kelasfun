@@ -111,7 +111,7 @@ class _QRPreview extends StatelessWidget {
             child: QrImageView(
               data: student.qrData,
               version: QrVersions.auto,
-              size: 180,
+              size: 220,
               eyeStyle: QrEyeStyle(
                 eyeShape: QrEyeShape.circle,
                 color: fgColor,

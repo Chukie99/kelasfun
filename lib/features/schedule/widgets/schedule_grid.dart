@@ -17,6 +17,7 @@ class ScheduleGrid extends StatelessWidget {
 
   static const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
   static const periods = [1, 2, 3, 4, 5, 6, 7, 8];
+  static const periodTimes = ['07:00','07:45','08:30','09:15','10:00','10:45','13:00','13:45'];
 
   void _showSubjectPicker(BuildContext context, String day, int period) {
     final db = context.read<AppDatabase>();
@@ -112,11 +113,12 @@ class ScheduleGrid extends StatelessWidget {
 
         if (col == 0 && row == 0) return const SizedBox();
         if (col == 0) {
+          final idx = row - 1;
           return Center(
-            child: Text(
-              'Jam ${periods[row - 1]}',
-              style: AppTheme.caption(context),
-            ),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text('Jam ${periods[idx]}', style: AppTheme.caption(context).copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
+              Text(periodTimes[idx], style: AppTheme.caption(context).copyWith(fontSize: 8, color: Colors.grey)),
+            ]),
           );
         }
         if (row == 0) {
