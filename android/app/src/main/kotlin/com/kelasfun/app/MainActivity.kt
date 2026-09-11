@@ -1,4 +1,4 @@
-package com.example.kelasfun
+package com.kelasfun.app
 
 import io.flutter.embedding.android.FlutterActivity
 
