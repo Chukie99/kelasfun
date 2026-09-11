@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/config/app_config.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';

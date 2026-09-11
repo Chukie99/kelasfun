@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:excel/excel.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:kelasfun/core/database/app_database.dart';
 import 'package:kelasfun/core/theme/app_theme.dart';
@@ -32,7 +34,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
     final db = context.read<AppDatabase>();
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['csv'],
+      allowedExtensions: ['csv', 'xlsx'],
     );
     if (result == null || result.files.isEmpty) return;
 
