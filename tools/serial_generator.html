@@ -112,13 +112,29 @@ function generate(){
   localStorage.setItem('kelasfun_history',JSON.stringify(history));
   renderHistory();
 }
+function fallbackCopy(text, done){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.setAttribute('readonly','');
+  ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(true); }catch(e){ done(false); }
+  document.body.removeChild(ta);
+}
 function copyCode(){
-  const code=document.getElementById('resultCode').textContent;
-  navigator.clipboard.writeText(code).then(()=>{
-    const b=document.getElementById('copyBtn');
-    const t=b.textContent; b.textContent='Tersalin ✓';
-    setTimeout(()=>b.textContent=t,1800);
-  });
+  const code=(document.getElementById('resultCode').textContent||'').trim();
+  if(!code) return;
+  const btn=document.getElementById('copyBtn');
+  const orig=btn.textContent;
+  const done=(ok)=>{
+    btn.textContent= ok ? 'Tersalin \u2713' : 'Gagal copy';
+    setTimeout(()=> btn.textContent=orig, 1800);
+    if(!ok) alert('Copy gagal — salin manual: '+code);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(code).then(()=>done(true)).catch(()=> fallbackCopy(code, done));
+  } else {
+    fallbackCopy(code, done);
+  }
 }
 function renderHistory(){
   const list=document.getElementById('historyList');
