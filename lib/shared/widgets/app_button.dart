@@ -37,10 +37,10 @@ class AppButton extends StatelessWidget {
     final buttonStyle = ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
-          return bgColor.withOpacity(0.5);
+          return bgColor.withValues(alpha: 0.5);
         }
         if (states.contains(WidgetState.hovered)) {
-          return bgColor.withOpacity(0.85);
+          return bgColor.withValues(alpha: 0.85);
         }
         return bgColor;
       }),

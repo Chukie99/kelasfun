@@ -201,7 +201,7 @@ class _AndroidAttendanceLocalState extends State<AndroidAttendanceLocal> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: AppTheme.accent.withOpacity(0.2),
+                                backgroundColor: AppTheme.accent.withValues(alpha: 0.2),
                                 child: Text(
                                   student.fullName.isNotEmpty
                                       ? student.fullName[0].toUpperCase()
@@ -217,7 +217,7 @@ class _AndroidAttendanceLocalState extends State<AndroidAttendanceLocal> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.2),
+                                  color: statusColor.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(

@@ -97,12 +97,12 @@ class PdfGenerator {
     Uint8List? qrCodeBytes,
   ) {
     // Professional color scheme
-    final primaryColor = PdfColor.fromHex('#7A1C1C');    // Deep navy blue
-    final secondaryColor = PdfColor.fromHex('#7A1C1C');   // Gold accent
-    final lightBg = PdfColor.fromHex('#F8F9FA');          // Light gray background
+    final primaryColor = PdfColor.fromHex('#7A1C1C');    // maroon
+    final secondaryColor = PdfColor.fromHex('#FFFFFF');   // white badge (no gold)
+    final lightBg = PdfColor.fromHex('#FFFFFF');          // white (putih-maroon)
     final darkText = PdfColor.fromHex('#2C3E50');         // Dark text
     final mediumText = PdfColor.fromHex('#5D6D7E');       // Medium gray text
-    final borderColor = PdfColor.fromHex('#DEE2E6');      // Light border
+    final borderColor = PdfColor.fromHex('#E8D0D0');      // maroon line
     final white = PdfColors.white;
 
     return pw.Container(
@@ -144,7 +144,7 @@ class PdfGenerator {
                     style: pw.TextStyle(
                       fontSize: 7,
                       fontWeight: pw.FontWeight.bold,
-                      color: white,
+                      color: primaryColor,
                     ),
                   ),
                 ),
@@ -152,7 +152,7 @@ class PdfGenerator {
             ),
           ),
 
-          // Gold accent line
+          // Maroon accent line
           pw.Container(
             height: 2,
             color: secondaryColor,
@@ -284,7 +284,7 @@ class PdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.SizedBox(
-          width: 35,
+          width: 42,
           child: pw.Text(
             label,
             style: pw.TextStyle(

@@ -32,15 +32,15 @@ class AppCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.radiusCard),
           splashColor: Colors.transparent,
           highlightColor: isDark
-              ? AppTheme.surfaceLight.withOpacity(0.5)
-              : AppTheme.lightSurfaceLight.withOpacity(0.5),
+              ? AppTheme.surfaceLight.withValues(alpha: 0.5)
+              : AppTheme.lightSurfaceLight.withValues(alpha: 0.5),
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppTheme.spacingLg),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppTheme.radiusCard),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 3,
                   offset: const Offset(0, 1),
                 ),

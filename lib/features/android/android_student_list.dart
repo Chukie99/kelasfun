@@ -104,7 +104,7 @@ class _AndroidStudentListState extends State<AndroidStudentList> {
                               margin: const EdgeInsets.only(bottom: 8),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: AppTheme.accent.withOpacity(0.2),
+                                  backgroundColor: AppTheme.accent.withValues(alpha: 0.2),
                                   child: Text(
                                     s.name.isNotEmpty ? s.name[0].toUpperCase() : '?',
                                     style: TextStyle(color: AppTheme.accent),

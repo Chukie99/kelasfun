@@ -157,7 +157,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       label: Text('$label ($count)'),
       selected: isSelected,
       onSelected: (_) => setState(() => _selectedFilter = label),
-      selectedColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
+      selectedColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withValues(alpha: 0.2),
       checkmarkColor: isDark ? AppTheme.accent : AppTheme.lightAccent,
       labelStyle: AppTheme.body(context).copyWith(
         fontSize: 13,

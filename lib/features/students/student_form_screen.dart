@@ -147,7 +147,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
     return CircleAvatar(
       radius: 50,
-      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
+      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withValues(alpha: 0.2),
       child: Text(
         initials,
         style: AppTheme.h2(context).copyWith(

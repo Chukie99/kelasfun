@@ -71,7 +71,7 @@ class AttendanceCard extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: statusCol.withOpacity(0.15),
+                backgroundColor: statusCol.withValues(alpha: 0.15),
                 child: Icon(statusIcon, color: statusCol, size: 20),
               ),
               const SizedBox(width: AppTheme.spacingMd),
@@ -103,7 +103,7 @@ class AttendanceCard extends StatelessWidget {
                     vertical: AppTheme.spacingXs,
                   ),
                   decoration: BoxDecoration(
-                    color: statusCol.withOpacity(0.15),
+                    color: statusCol.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(AppTheme.radiusChip),
                   ),
                   child: Text(
@@ -122,7 +122,7 @@ class AttendanceCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppTheme.spacingSm),
               decoration: BoxDecoration(
-                color: statusCol.withOpacity(0.08),
+                color: statusCol.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppTheme.radiusButton),
               ),
               child: Text(

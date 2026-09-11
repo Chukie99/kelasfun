@@ -146,7 +146,8 @@ class ReportScreen extends StatelessWidget {
         });
       }
 
-      final pdf = await PdfGenerator.generateStudentCards(students: studentData);
+      final schoolName = await db.settingsDao.getSetting('school_name');
+      final pdf = await PdfGenerator.generateStudentCards(students: studentData, schoolName: schoolName);
       if (pdf != null && context.mounted) {
         await Printing.layoutPdf(onLayout: (format) => pdf);
       }

@@ -24,7 +24,7 @@ class StudentCard extends StatelessWidget {
       } catch (_) {}
     }
     return CircleAvatar(
-      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withOpacity(0.2),
+      backgroundColor: (isDark ? AppTheme.accent : AppTheme.lightAccent).withValues(alpha: 0.2),
       child: Text(
         initials,
         style: TextStyle(

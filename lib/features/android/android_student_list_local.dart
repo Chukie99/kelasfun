@@ -106,7 +106,7 @@ class _AndroidStudentListLocalState extends State<AndroidStudentListLocal> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: AppTheme.accent.withOpacity(0.2),
+                                backgroundColor: AppTheme.accent.withValues(alpha: 0.2),
                                 child: Text(
                                   s.fullName.isNotEmpty
                                       ? s.fullName[0].toUpperCase()
@@ -172,7 +172,7 @@ class _AndroidStudentListLocalState extends State<AndroidStudentListLocal> {
         label: Text(label),
         selected: isSelected,
         onSelected: (_) => setState(() => _classFilter = label),
-        selectedColor: AppTheme.accent.withOpacity(0.2),
+        selectedColor: AppTheme.accent.withValues(alpha: 0.2),
       ),
     );
   }

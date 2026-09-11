@@ -67,7 +67,7 @@ class ScheduleGrid extends StatelessWidget {
                     leading: CircleAvatar(
                       backgroundColor: isSelected 
                           ? AppTheme.accent 
-                          : AppTheme.accent.withOpacity(0.2),
+                          : AppTheme.accent.withValues(alpha: 0.2),
                       child: Text(
                         subject.code,
                         style: TextStyle(
@@ -168,12 +168,12 @@ class ScheduleGrid extends StatelessWidget {
                         Icon(
                           Icons.add,
                           size: 16,
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(alpha: 0.5),
                         ),
                         Text(
                           '-',
                           style: AppTheme.small(context).copyWith(
-                            color: Colors.grey.withOpacity(0.5),
+                            color: Colors.grey.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
